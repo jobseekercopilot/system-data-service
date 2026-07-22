@@ -1,0 +1,1 @@
+{"SchemaVersion":2,"ArtifactName":"target/location-gateway-1.0.0.jar","ArtifactType":"filesystem","Results":[{"Target":"Java","Class":"lang-pkgs","Type":"jar","Packages":[{"Name":"example-library","Version":"1.0.0"}],"Vulnerabilities":[{"VulnerabilityID":"CVE-2099-12345","PkgName":"example-library","InstalledVersion":"1.0.0","Severity":"CRITICAL"}]}]}

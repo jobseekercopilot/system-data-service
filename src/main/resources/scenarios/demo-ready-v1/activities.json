@@ -1,0 +1,4 @@
+{
+  "status": "not-persisted",
+  "note": "No persistent reporting/activity repository was found in reporting-service. Aggregate verification is exposed through system-data-service."
+}
