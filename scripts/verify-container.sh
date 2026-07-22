@@ -34,5 +34,11 @@ if docker exec "$service_name" wget --quiet --timeout=3 --tries=1 --spider \
     exit 1
 fi
 
+if docker exec "$service_name" wget --quiet --timeout=3 --tries=1 --spider \
+        http://127.0.0.1:8103/internal/environments/status; then
+    echo "environment-management API unexpectedly accepted an unauthenticated default request" >&2
+    exit 1
+fi
+
 docker stop --time 25 "$service_name" >/dev/null
 test "$(docker inspect --format '{{.State.ExitCode}}' "$service_name")" = "143"

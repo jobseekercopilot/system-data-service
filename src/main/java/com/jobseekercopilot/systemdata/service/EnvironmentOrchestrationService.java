@@ -11,6 +11,7 @@ import com.jobseekercopilot.systemdata.util.DeterministicIds;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 @Service
 public class EnvironmentOrchestrationService {
@@ -31,17 +33,19 @@ public class EnvironmentOrchestrationService {
     private final DatasetStorageService datasetStorageService;
     private final EnvironmentManagementGuard guard;
     private final DemoEnvironmentScenarioBuilder scenarioBuilder;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
     public EnvironmentOrchestrationService(
             SystemDataProperties properties,
             DatasetStorageService datasetStorageService,
             EnvironmentManagementGuard guard,
-            DemoEnvironmentScenarioBuilder scenarioBuilder) {
+            DemoEnvironmentScenarioBuilder scenarioBuilder,
+            @Qualifier("environmentManagementRestTemplate") RestTemplate restTemplate) {
         this.properties = properties;
         this.datasetStorageService = datasetStorageService;
         this.guard = guard;
         this.scenarioBuilder = scenarioBuilder;
+        this.restTemplate = restTemplate;
     }
 
     public EnvironmentOperationResponse reset(EnvironmentOperationRequest request) {
@@ -50,7 +54,10 @@ public class EnvironmentOrchestrationService {
         EnvironmentScenario scenario = scenario(request);
         String userId = scenarioBuilder.demoUserId();
         List<EnvironmentServiceResult> services = resetServices(scenarioId(scenario), userId);
-        return response("reset", scenario, startedAt, services, summaryForReset(services), List.of());
+        List<String> warnings = hasFailed(services)
+                ? List.of("Reset stopped after a downstream failure; retry is safe after the dependency recovers.")
+                : List.of();
+        return response("reset", scenario, startedAt, services, summaryForReset(services), warnings);
     }
 
     public EnvironmentOperationResponse seed(EnvironmentOperationRequest request) {
@@ -62,7 +69,12 @@ public class EnvironmentOrchestrationService {
         }
         DemoEnvironmentScenario demoScenario = buildScenario(request);
         List<EnvironmentServiceResult> services = seedServices(demoScenario);
-        return response("seed", scenario, startedAt, services, summaryForSeed(demoScenario), demoScenario.warnings());
+        List<String> warnings = new ArrayList<>(demoScenario.warnings());
+        if (hasFailed(services)) {
+            warnings.add("Seed stopped after a downstream failure; retry with reset-and-seed after the dependency recovers.");
+        }
+        EnvironmentSummary summary = hasFailed(services) ? summaryForReset(services) : summaryForSeed(demoScenario);
+        return response("seed", scenario, startedAt, services, summary, warnings);
     }
 
     public EnvironmentOperationResponse resetAndSeed(EnvironmentOperationRequest request) {
@@ -73,11 +85,18 @@ public class EnvironmentOrchestrationService {
         services.addAll(resetServices(scenarioId(scenario), scenarioBuilder.demoUserId()));
         List<String> warnings = new ArrayList<>();
         EnvironmentSummary summary = summaryForReset(services);
-        if (scenario == EnvironmentScenario.DEMO_READY) {
+        if (hasFailed(services)) {
+            warnings.add("Seed phase skipped because reset did not complete; retry is safe after the dependency recovers.");
+        } else if (scenario == EnvironmentScenario.DEMO_READY) {
             DemoEnvironmentScenario demoScenario = buildScenario(request);
-            services.addAll(seedServices(demoScenario));
+            List<EnvironmentServiceResult> seedResults = seedServices(demoScenario);
+            services.addAll(seedResults);
             warnings.addAll(demoScenario.warnings());
-            summary = summaryForSeed(demoScenario);
+            if (hasFailed(seedResults)) {
+                warnings.add("Seed stopped after a downstream failure; retry with reset-and-seed after the dependency recovers.");
+            } else {
+                summary = summaryForSeed(demoScenario);
+            }
         }
         return response("reset-and-seed", scenario, startedAt, services, summary, warnings);
     }
@@ -106,32 +125,56 @@ public class EnvironmentOrchestrationService {
                 "environmentManagementEnabled", true,
                 "supportedScenarios", List.of(EnvironmentScenario.EMPTY, EnvironmentScenario.DEMO_READY),
                 "defaultDatasetId", DEFAULT_DATASET_ID,
-                "defaultDatasetVersion", DEFAULT_DATASET_VERSION,
-                "targetServices", properties.getEnvironmentManagement().getTargetServices());
+                "defaultDatasetVersion", DEFAULT_DATASET_VERSION);
     }
 
     private List<EnvironmentServiceResult> resetServices(String scenarioId, String userId) {
         var targets = properties.getEnvironmentManagement().getTargetServices();
-        return List.of(
-                delete("payment-service", targets.getPayment() + "/internal/system-data/scenario/" + scenarioId + "/payments/" + userId),
-                delete("document-store-service", targets.getDocumentStore() + "/internal/system-data/scenario/" + scenarioId + "/documents/" + userId),
-                delete("application-tracker-service", targets.getApplicationTracker() + "/internal/system-data/scenario/" + scenarioId + "/applications/" + userId),
-                delete("user-profile-service", targets.getUserProfile() + "/internal/system-data/scenario/" + scenarioId + "/profiles/" + userId),
-                delete("authentication-service", targets.getAuthentication() + "/internal/system-data/scenario/" + scenarioId + "/users/" + userId),
-                EnvironmentServiceResult.skipped("cv-cover-letter-service", "No persistence discovered."),
-                EnvironmentServiceResult.skipped("reporting-service", "No persistence discovered in current source."));
+        List<EnvironmentServiceResult> results = executeFailFast(List.of(
+                operation("payment-service", () -> delete("payment-service", targets.getPayment() + "/internal/system-data/scenario/" + scenarioId + "/payments/" + userId)),
+                operation("document-store-service", () -> delete("document-store-service", targets.getDocumentStore() + "/internal/system-data/scenario/" + scenarioId + "/documents/" + userId)),
+                operation("application-tracker-service", () -> delete("application-tracker-service", targets.getApplicationTracker() + "/internal/system-data/scenario/" + scenarioId + "/applications/" + userId)),
+                operation("user-profile-service", () -> delete("user-profile-service", targets.getUserProfile() + "/internal/system-data/scenario/" + scenarioId + "/profiles/" + userId)),
+                operation("authentication-service", () -> delete("authentication-service", targets.getAuthentication() + "/internal/system-data/scenario/" + scenarioId + "/users/" + userId))));
+        results.add(EnvironmentServiceResult.skipped("cv-cover-letter-service", "No persistence discovered."));
+        results.add(EnvironmentServiceResult.skipped("reporting-service", "No persistence discovered in current source."));
+        return results;
     }
 
     private List<EnvironmentServiceResult> seedServices(DemoEnvironmentScenario scenario) {
         var targets = properties.getEnvironmentManagement().getTargetServices();
-        return List.of(
-                post("authentication-service", targets.getAuthentication() + "/internal/system-data/seed/user", scenario.user()),
-                post("user-profile-service", targets.getUserProfile() + "/internal/system-data/seed/profiles/" + scenario.userId(), scenario.profile()),
-                post("payment-service", targets.getPayment() + "/internal/system-data/seed/payments", scenario.payment()),
-                post("document-store-service", targets.getDocumentStore() + "/internal/system-data/seed/documents", scenario.documents()),
-                post("application-tracker-service", targets.getApplicationTracker() + "/internal/system-data/seed/applications", scenario.applications()),
-                EnvironmentServiceResult.skipped("cv-cover-letter-service", "No persistent generation records discovered; document-store-service owns document records."),
-                EnvironmentServiceResult.skipped("reporting-service", "No persistent activity repository discovered; E2E can verify aggregate state through this endpoint."));
+        List<EnvironmentServiceResult> results = executeFailFast(List.of(
+                operation("authentication-service", () -> post("authentication-service", targets.getAuthentication() + "/internal/system-data/seed/user", scenario.user())),
+                operation("user-profile-service", () -> post("user-profile-service", targets.getUserProfile() + "/internal/system-data/seed/profiles/" + scenario.userId(), scenario.profile())),
+                operation("payment-service", () -> post("payment-service", targets.getPayment() + "/internal/system-data/seed/payments", scenario.payment())),
+                operation("document-store-service", () -> post("document-store-service", targets.getDocumentStore() + "/internal/system-data/seed/documents", scenario.documents())),
+                operation("application-tracker-service", () -> post("application-tracker-service", targets.getApplicationTracker() + "/internal/system-data/seed/applications", scenario.applications()))));
+        results.add(EnvironmentServiceResult.skipped("cv-cover-letter-service", "No persistent generation records discovered; document-store-service owns document records."));
+        results.add(EnvironmentServiceResult.skipped("reporting-service", "No persistent activity repository discovered; E2E can verify aggregate state through this endpoint."));
+        return results;
+    }
+
+    private List<EnvironmentServiceResult> executeFailFast(List<DownstreamOperation> operations) {
+        List<EnvironmentServiceResult> results = new ArrayList<>();
+        boolean failed = false;
+        for (DownstreamOperation operation : operations) {
+            if (failed) {
+                results.add(EnvironmentServiceResult.skipped(operation.service(), "Skipped after an earlier downstream failure."));
+                continue;
+            }
+            EnvironmentServiceResult result = operation.action().get();
+            results.add(result);
+            failed = !"SUCCESS".equals(result.status());
+        }
+        return results;
+    }
+
+    private DownstreamOperation operation(String service, Supplier<EnvironmentServiceResult> action) {
+        return new DownstreamOperation(service, action);
+    }
+
+    private boolean hasFailed(List<EnvironmentServiceResult> services) {
+        return services.stream().anyMatch(result -> "FAILED".equals(result.status()));
     }
 
     private EnvironmentScenario scenario(EnvironmentOperationRequest request) {
@@ -169,51 +212,60 @@ public class EnvironmentOrchestrationService {
     private EnvironmentServiceResult post(String service, String url, Object body) {
         try {
             ResponseEntity<Map> response = restTemplate.postForEntity(url, body, Map.class);
-            return resultFrom(service, response.getBody());
+            return resultFrom(service, "SEED", response);
         } catch (RestClientException exception) {
-            return failure(service, "SEED", exception);
+            return failure(service, "SEED");
         }
     }
 
     private EnvironmentServiceResult delete(String service, String url) {
         try {
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.DELETE, HttpEntity.EMPTY, Map.class);
-            return resultFrom(service, response.getBody());
+            return resultFrom(service, "RESET", response);
         } catch (RestClientException exception) {
-            return failure(service, "RESET", exception);
+            return failure(service, "RESET");
         }
     }
 
     private EnvironmentServiceResult get(String service, String url) {
         try {
             ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
-            return resultFrom(service, response.getBody());
+            return resultFrom(service, "VERIFY", response);
         } catch (RestClientException exception) {
-            return failure(service, "VERIFY", exception);
+            return failure(service, "VERIFY");
         }
     }
 
-    private EnvironmentServiceResult resultFrom(String fallbackService, Map body) {
-        if (body == null) {
-            return new EnvironmentServiceResult(fallbackService, "UNKNOWN", "SUCCESS", 0, Map.of(), List.of());
+    private EnvironmentServiceResult resultFrom(String service, String operation, ResponseEntity<Map> response) {
+        Map body = response.getBody();
+        if (!response.getStatusCode().is2xxSuccessful() || body == null) {
+            return failure(service, operation);
         }
-        Object service = body.getOrDefault("service", fallbackService);
-        Object operation = body.getOrDefault("operation", "UNKNOWN");
-        Object status = body.getOrDefault("status", "SUCCESS");
-        int recordsAffected = ((Number) body.getOrDefault("recordsAffected", 0)).intValue();
-        Object details = body.get("details");
-        Object warnings = body.get("warnings");
-        return new EnvironmentServiceResult(
-                service.toString(),
-                operation.toString(),
-                status.toString(),
-                recordsAffected,
-                details instanceof Map<?, ?> map ? new LinkedHashMap<>((Map<String, Object>) map) : Map.of(),
-                warnings instanceof List<?> list ? list.stream().map(Object::toString).toList() : List.of());
+        try {
+            if (!"SUCCESS".equalsIgnoreCase(String.valueOf(body.get("status")))) {
+                return failure(service, operation);
+            }
+            Object affected = body.getOrDefault("recordsAffected", 0);
+            if (!(affected instanceof Number recordsAffected)) {
+                return failure(service, operation);
+            }
+            Object details = body.get("details");
+            Object warnings = body.get("warnings");
+            return new EnvironmentServiceResult(
+                    service,
+                    operation,
+                    "SUCCESS",
+                    recordsAffected.intValue(),
+                    details instanceof Map<?, ?> map ? new LinkedHashMap<>((Map<String, Object>) map) : Map.of(),
+                    warnings instanceof List<?> list ? list.stream().map(Object::toString).toList() : List.of());
+        } catch (RuntimeException exception) {
+            return failure(service, operation);
+        }
     }
 
-    private EnvironmentServiceResult failure(String service, String operation, RestClientException exception) {
-        return new EnvironmentServiceResult(service, operation, "FAILED", 0, Map.of("error", exception.getMessage()), List.of(exception.getClass().getSimpleName()));
+    private EnvironmentServiceResult failure(String service, String operation) {
+        return new EnvironmentServiceResult(service, operation, "FAILED", 0, Map.of(),
+                List.of("Downstream operation failed; no response details are exposed."));
     }
 
     private EnvironmentSummary summaryForSeed(DemoEnvironmentScenario scenario) {
@@ -296,5 +348,8 @@ public class EnvironmentOrchestrationService {
             }
         });
         return statuses;
+    }
+
+    private record DownstreamOperation(String service, Supplier<EnvironmentServiceResult> action) {
     }
 }

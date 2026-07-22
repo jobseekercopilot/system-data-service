@@ -152,13 +152,16 @@ public class SystemDataProperties {
 
     public static class EnvironmentManagement {
         private boolean enabled = false;
-        private List<String> allowedEnvironments = new ArrayList<>(List.of("local", "test", "demo", "default"));
+        private List<String> allowedEnvironments = new ArrayList<>(List.of("local", "test", "demo"));
+        private String callerKey;
         private TargetServices targetServices = new TargetServices();
 
         public boolean isEnabled() { return enabled; }
         public void setEnabled(boolean enabled) { this.enabled = enabled; }
         public List<String> getAllowedEnvironments() { return allowedEnvironments; }
         public void setAllowedEnvironments(List<String> allowedEnvironments) { this.allowedEnvironments = allowedEnvironments; }
+        public String getCallerKey() { return callerKey; }
+        public void setCallerKey(String callerKey) { this.callerKey = callerKey; }
         public TargetServices getTargetServices() { return targetServices; }
         public void setTargetServices(TargetServices targetServices) { this.targetServices = targetServices; }
     }
