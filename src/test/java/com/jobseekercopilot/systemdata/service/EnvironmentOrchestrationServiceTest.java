@@ -16,6 +16,8 @@ import com.jobseekercopilot.systemdata.model.EnvironmentOperationRequest;
 import com.jobseekercopilot.systemdata.model.EnvironmentScenario;
 import com.jobseekercopilot.systemdata.model.JobDataset;
 import com.jobseekercopilot.systemdata.model.LocationDataset;
+import com.jobseekercopilot.systemdata.model.NamedStateDefinition;
+import com.jobseekercopilot.systemdata.model.NamedStateIdentity;
 import com.jobseekercopilot.systemdata.util.ChecksumUtil;
 import java.nio.file.Path;
 import java.nio.charset.StandardCharsets;
@@ -25,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.env.MockEnvironment;
@@ -56,6 +60,7 @@ class EnvironmentOrchestrationServiceTest {
                 new EnvironmentManagementGuard(properties, environment),
                 new DemoEnvironmentScenarioBuilder(),
                 noOpFixtureValidator(),
+                new NamedStateRegistry(new ObjectMapper().findAndRegisterModules()),
                 restTemplate);
     }
 
@@ -170,15 +175,34 @@ class EnvironmentOrchestrationServiceTest {
 
     @Test
     void verifyReadsOnlyTheScenarioOwnedIdentity() {
-        expectSuccess(GET, "http://localhost:8084/internal/system-data/verify/users/" + USER_ID, "authentication-service", "VERIFY");
-        expectSuccess(GET, "http://localhost:8085/internal/system-data/verify/profiles/" + USER_ID, "user-profile-service", "VERIFY");
-        expectSuccess(GET, "http://localhost:8088/internal/system-data/verify/applications/" + USER_ID, "application-tracker-service", "VERIFY");
-        expectSuccess(GET, "http://localhost:8089/internal/system-data/verify/documents/" + USER_ID, "document-store-service", "VERIFY");
-        expectSuccess(GET, "http://localhost:8099/internal/system-data/verify/payments/" + USER_ID, "payment-service", "VERIFY");
+        expectVerification(new NamedStateRegistry(new ObjectMapper().findAndRegisterModules())
+                .require(EnvironmentScenario.DEMO_READY));
 
         var response = service.verify(request(EnvironmentScenario.DEMO_READY));
 
         assertThat(response.status()).isEqualTo("SUCCESS");
+        server.verify();
+    }
+
+    @Test
+    void verificationFailsWhenMeasuredStateDoesNotMatchTheDefinition() {
+        NamedStateDefinition definition = new NamedStateRegistry(new ObjectMapper().findAndRegisterModules())
+                .require(EnvironmentScenario.LOGIN_SESSION);
+        String userId = definition.identities().get(0).userId(definition.scenarioId());
+        server.expect(requestTo("http://localhost:8084/internal/system-data/verify/users/" + userId))
+                .andExpect(method(GET))
+                .andRespond(withSuccess(
+                        "{\"status\":\"SUCCESS\",\"recordsAffected\":0,\"details\":{\"exists\":false}}",
+                        MediaType.APPLICATION_JSON));
+
+        var response = service.verify(request(EnvironmentScenario.LOGIN_SESSION));
+
+        assertThat(response.status()).isEqualTo("FAILED");
+        assertThat(response.services()).last().satisfies(result -> {
+            assertThat(result.service()).isEqualTo("named-state-catalog");
+            assertThat(result.warnings()).containsExactly(
+                    "Prepared state does not match its named-state definition.");
+        });
         server.verify();
     }
 
@@ -188,6 +212,112 @@ class EnvironmentOrchestrationServiceTest {
 
         assertThat(status).doesNotContainKey("targetServices");
         assertThat(status.toString()).doesNotContain("localhost", "8084", "8099");
+    }
+
+    @Test
+    void exposesEveryVersionedStateWithoutTargetOrCredentialDetails() {
+        assertThat(service.listStates()).hasSize(EnvironmentScenario.values().length)
+                .allSatisfy(definition -> {
+                    assertThat(definition.version()).matches("[1-9][0-9]*\\.[0-9]+\\.[0-9]+");
+                    assertThat(definition.identities()).allSatisfy(identity ->
+                            assertThat(identity.email()).endsWith("@example.com"));
+                });
+        assertThat(service.describe(EnvironmentScenario.PROVIDER_FAILURE).providerBehaviour())
+                .isEqualTo("ALL_UNAVAILABLE");
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = EnvironmentScenario.class, names = {
+            "EMPTY", "REGISTRATION_CLEAN", "LOGIN_SESSION", "PROFILE_LOCATION",
+            "DUPLICATE_REGISTRATION", "CROSS_USER_SECURITY", "PROVIDER_FAILURE"})
+    void namedStatePrepareVerifyAndResetAreRepeatableAndBounded(EnvironmentScenario scenario) {
+        NamedStateDefinition definition = new NamedStateRegistry(new ObjectMapper().findAndRegisterModules())
+                .require(scenario);
+        expectPrepare(definition);
+        expectPrepare(definition);
+        expectVerification(definition);
+        expectReset(definition);
+
+        var first = service.prepare(request(scenario));
+        var second = service.prepare(request(scenario));
+        var verification = service.verify(request(scenario));
+        var reset = service.reset(request(scenario));
+
+        assertThat(first.status()).isEqualTo("SUCCESS");
+        assertThat(second.status()).isEqualTo("SUCCESS");
+        assertThat(first.summary()).isEqualTo(second.summary());
+        assertThat(verification.status()).isEqualTo("SUCCESS");
+        assertThat(reset.status()).isEqualTo("SUCCESS");
+        server.verify();
+    }
+
+    private void expectPrepare(NamedStateDefinition definition) {
+        expectReset(definition);
+        for (NamedStateIdentity identity : definition.identities()) {
+            String userId = identity.userId(definition.scenarioId());
+            for (String component : identity.seedComponents()) {
+                if ("AUTHENTICATION".equals(component)) {
+                    expectSuccess(POST, "http://localhost:8084/internal/system-data/seed/user", "authentication-service", "SEED");
+                } else if ("USER_PROFILE".equals(component)) {
+                    expectSuccess(POST, "http://localhost:8085/internal/system-data/seed/profiles/" + userId, "user-profile-service", "SEED");
+                }
+            }
+        }
+    }
+
+    private void expectReset(NamedStateDefinition definition) {
+        for (NamedStateIdentity identity : definition.identities()) {
+            String userId = identity.userId(definition.scenarioId());
+            for (String component : identity.resetComponents()) {
+                String url = switch (component) {
+                    case "PAYMENT" -> "http://localhost:8099/internal/system-data/scenario/" + definition.scenarioId() + "/payments/" + userId;
+                    case "DOCUMENTS" -> "http://localhost:8089/internal/system-data/scenario/" + definition.scenarioId() + "/documents/" + userId;
+                    case "APPLICATIONS" -> "http://localhost:8088/internal/system-data/scenario/" + definition.scenarioId() + "/applications/" + userId;
+                    case "USER_PROFILE" -> "http://localhost:8085/internal/system-data/scenario/" + definition.scenarioId() + "/profiles/" + userId;
+                    case "AUTHENTICATION" -> "http://localhost:8084/internal/system-data/scenario/" + definition.scenarioId() + "/users/" + userId;
+                    default -> throw new IllegalStateException(component);
+                };
+                expectSuccess(DELETE, url, "reset", "RESET");
+            }
+        }
+    }
+
+    private void expectVerification(NamedStateDefinition definition) {
+        for (NamedStateIdentity identity : definition.identities()) {
+            String userId = identity.userId(definition.scenarioId());
+            for (String component : List.of("AUTHENTICATION", "USER_PROFILE", "APPLICATIONS", "DOCUMENTS", "PAYMENT")) {
+                if (!identity.resetComponents().contains(component)) continue;
+                String url = switch (component) {
+                    case "AUTHENTICATION" -> "http://localhost:8084/internal/system-data/verify/users/" + userId;
+                    case "USER_PROFILE" -> "http://localhost:8085/internal/system-data/verify/profiles/" + userId;
+                    case "APPLICATIONS" -> "http://localhost:8088/internal/system-data/verify/applications/" + userId;
+                    case "DOCUMENTS" -> "http://localhost:8089/internal/system-data/verify/documents/" + userId;
+                    case "PAYMENT" -> "http://localhost:8099/internal/system-data/verify/payments/" + userId;
+                    default -> throw new IllegalStateException(component);
+                };
+                boolean seeded = identity.seedComponents().contains(component);
+                int applications = expected(definition, "applications");
+                int documents = expected(definition, "documents");
+                int versions = expected(definition, "documentVersions");
+                int ledger = expected(definition, "ledgerEntries");
+                String details = switch (component) {
+                    case "AUTHENTICATION", "USER_PROFILE" -> "{\"exists\":" + seeded + "}";
+                    case "APPLICATIONS" -> "{\"applications\":" + applications + ",\"byStatus\":{}}";
+                    case "DOCUMENTS" -> "{\"documents\":" + documents + ",\"documentVersions\":" + versions + "}";
+                    case "PAYMENT" -> "{\"walletExists\":" + seeded + ",\"ledgerEntries\":" + ledger + ",\"balanceTokens\":0}";
+                    default -> throw new IllegalStateException(component);
+                };
+                server.expect(requestTo(url))
+                        .andExpect(method(GET))
+                        .andRespond(withSuccess("{\"status\":\"SUCCESS\",\"recordsAffected\":0,\"details\":" + details + "}",
+                                MediaType.APPLICATION_JSON));
+            }
+        }
+    }
+
+    private int expected(NamedStateDefinition definition, String key) {
+        Object value = definition.expected().get(key);
+        return value instanceof Number number ? number.intValue() : 0;
     }
 
     private void expectSeedSequence() {

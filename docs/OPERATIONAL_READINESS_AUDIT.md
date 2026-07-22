@@ -37,9 +37,12 @@ document/file, and AI-credit/payment databases. It does not directly write SQL.
 Job, matching, CV orchestration, export, and reporting persistence are outside
 its ownership.
 
-Current named states are only `EMPTY` and `DEMO_READY`. Current operations are
-reset, seed (append-like), reset-and-seed, verify, and fixture query. There is
-no separately defined append or clean contract. SD-03 now requires an
+SD-05 adds versioned states for empty, registration, login/session,
+profile/location, duplicate registration, cross-user security, provider
+failure, and the populated demo. Discoverable list/describe/prepare/reset/verify
+operations consume a validated declarative catalog. Every state has isolated
+deterministic synthetic identities and bounded component cleanup. Seed and
+reset-and-seed remain compatibility aliases. SD-03 requires an
 authenticated internal caller, rejects ambiguous/default and production-like
 profiles and targets, bounds mutation to the scenario identity, and defines a
 fail-fast non-atomic recovery contract. SD-07 still owns the complete stack
@@ -60,10 +63,9 @@ payload checksums are validated in CI and again by runtime consumers. Repeated
 generation is byte-stable and negative PII/secret/captured-data/URL/licence
 tests pass. It contains none of the quarantined records or model responses.
 
-The included Alex Taylor identity and scenario records are synthetic. Stable
-UUIDs, fixed reference dates, deterministic ordering, and immutable version
-paths exist, but repeat seed/reset idempotency and guard behavior are not yet
-adequately tested.
+All included identities and scenario records are synthetic. Stable UUIDs,
+fixed reference dates, deterministic ordering, immutable version paths,
+catalog validation, and repeated prepare/verify/reset behavior are tested.
 
 Provider gateways own external calls. Production services own production data
 and behavior. This service owns safe datasets/state preparation. E2E requests a
@@ -78,7 +80,7 @@ and Python orchestration remain legacy inputs to replace in SD-07/E2E-03.
 | SD-02 | Reproducible contract clients; no JARs | High / P1 | SD-01 | Yes — complete |
 | SD-03 | Production-safe authenticated reset/seed | Critical / P0 | SD-01/02 | Yes — complete locally; stack proof in SD-07 |
 | SD-04 | Governed synthetic datasets/provenance | High / P1 | SD-01 | Yes — complete |
-| SD-05 | Named states, determinism, idempotency | High / P1 | SD-02/03/04 | Yes |
+| SD-05 | Named states, determinism, idempotency | High / P1 | SD-02/03/04 | Yes — complete locally; stack proof in SD-07 |
 | SD-06 | Separate live acquisition boundary and validate dataset paths | High / P1 | SD-01/04 | Yes |
 | SD-07 | E2E named-state/minimum-stack integration | High / P1 | SD-03/04/05 and E2E-02/03 | Yes |
 

@@ -27,7 +27,9 @@ separate live-acquisition boundary.
 
 ## Current safe responsibilities
 
-- Define synthetic `EMPTY` and `DEMO_READY` scenario state.
+- Define isolated, versioned synthetic states for registration, session,
+  profile/location, duplicate-account, cross-user, provider-failure, empty and
+  populated-demo journeys.
 - Serve deterministic fixture responses when explicitly enabled in an allowed
   non-production profile and a governed dataset is present.
 - Coordinate reset, seed, reset-and-seed, and verify through service-owned
@@ -64,6 +66,8 @@ Required gateway clients are generated exclusively from pinned private source
 contracts. See [the contract-client workflow](docs/CONTRACT_CLIENTS.md).
 Fixture provenance, licence, expiry, generation, and refresh rules are in
 [the fixture-governance guide](docs/FIXTURE_GOVERNANCE.md).
+The discoverable prepare/verify/reset contract and state ownership rules are in
+[the named-state guide](docs/NAMED_STATES.md).
 
 ## Safety defaults
 

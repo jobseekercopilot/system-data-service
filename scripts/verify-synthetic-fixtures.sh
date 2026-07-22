@@ -5,6 +5,7 @@ script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 repository_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
 fixture_dir=${1:-$repository_root/fixtures/datasets/uk-software-developer-demo/1.0.0}
 scenario_dir="$repository_root/src/main/resources/scenarios/demo-ready-v1"
+scenario_catalog="$repository_root/src/main/resources/scenarios/named-states.json"
 source_specification="$repository_root/fixtures/source/uk-software-developer-demo-v1.json"
 
 fail() {
@@ -45,6 +46,18 @@ jq -e '
   and .credentialClassification == "PUBLIC_TEST_CREDENTIAL_NON_PRODUCTION"
   and (.email | endswith("@example.com"))
 ' "$scenario_dir/user.json" >/dev/null || fail "demo identity is not explicitly synthetic and reserved"
+jq -e '
+  length == 8
+  and ([.[].scenario] | unique | length == 8)
+  and ([.[].scenarioId] | unique | length == 8)
+  and all(.[];
+    (.scenarioId | test("^[a-z0-9-]+-v[1-9][0-9]*$"))
+    and (.version | test("^[1-9][0-9]*\\.[0-9]+\\.[0-9]+$"))
+    and (.identities | type == "array")
+    and all(.identities[]; . as $identity |
+      ($identity.email | endswith("@example.com"))
+      and ($identity.resetComponents | contains($identity.seedComponents))))
+' "$scenario_catalog" >/dev/null || fail "named-state catalog schema or isolation policy is invalid"
 
 jq -e '
   .datasetId == "uk-software-developer-demo"
@@ -127,7 +140,7 @@ scenario_checksum=$(
 test "$scenario_checksum" = "$(jq -r '.scenarioBundle.sha256' "$fixture_dir/provenance.json")" \
     || fail "scenario bundle checksum mismatch"
 
-if jq -r '.. | strings' "$fixture_dir"/*.json "$scenario_dir"/*.json "$source_specification" \
+if jq -r '.. | strings' "$fixture_dir"/*.json "$scenario_dir"/*.json "$scenario_catalog" "$source_specification" \
         | grep -Eiq '(sk-[a-z0-9]{16,}|gh[pousr]_[a-z0-9]{12,}|AKIA[0-9A-Z]{12,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|LIVE_CAPTURED_FIXTURE)'; then
     fail "credential, secret, or captured-provider marker detected"
 fi
@@ -137,14 +150,14 @@ url_file=$(mktemp)
 cleanup() { rm -f "$email_file" "$url_file"; }
 trap cleanup EXIT INT TERM
 jq -r '.. | strings | select(test("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"))' \
-    "$fixture_dir"/*.json "$scenario_dir"/*.json "$source_specification" > "$email_file"
+    "$fixture_dir"/*.json "$scenario_dir"/*.json "$scenario_catalog" "$source_specification" > "$email_file"
 while IFS= read -r email || test -n "$email"; do
     printf '%s' "$email" | grep -Eiq '^[A-Za-z0-9._%+-]+@example\.(com|test)$' \
         || fail "non-reserved email address detected"
 done < "$email_file"
 
 jq -r '.. | strings | select(test("^https?://"))' \
-    "$fixture_dir"/*.json "$scenario_dir"/*.json "$source_specification" > "$url_file"
+    "$fixture_dir"/*.json "$scenario_dir"/*.json "$scenario_catalog" "$source_specification" > "$url_file"
 while IFS= read -r url || test -n "$url"; do
     printf '%s' "$url" | grep -Eq '^https://[A-Za-z0-9.-]+\.example\.test(/|$)' \
         || fail "unsafe external URL detected"

@@ -3,6 +3,7 @@ package com.jobseekercopilot.systemdata.controller;
 import com.jobseekercopilot.systemdata.model.EnvironmentOperationRequest;
 import com.jobseekercopilot.systemdata.model.EnvironmentOperationResponse;
 import com.jobseekercopilot.systemdata.model.EnvironmentScenario;
+import com.jobseekercopilot.systemdata.model.NamedStateDefinition;
 import com.jobseekercopilot.systemdata.service.EnvironmentOrchestrationService;
 import com.jobseekercopilot.systemdata.service.InternalCallerGuard;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -50,6 +52,29 @@ public class EnvironmentManagementController {
             @RequestBody EnvironmentOperationRequest request) {
         callerGuard.requireAuthorized(callerKey);
         return ResponseEntity.ok(orchestrationService.resetAndSeed(request));
+    }
+
+    @PostMapping("/prepare")
+    public ResponseEntity<EnvironmentOperationResponse> prepare(
+            @RequestHeader(name = InternalCallerGuard.HEADER_NAME, required = false) String callerKey,
+            @RequestBody EnvironmentOperationRequest request) {
+        callerGuard.requireAuthorized(callerKey);
+        return ResponseEntity.ok(orchestrationService.prepare(request));
+    }
+
+    @GetMapping("/states")
+    public ResponseEntity<List<NamedStateDefinition>> states(
+            @RequestHeader(name = InternalCallerGuard.HEADER_NAME, required = false) String callerKey) {
+        callerGuard.requireAuthorized(callerKey);
+        return ResponseEntity.ok(orchestrationService.listStates());
+    }
+
+    @GetMapping("/states/{scenario}")
+    public ResponseEntity<NamedStateDefinition> describe(
+            @RequestHeader(name = InternalCallerGuard.HEADER_NAME, required = false) String callerKey,
+            @org.springframework.web.bind.annotation.PathVariable EnvironmentScenario scenario) {
+        callerGuard.requireAuthorized(callerKey);
+        return ResponseEntity.ok(orchestrationService.describe(scenario));
     }
 
     @GetMapping("/status")

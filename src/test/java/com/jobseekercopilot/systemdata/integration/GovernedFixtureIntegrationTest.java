@@ -1,10 +1,12 @@
 package com.jobseekercopilot.systemdata.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobseekercopilot.systemdata.config.SystemDataProperties;
 import com.jobseekercopilot.systemdata.model.FixtureLlmRequest;
+import com.jobseekercopilot.systemdata.exception.GatewayUnavailableException;
 import com.jobseekercopilot.systemdata.service.DatasetStorageService;
 import com.jobseekercopilot.systemdata.service.DemoEnvironmentScenarioBuilder;
 import com.jobseekercopilot.systemdata.service.FixtureService;
@@ -69,5 +71,13 @@ class GovernedFixtureIntegrationTest {
         assertThat(firstScenario).isEqualTo(secondScenario);
         assertThat(firstScenario.applications()).hasSize(9);
         assertThat(firstScenario.userId()).isEqualTo(builder.demoUserId());
+    }
+
+    @Test
+    void providerFailureStateIsDeterministicAndDoesNotReadOrCallAProvider() {
+        assertThatThrownBy(() -> fixtureService.searchJobs(null, null, "PROVIDER_FAILURE", null,
+                null, null, 0, 20, null, null, null, null))
+                .isInstanceOf(GatewayUnavailableException.class)
+                .hasMessage("Synthetic provider fixture is unavailable");
     }
 }

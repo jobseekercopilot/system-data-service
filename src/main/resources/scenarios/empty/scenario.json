@@ -1,5 +1,5 @@
 {
-  "scenarioId": "empty",
+  "scenarioId": "empty-v1",
   "scenario": "EMPTY",
   "description": "Reset non-production data owned by the deterministic demo identity and leave services in a valid empty state."
 }
