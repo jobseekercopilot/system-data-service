@@ -96,6 +96,7 @@ symlink paths without making a provider call.
 | SD-05 | Named states, determinism, idempotency | High / P1 | SD-02/03/04 | Yes — complete locally; stack proof in E2E-03 |
 | SD-06 | Separate live acquisition boundary and validate dataset paths | High / P1 | SD-01/04 | Yes — complete locally |
 | SD-07 | E2E named-state lifecycle integration | High / P1 | SD-03/04/05/06 and E2E-02 | Yes — E2E client in delivery; stack proof remains E2E-03 |
+| SD-10 | Fail closed when the history secret scan cannot inspect commits | High / P1 | None | Yes — remediation in delivery |
 
 ## Definition of Done
 

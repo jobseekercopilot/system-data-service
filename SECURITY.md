@@ -13,3 +13,10 @@ separate, explicitly authorized workflow and is never part of normal tests.
 Do not bypass a failed secret, dependency, container, provenance, or safety
 check. Current security blockers and unblock conditions are recorded in
 `docs/OPERATIONAL_READINESS_AUDIT.md` and private issues #4, #5, #6, and #7.
+
+CI runs `scripts/test-secret-history.sh` before
+`scripts/verify-secret-history.sh`. The scanner configures the read-only Docker
+mount as a safe Git directory, proves the repository has history, requires
+Gitleaks to report a non-zero commit count, and uses redacted output. A Git
+discovery error or zero-commit result fails the job; it is never valid evidence
+of a clean history.
