@@ -1,0 +1,361 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Jobseeker Copilot - Reed Gateway API",
+    "description": "Gateway API for Reed job search integration. Searches jobs via Reed external API.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8087",
+      "description": "Generated server url"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Reed Jobs",
+      "description": "Reed job search endpoints"
+    }
+  ],
+  "paths": {
+    "/api/jobs/external-search": {
+      "post": {
+        "tags": [
+          "Reed Jobs"
+        ],
+        "summary": "Search Reed for the job service",
+        "description": "Internal gateway contract used by job-service.",
+        "operationId": "externalSearch",
+        "parameters": [
+          {
+            "name": "X-User-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExternalSearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "401": {
+            "description": "Missing X-User-Id header",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalSearchResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Search completed successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalSearchResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Search completed with no matching jobs",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalSearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/provider-mode": {
+      "get": {
+        "tags": [
+          "provider-mode-controller"
+        ],
+        "operationId": "providerMode",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reed/search": {
+      "get": {
+        "tags": [
+          "Reed Jobs"
+        ],
+        "summary": "Search jobs on Reed",
+        "description": "Searches for jobs via Reed external API.",
+        "operationId": "searchJobs",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "Job title or keyword",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Software Engineer"
+          },
+          {
+            "name": "location",
+            "in": "query",
+            "description": "Location (city or postcode)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "London"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of results",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            },
+            "example": 10
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search completed successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReedSearchResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Reed API error or rate limit exceeded",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReedSearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ExternalSearchRequest": {
+        "required": [
+          "keywords",
+          "location"
+        ],
+        "type": "object",
+        "properties": {
+          "keywords": {
+            "maxItems": 10,
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "location": {
+            "type": "string"
+          },
+          "distance": {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "employmentType": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "salaryMin": {
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          },
+          "salaryMax": {
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "page": {
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ExternalJob": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "company": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "salary": {
+            "$ref": "#/components/schemas/ExternalSalary"
+          },
+          "employmentType": {
+            "type": "string"
+          },
+          "postedDate": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "matchScore": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "ExternalSalary": {
+        "type": "object",
+        "properties": {
+          "min": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "max": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "currency": {
+            "type": "string"
+          }
+        }
+      },
+      "ExternalSearchResponse": {
+        "type": "object",
+        "properties": {
+          "jobs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExternalJob"
+            }
+          },
+          "totalResults": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ReedJobDto": {
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "type": "string"
+          },
+          "jobTitle": {
+            "type": "string"
+          },
+          "employerName": {
+            "type": "string"
+          },
+          "locationName": {
+            "type": "string"
+          },
+          "minimumSalary": {
+            "type": "string"
+          },
+          "maximumSalary": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "jobDescription": {
+            "type": "string"
+          },
+          "jobUrl": {
+            "type": "string"
+          },
+          "employmentType": {
+            "type": "string"
+          }
+        }
+      },
+      "ReedSearchResponse": {
+        "type": "object",
+        "properties": {
+          "totalResults": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReedJobDto"
+            }
+          }
+        }
+      }
+    }
+  }
+}

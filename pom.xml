@@ -19,6 +19,7 @@
 
     <properties>
         <java.version>17</java.version>
+        <openapi-generator.version>7.22.0</openapi-generator.version>
     </properties>
 
     <dependencies>
@@ -43,6 +44,74 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>${openapi-generator.version}</version>
+                <executions>
+                    <execution>
+                        <id>generate-adzuna-client</id>
+                        <goals><goal>generate</goal></goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/contracts/adzuna-gateway-openapi.json</inputSpec>
+                            <output>${project.build.directory}/generated-sources/openapi/adzuna</output>
+                            <apiPackage>com.jobseekercopilot.generated.adzunagateway.api</apiPackage>
+                            <modelPackage>com.jobseekercopilot.generated.adzunagateway.model</modelPackage>
+                            <invokerPackage>com.jobseekercopilot.generated.adzunagateway.client</invokerPackage>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-jsearch-client</id>
+                        <goals><goal>generate</goal></goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/contracts/jsearch-gateway-openapi.json</inputSpec>
+                            <output>${project.build.directory}/generated-sources/openapi/jsearch</output>
+                            <apiPackage>com.jobseekercopilot.generated.jsearchgateway.api</apiPackage>
+                            <modelPackage>com.jobseekercopilot.generated.jsearchgateway.model</modelPackage>
+                            <invokerPackage>com.jobseekercopilot.generated.jsearchgateway.client</invokerPackage>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-reed-client</id>
+                        <goals><goal>generate</goal></goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/contracts/reed-gateway-openapi.json</inputSpec>
+                            <output>${project.build.directory}/generated-sources/openapi/reed</output>
+                            <apiPackage>com.jobseekercopilot.generated.reedgateway.api</apiPackage>
+                            <modelPackage>com.jobseekercopilot.generated.reedgateway.model</modelPackage>
+                            <invokerPackage>com.jobseekercopilot.generated.reedgateway.client</invokerPackage>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-postcode-client</id>
+                        <goals><goal>generate</goal></goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/contracts/postcode-io-gateway-openapi.json</inputSpec>
+                            <output>${project.build.directory}/generated-sources/openapi/postcode</output>
+                            <apiPackage>com.jobseekercopilot.generated.postcodeiogateway.api</apiPackage>
+                            <modelPackage>com.jobseekercopilot.generated.postcodeiogateway.model</modelPackage>
+                            <invokerPackage>com.jobseekercopilot.generated.postcodeiogateway.client</invokerPackage>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <generatorName>java</generatorName>
+                    <library>resttemplate</library>
+                    <generateApiTests>false</generateApiTests>
+                    <generateModelTests>false</generateModelTests>
+                    <generateApiDocumentation>false</generateApiDocumentation>
+                    <generateModelDocumentation>false</generateModelDocumentation>
+                    <skipValidateSpec>false</skipValidateSpec>
+                    <configOptions>
+                        <annotationLibrary>none</annotationLibrary>
+                        <dateLibrary>java8</dateLibrary>
+                        <hideGenerationTimestamp>true</hideGenerationTimestamp>
+                        <openApiNullable>false</openApiNullable>
+                        <useJakartaEe>true</useJakartaEe>
+                        <useRuntimeException>true</useRuntimeException>
+                    </configOptions>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

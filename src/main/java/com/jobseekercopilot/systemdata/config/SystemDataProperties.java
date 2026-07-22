@@ -142,7 +142,7 @@ public class SystemDataProperties {
 
     public static class Gateway {
         private String baseUrl;
-        private boolean enabled = true;
+        private boolean enabled = false;
 
         public String getBaseUrl() { return baseUrl; }
         public void setBaseUrl(String baseUrl) { this.baseUrl = baseUrl; }

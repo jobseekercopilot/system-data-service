@@ -19,9 +19,10 @@ SHA-256 9e660d361543ce797d0c473d0af201379802cf4751d23af11c8e14585ff3afee
 
 Gitleaks 8.30.1 scanned approximately 4.05 MB and found no credential. A clean
 Java 17 compile/package passed six original tests, with Maven warnings for ten
-project-local generated client JARs. The safe baseline removes those binaries
-and the dependent acquisition sources; four independent tests remain pending
-the reproducible client work in SD-02.
+project-local generated client JARs. SD-02 replaced those binaries with four
+pinned OpenAPI source contracts and OpenAPI Generator 7.22.0. A clean Maven
+build now validates, generates, compiles, and tests the clients without a local
+JAR or `systemPath`.
 
 ## Verified responsibilities
 
@@ -63,7 +64,7 @@ and Python orchestration remain legacy inputs to replace in SD-07/E2E-03.
 | Issue | Finding | Severity / priority | Dependency | Beta blocker |
 |---|---|---|---|---|
 | SD-01 | Safe source-only baseline | High / P1 | None | Yes |
-| SD-02 | Reproducible contract clients; no JARs | High / P1 | SD-01 | Yes |
+| SD-02 | Reproducible contract clients; no JARs | High / P1 | SD-01 | Yes — complete |
 | SD-03 | Production-safe authenticated reset/seed | Critical / P0 | SD-01/02 | Yes |
 | SD-04 | Governed synthetic datasets/provenance | High / P1 | SD-01 | Yes |
 | SD-05 | Named states, determinism, idempotency | High / P1 | SD-02/03/04 | Yes |
