@@ -14,6 +14,7 @@ public class SystemDataProperties {
     private Gateways gateways = new Gateways();
     private EnvironmentManagement environmentManagement = new EnvironmentManagement();
     private Fixtures fixtures = new Fixtures();
+    private LiveAcquisition liveAcquisition = new LiveAcquisition();
 
     public Path getRepositoryDirectory() {
         return repositoryDirectory;
@@ -70,6 +71,9 @@ public class SystemDataProperties {
     public void setFixtures(Fixtures fixtures) {
         this.fixtures = fixtures;
     }
+
+    public LiveAcquisition getLiveAcquisition() { return liveAcquisition; }
+    public void setLiveAcquisition(LiveAcquisition liveAcquisition) { this.liveAcquisition = liveAcquisition; }
 
     public static class Generation {
         private String defaultDatasetId = "uk-software-developer-demo";
@@ -202,5 +206,30 @@ public class SystemDataProperties {
         public void setDefaultDatasetVersion(String defaultDatasetVersion) { this.defaultDatasetVersion = defaultDatasetVersion; }
         public String getDefaultScenario() { return defaultScenario; }
         public void setDefaultScenario(String defaultScenario) { this.defaultScenario = defaultScenario; }
+    }
+
+    public static class LiveAcquisition {
+        private boolean enabled;
+        private boolean execute;
+        private String operatorConfirmation;
+        private String termsApprovalReference;
+        private String provenanceReviewer;
+        private int maximumOutputRecords = 120;
+        private List<String> approvedProviders = new ArrayList<>();
+
+        public boolean isEnabled() { return enabled; }
+        public void setEnabled(boolean enabled) { this.enabled = enabled; }
+        public boolean isExecute() { return execute; }
+        public void setExecute(boolean execute) { this.execute = execute; }
+        public String getOperatorConfirmation() { return operatorConfirmation; }
+        public void setOperatorConfirmation(String operatorConfirmation) { this.operatorConfirmation = operatorConfirmation; }
+        public String getTermsApprovalReference() { return termsApprovalReference; }
+        public void setTermsApprovalReference(String termsApprovalReference) { this.termsApprovalReference = termsApprovalReference; }
+        public String getProvenanceReviewer() { return provenanceReviewer; }
+        public void setProvenanceReviewer(String provenanceReviewer) { this.provenanceReviewer = provenanceReviewer; }
+        public int getMaximumOutputRecords() { return maximumOutputRecords; }
+        public void setMaximumOutputRecords(int maximumOutputRecords) { this.maximumOutputRecords = maximumOutputRecords; }
+        public List<String> getApprovedProviders() { return approvedProviders; }
+        public void setApprovedProviders(List<String> approvedProviders) { this.approvedProviders = approvedProviders; }
     }
 }

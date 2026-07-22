@@ -17,9 +17,11 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.client.RestClientException;
 
 @Service
+@Profile("live-acquisition")
 public class LocationDatasetService {
     private static final Logger log = LoggerFactory.getLogger(LocationDatasetService.class);
     private final SystemDataProperties properties;
@@ -70,8 +72,8 @@ public class LocationDatasetService {
                 }
                 sources.add(new DatasetSource("postcode-io-gateway", postcode, postcode, retrievedAt, "SUCCESS", null));
             } catch (RestClientException ex) {
-                log.warn("Postcode dataset gathering failed for postcode={}", postcode, ex);
-                sources.add(new DatasetSource("postcode-io-gateway", postcode, postcode, retrievedAt, "FAILED", ex.getMessage()));
+                log.warn("Live acquisition provider call failed provider=POSTCODE_IO");
+                sources.add(new DatasetSource("postcode-io-gateway", postcode, postcode, retrievedAt, "FAILED", "Gateway request failed"));
             }
         }
         deriveLocationsFromJobs(jobs, locations, sources);

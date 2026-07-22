@@ -72,6 +72,18 @@ and behavior. This service owns safe datasets/state preparation. E2E requests a
 named state over HTTP and must not duplicate seeding logic. Broad root Compose
 and Python orchestration remain legacy inputs to replace in SD-07/E2E-03.
 
+SD-06 separates acquisition into an exact, non-web `live-acquisition` profile.
+Normal runtime has no gateway client, collection service, generation service,
+or acquisition runner beans even if gateway flags are plausibly misconfigured.
+The one-shot path requires explicit enable/execute/confirmation gates, an
+approval reference, a provenance reviewer, allowlisted local gateway targets,
+approved enabled providers, immutable path-safe identifiers, and bounded
+output. It cannot run with test/demo/E2E/CI/production profiles, cannot enrich
+through an LLM, and writes only to a Git-ignored quarantine with a pending,
+non-redistributable, non-runtime review record. Tests cover fail-closed modes,
+unsafe URLs and profiles, bounds, overwrite, traversal, containment, and
+symlink paths without making a provider call.
+
 ## Findings and dependencies
 
 | Issue | Finding | Severity / priority | Dependency | Beta blocker |
@@ -81,7 +93,7 @@ and Python orchestration remain legacy inputs to replace in SD-07/E2E-03.
 | SD-03 | Production-safe authenticated reset/seed | Critical / P0 | SD-01/02 | Yes — complete locally; stack proof in SD-07 |
 | SD-04 | Governed synthetic datasets/provenance | High / P1 | SD-01 | Yes — complete |
 | SD-05 | Named states, determinism, idempotency | High / P1 | SD-02/03/04 | Yes — complete locally; stack proof in SD-07 |
-| SD-06 | Separate live acquisition boundary and validate dataset paths | High / P1 | SD-01/04 | Yes |
+| SD-06 | Separate live acquisition boundary and validate dataset paths | High / P1 | SD-01/04 | Yes — complete locally |
 | SD-07 | E2E named-state/minimum-stack integration | High / P1 | SD-03/04/05 and E2E-02/03 | Yes |
 
 ## Definition of Done

@@ -68,6 +68,9 @@ Fixture provenance, licence, expiry, generation, and refresh rules are in
 [the fixture-governance guide](docs/FIXTURE_GOVERNANCE.md).
 The discoverable prepare/verify/reset contract and state ownership rules are in
 [the named-state guide](docs/NAMED_STATES.md).
+[Live acquisition](docs/LIVE_ACQUISITION.md) is a separate, fail-closed,
+operator-only one-shot profile whose bounded output is quarantined and never
+used by E2E, demos, normal runtime, or CI.
 
 ## Safety defaults
 

@@ -22,9 +22,11 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.client.RestClientException;
 
 @Service
+@Profile("live-acquisition")
 public class JobDatasetService {
     private static final Logger log = LoggerFactory.getLogger(JobDatasetService.class);
 
@@ -93,9 +95,9 @@ public class JobDatasetService {
                     providerStatuses.put("ADZUNA", "SUCCESS");
                     success = true;
                 } catch (RestClientException ex) {
-                    log.warn("Adzuna dataset gathering failed for query={} location={}", query, location, ex);
-                    sources.add(new DatasetSource("adzuna-gateway", query, location, retrievedAt, "FAILED", ex.getMessage()));
-                    providerStatuses.put("ADZUNA", "FAILED: " + ex.getMessage());
+                    log.warn("Live acquisition provider call failed provider=ADZUNA");
+                    sources.add(new DatasetSource("adzuna-gateway", query, location, retrievedAt, "FAILED", "Gateway request failed"));
+                    providerStatuses.put("ADZUNA", "FAILED");
                     if (!properties.getGeneration().isAllowPartialProviderFailure()) {
                         throw ex;
                     }
@@ -130,9 +132,9 @@ public class JobDatasetService {
                     providerStatuses.put("JSEARCH", "SUCCESS");
                     success = true;
                 } catch (RestClientException ex) {
-                    log.warn("JSearch dataset gathering failed for query={} location={}", query, location, ex);
-                    sources.add(new DatasetSource("jsearch-gateway", query, location, retrievedAt, "FAILED", ex.getMessage()));
-                    providerStatuses.put("JSEARCH", "FAILED: " + ex.getMessage());
+                    log.warn("Live acquisition provider call failed provider=JSEARCH");
+                    sources.add(new DatasetSource("jsearch-gateway", query, location, retrievedAt, "FAILED", "Gateway request failed"));
+                    providerStatuses.put("JSEARCH", "FAILED");
                     if (!properties.getGeneration().isAllowPartialProviderFailure()) {
                         throw ex;
                     }
@@ -164,9 +166,9 @@ public class JobDatasetService {
                     providerStatuses.put("REED", "SUCCESS");
                     success = true;
                 } catch (RestClientException ex) {
-                    log.warn("Reed dataset gathering failed for query={} location={}", query, location, ex);
-                    sources.add(new DatasetSource("reed-gateway", query, location, retrievedAt, "FAILED", ex.getMessage()));
-                    providerStatuses.put("REED", "FAILED: " + ex.getMessage());
+                    log.warn("Live acquisition provider call failed provider=REED");
+                    sources.add(new DatasetSource("reed-gateway", query, location, retrievedAt, "FAILED", "Gateway request failed"));
+                    providerStatuses.put("REED", "FAILED");
                     if (!properties.getGeneration().isAllowPartialProviderFailure()) {
                         throw ex;
                     }

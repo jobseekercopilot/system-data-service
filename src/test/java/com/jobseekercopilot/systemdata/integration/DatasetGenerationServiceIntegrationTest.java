@@ -22,10 +22,12 @@ import com.jobseekercopilot.systemdata.service.DatasetGenerationService;
 import com.jobseekercopilot.systemdata.service.DatasetManifestService;
 import com.jobseekercopilot.systemdata.service.DatasetSanitisationService;
 import com.jobseekercopilot.systemdata.service.DatasetStorageService;
+import com.jobseekercopilot.systemdata.service.DatasetPathPolicy;
 import com.jobseekercopilot.systemdata.service.DatasetValidationService;
 import com.jobseekercopilot.systemdata.service.DemoJobQualityAssessor;
 import com.jobseekercopilot.systemdata.service.JobDatasetService;
 import com.jobseekercopilot.systemdata.service.LocationDatasetService;
+import com.jobseekercopilot.systemdata.service.LiveAcquisitionGuard;
 import com.jobseekercopilot.systemdata.util.ChecksumUtil;
 import com.jobseekercopilot.systemdata.util.DatasetIdGenerator;
 import com.jobseekercopilot.systemdata.util.SemanticVersionValidator;
@@ -36,6 +38,7 @@ import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.springframework.mock.env.MockEnvironment;
 
 class DatasetGenerationServiceIntegrationTest {
 
@@ -46,10 +49,19 @@ class DatasetGenerationServiceIntegrationTest {
     void generatesSmallDatasetWithMockedGatewayResponses() {
         SystemDataProperties properties = new SystemDataProperties();
         properties.setRepositoryDirectory(tempDir.resolve("dataset-repository"));
+        properties.setOutputDirectory(tempDir.resolve("quarantined-acquisitions"));
         properties.getGeneration().setFailIfAllProvidersFail(true);
         properties.getGeneration().setAllowPartialProviderFailure(true);
         properties.getGateways().getAdzuna().setEnabled(true);
+        properties.getGateways().getAdzuna().setBaseUrl("http://localhost:8101");
         properties.getGateways().getPostcodeIo().setEnabled(true);
+        properties.getGateways().getPostcodeIo().setBaseUrl("http://localhost:8082");
+        properties.getLiveAcquisition().setEnabled(true);
+        properties.getLiveAcquisition().setExecute(true);
+        properties.getLiveAcquisition().setOperatorConfirmation("I UNDERSTAND LIVE PROVIDERS WILL BE CALLED");
+        properties.getLiveAcquisition().setTermsApprovalReference("TEST-APPROVAL");
+        properties.getLiveAcquisition().setProvenanceReviewer("test-reviewer");
+        properties.getLiveAcquisition().setApprovedProviders(List.of("ADZUNA"));
 
         TextSanitiser textSanitiser = new TextSanitiser();
         DatasetIdGenerator idGenerator = new DatasetIdGenerator();
@@ -80,6 +92,9 @@ class DatasetGenerationServiceIntegrationTest {
         LocationDatasetService locationDatasetService = new LocationDatasetService(
                 properties, postcode, new PostcodeNormaliser(idGenerator), idGenerator);
         ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
+        var pathPolicy = new DatasetPathPolicy(new SemanticVersionValidator());
+        var environment = new MockEnvironment();
+        environment.setActiveProfiles("live-acquisition");
         DatasetGenerationService service = new DatasetGenerationService(
                 properties,
                 jobDatasetService,
@@ -88,9 +103,10 @@ class DatasetGenerationServiceIntegrationTest {
                 new DatasetDeduplicationService(),
                 new DatasetValidationService(),
                 new DatasetManifestService(objectMapper, new ChecksumUtil(), properties),
-                new DatasetStorageService(objectMapper, properties),
+                new DatasetStorageService(objectMapper, properties, pathPolicy),
                 new SemanticVersionValidator(),
-                qualityAssessor);
+                qualityAssessor,
+                new LiveAcquisitionGuard(properties, environment, pathPolicy));
 
         var result = service.generate(new DatasetGenerationRequest(
                 "uk-software-developer-demo",
@@ -109,6 +125,7 @@ class DatasetGenerationServiceIntegrationTest {
         assertThat(Files.exists(result.outputDirectory().resolve("jobs.json"))).isTrue();
         assertThat(Files.exists(result.outputDirectory().resolve("locations.json"))).isTrue();
         assertThat(Files.exists(result.outputDirectory().resolve("generation-report.json"))).isTrue();
+        assertThat(Files.exists(result.outputDirectory().resolve("acquisition-review.json"))).isTrue();
         assertThat(result.jobs().jobs()).hasSize(1);
         assertThat(result.locations().locations()).hasSize(2);
         assertThat(result.report().rawResultCounts()).containsEntry("ADZUNA", 1);
@@ -129,7 +146,7 @@ class DatasetGenerationServiceIntegrationTest {
                 .isInstanceOf(DatasetGenerationException.class)
                 .hasMessageContaining("already exists");
 
-        var overwritten = service.generate(new DatasetGenerationRequest(
+        assertThatThrownBy(() -> service.generate(new DatasetGenerationRequest(
                 "uk-software-developer-demo",
                 "UK Software Developer Demo",
                 "1.0.0",
@@ -140,10 +157,11 @@ class DatasetGenerationServiceIntegrationTest {
                 List.of("ADZUNA"),
                 20,
                 false,
-                true));
+                true)))
+                .isInstanceOf(DatasetGenerationException.class)
+                .hasMessage("Live acquisition is not authorized");
 
-        assertThat(overwritten.outputDirectory()).isEqualTo(result.outputDirectory());
-        assertThat(Files.exists(tempDir.resolve("dataset-repository/uk-software-developer-demo/backups"))).isTrue();
+        assertThat(Files.exists(tempDir.resolve("dataset-repository/uk-software-developer-demo/backups"))).isFalse();
     }
 
     @Test
