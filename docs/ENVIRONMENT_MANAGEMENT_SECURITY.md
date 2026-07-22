@@ -62,12 +62,19 @@ full recovery journey.
 Use a key supplied outside Git and avoid shell history where practical:
 
 ```text
+GET  /internal/environments/states
+GET  /internal/environments/states/{scenario}
+POST /internal/environments/prepare
 POST /internal/environments/reset
 POST /internal/environments/seed
 POST /internal/environments/reset-and-seed
 GET  /internal/environments/verify?scenario=DEMO_READY
 Header: X-System-Data-Key: <local secret of at least 32 characters>
 ```
+
+The versioned catalog, state-specific identities and component boundaries are
+documented in [NAMED_STATES.md](NAMED_STATES.md). `prepare` is the preferred E2E
+operation; it retains reset-before-seed and fail-fast semantics.
 
 Responses report `SUCCESS` or `FAILED`, per-service results, skipped phases,
 and safe retry guidance. The status response does not disclose target URLs.

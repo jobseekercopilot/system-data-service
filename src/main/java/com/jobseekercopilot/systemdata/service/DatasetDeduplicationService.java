@@ -1,6 +1,7 @@
 package com.jobseekercopilot.systemdata.service;
 
 import com.jobseekercopilot.systemdata.model.DemoJob;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -18,11 +19,22 @@ public class DatasetDeduplicationService {
         for (DemoJob job : jobs) {
             String key = key(job);
             DemoJob existing = seen.get(key);
-            if (existing == null || completenessScore(job) > completenessScore(existing)) {
+            if (existing == null || preferred(job, existing)) {
                 seen.put(key, job);
             }
         }
-        return new DeduplicationResult(List.copyOf(seen.values()), jobs.size() - seen.size());
+        List<DemoJob> deterministic = seen.values().stream()
+                .sorted(Comparator.comparing(DemoJob::id, Comparator.nullsLast(String::compareTo)))
+                .toList();
+        return new DeduplicationResult(deterministic, jobs.size() - seen.size());
+    }
+
+    private boolean preferred(DemoJob candidate, DemoJob existing) {
+        int completeness = Integer.compare(completenessScore(candidate), completenessScore(existing));
+        if (completeness != 0) {
+            return completeness > 0;
+        }
+        return Comparator.nullsLast(String::compareTo).compare(candidate.id(), existing.id()) < 0;
     }
 
     private String key(DemoJob job) {

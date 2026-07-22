@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobseekercopilot.systemdata.config.SystemDataProperties;
 import com.jobseekercopilot.systemdata.exception.DatasetGenerationException;
+import com.jobseekercopilot.systemdata.exception.GatewayUnavailableException;
 import com.jobseekercopilot.systemdata.model.DemoJob;
 import com.jobseekercopilot.systemdata.model.FixtureJobSearchResponse;
 import com.jobseekercopilot.systemdata.model.FixtureLlmRequest;
@@ -44,6 +45,9 @@ public class FixtureService {
         String resolvedDataset = valueOrDefault(datasetId, properties.getFixtures().getDefaultDatasetId());
         String resolvedVersion = valueOrDefault(datasetVersion, properties.getFixtures().getDefaultDatasetVersion());
         String resolvedScenario = valueOrDefault(scenario, properties.getFixtures().getDefaultScenario());
+        if ("PROVIDER_FAILURE".equalsIgnoreCase(resolvedScenario)) {
+            throw new GatewayUnavailableException("Synthetic provider fixture is unavailable");
+        }
         int resolvedPage = Math.max(0, page == null ? 0 : page);
         int resolvedPageSize = Math.min(100, Math.max(1, pageSize == null ? 10 : pageSize));
         List<DemoJob> matching = readJobs(resolvedDataset, resolvedVersion).stream()

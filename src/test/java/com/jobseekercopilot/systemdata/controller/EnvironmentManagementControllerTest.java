@@ -10,6 +10,8 @@ import com.jobseekercopilot.systemdata.model.EnvironmentScenario;
 import com.jobseekercopilot.systemdata.service.DemoEnvironmentScenarioBuilder;
 import com.jobseekercopilot.systemdata.service.EnvironmentOrchestrationService;
 import com.jobseekercopilot.systemdata.service.InternalCallerGuard;
+import com.jobseekercopilot.systemdata.service.NamedStateRegistry;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.server.ResponseStatusException;
@@ -26,6 +28,9 @@ class EnvironmentManagementControllerTest {
         assertUnauthorized(() -> controller.reset("wrong", null));
         assertUnauthorized(() -> controller.seed(null, request()));
         assertUnauthorized(() -> controller.resetAndSeed("wrong", request()));
+        assertUnauthorized(() -> controller.prepare("wrong", request()));
+        assertUnauthorized(() -> controller.states("wrong"));
+        assertUnauthorized(() -> controller.describe("wrong", EnvironmentScenario.DEMO_READY));
         assertUnauthorized(() -> controller.status(null));
         assertUnauthorized(() -> controller.verify("wrong", EnvironmentScenario.DEMO_READY));
         assertThat(orchestration.invocations).isZero();
@@ -39,6 +44,19 @@ class EnvironmentManagementControllerTest {
         controller.reset(VALID_KEY, request());
 
         assertThat(orchestration.invocations).isOne();
+    }
+
+    @Test
+    void authorizedCallerCanDiscoverDescribeAndPrepareStates() {
+        RecordingOrchestrationService orchestration = new RecordingOrchestrationService();
+        EnvironmentManagementController controller = controller(orchestration);
+
+        controller.states(VALID_KEY);
+        controller.describe(VALID_KEY, EnvironmentScenario.LOGIN_SESSION);
+        controller.prepare(VALID_KEY, new EnvironmentOperationRequest(
+                EnvironmentScenario.LOGIN_SESSION, null, null, null));
+
+        assertThat(orchestration.invocations).isEqualTo(3);
     }
 
     private EnvironmentManagementController controller(RecordingOrchestrationService orchestration) {
@@ -61,7 +79,8 @@ class EnvironmentManagementControllerTest {
         private int invocations;
 
         private RecordingOrchestrationService() {
-            super(null, null, null, new DemoEnvironmentScenarioBuilder(), null, new RestTemplate());
+            super(null, null, null, new DemoEnvironmentScenarioBuilder(), null,
+                    new NamedStateRegistry(new ObjectMapper().findAndRegisterModules()), new RestTemplate());
         }
 
         @Override
@@ -80,6 +99,24 @@ class EnvironmentManagementControllerTest {
         public EnvironmentOperationResponse resetAndSeed(EnvironmentOperationRequest request) {
             invocations++;
             return null;
+        }
+
+        @Override
+        public EnvironmentOperationResponse prepare(EnvironmentOperationRequest request) {
+            invocations++;
+            return null;
+        }
+
+        @Override
+        public java.util.List<com.jobseekercopilot.systemdata.model.NamedStateDefinition> listStates() {
+            invocations++;
+            return java.util.List.of();
+        }
+
+        @Override
+        public com.jobseekercopilot.systemdata.model.NamedStateDefinition describe(EnvironmentScenario scenario) {
+            invocations++;
+            return new NamedStateRegistry(new ObjectMapper().findAndRegisterModules()).require(scenario);
         }
 
         @Override
