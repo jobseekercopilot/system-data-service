@@ -72,6 +72,12 @@ The discoverable prepare/verify/reset contract and state ownership rules are in
 is the only browser-framework integration. It calls these APIs and contains no
 database seeding. E2E-03 separately owns minimum-stack wiring and persistence
 proof.
+
+Environment management requires two distinct runtime-only values of at least
+32 bytes: `SYSTEM_DATA_INTERNAL_CALLER_KEY` authenticates lifecycle callers,
+while `SYSTEM_DATA_DOWNSTREAM_ENVIRONMENT_DATA_TOKEN` authenticates the
+orchestrator to service-owned state endpoints. See
+[the environment-management security guide](docs/ENVIRONMENT_MANAGEMENT_SECURITY.md).
 [Live acquisition](docs/LIVE_ACQUISITION.md) is a separate, fail-closed,
 operator-only one-shot profile whose bounded output is quarantined and never
 used by E2E, demos, normal runtime, or CI.

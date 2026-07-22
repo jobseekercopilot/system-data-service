@@ -158,6 +158,7 @@ public class SystemDataProperties {
         private boolean enabled = false;
         private List<String> allowedEnvironments = new ArrayList<>(List.of("local", "test", "demo"));
         private String callerKey;
+        private String downstreamEnvironmentDataToken;
         private TargetServices targetServices = new TargetServices();
 
         public boolean isEnabled() { return enabled; }
@@ -166,6 +167,8 @@ public class SystemDataProperties {
         public void setAllowedEnvironments(List<String> allowedEnvironments) { this.allowedEnvironments = allowedEnvironments; }
         public String getCallerKey() { return callerKey; }
         public void setCallerKey(String callerKey) { this.callerKey = callerKey; }
+        public String getDownstreamEnvironmentDataToken() { return downstreamEnvironmentDataToken; }
+        public void setDownstreamEnvironmentDataToken(String value) { downstreamEnvironmentDataToken = value; }
         public TargetServices getTargetServices() { return targetServices; }
         public void setTargetServices(TargetServices targetServices) { this.targetServices = targetServices; }
     }

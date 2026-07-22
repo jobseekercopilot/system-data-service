@@ -28,6 +28,19 @@ must not expose their internal state endpoints outside the bounded development
 network. This caller key authorizes the orchestrator endpoint; it is not sent
 to, or treated as a credential for, downstream application APIs.
 
+The orchestrator instead uses the separately configured
+`SYSTEM_DATA_DOWNSTREAM_ENVIRONMENT_DATA_TOKEN` in exactly one
+`X-Environment-Data-Token` header on service-owned seed, reset and verify
+requests. Both runtime values must contain at least 32 bytes and must be
+distinct. Enabling environment management with a missing, weak or reused
+downstream credential fails startup. Neither credential may be committed,
+logged, returned in an API response, or reused outside a disposable
+local/test/demo stack.
+
+The target guard runs before the authenticated downstream client is invoked,
+and redirects remain disabled. Consequently the credential can only be sent
+to the exact loopback or Compose service names and ports described above.
+
 ## Identity and mutation boundary
 
 Reset paths are constructed internally from the selected named scenario and

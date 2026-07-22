@@ -4,6 +4,9 @@ set -eu
 image_name=${1:-system-data-service:verify}
 service_name="system-data-verify-service-$$"
 fixture_service_name="system-data-fixture-verify-service-$$"
+inbound_test_key=local-container-test-key-32-characters
+downstream_test_token=local-downstream-environment-token-32-characters
+test "$inbound_test_key" != "$downstream_test_token"
 
 cleanup() {
     docker rm --force "$service_name" >/dev/null 2>&1 || true
@@ -52,7 +55,8 @@ docker run --detach --name "$fixture_service_name" \
     --env SPRING_PROFILES_ACTIVE=local \
     --env SYSTEM_DATA_FIXTURES_ENABLED=true \
     --env SYSTEM_DATA_ENVIRONMENT_MANAGEMENT_ENABLED=true \
-    --env SYSTEM_DATA_INTERNAL_CALLER_KEY=local-container-test-key-32-characters \
+    --env SYSTEM_DATA_INTERNAL_CALLER_KEY="$inbound_test_key" \
+    --env SYSTEM_DATA_DOWNSTREAM_ENVIRONMENT_DATA_TOKEN="$downstream_test_token" \
     "$image_name" >/dev/null
 
 attempt=0
@@ -75,7 +79,7 @@ if printf '%s' "$fixture_response" | grep -F 'LIVE_CAPTURED_FIXTURE' >/dev/null;
 fi
 
 states_response=$(docker exec "$fixture_service_name" wget --quiet --timeout=3 --tries=1 -O - \
-    --header 'X-System-Data-Key: local-container-test-key-32-characters' \
+    --header "X-System-Data-Key: $inbound_test_key" \
     'http://127.0.0.1:8103/internal/environments/states')
 printf '%s' "$states_response" | grep -F '"scenario":"REGISTRATION_CLEAN"' >/dev/null
 printf '%s' "$states_response" | grep -F '"scenario":"CROSS_USER_SECURITY"' >/dev/null
