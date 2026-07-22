@@ -1,0 +1,25 @@
+{
+  "fullName": "Alex Taylor",
+  "email": "alex.taylor92@example.com",
+  "password": "Password123!",
+  "homeLocation": "Reading",
+  "targetRoles": [
+    "Software Developer",
+    "Backend Developer",
+    "Java Developer"
+  ],
+  "skills": [
+    "Java",
+    "Spring Boot",
+    "Angular",
+    "TypeScript",
+    "SQL",
+    "PostgreSQL",
+    "Git",
+    "REST APIs",
+    "Docker",
+    "Microservices",
+    "Problem Solving",
+    "Teamwork"
+  ]
+}

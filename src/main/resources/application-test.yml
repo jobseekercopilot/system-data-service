@@ -1,0 +1,14 @@
+system-data:
+  repository-directory: ${SYSTEM_DATA_REPOSITORY_DIRECTORY:./target/dataset-repository-test}
+  output-directory: ${SYSTEM_DATA_OUTPUT_DIRECTORY:./target/generated-datasets-test}
+  gateways:
+    adzuna:
+      enabled: false
+    jsearch:
+      enabled: false
+    reed:
+      enabled: false
+    postcode-io:
+      enabled: false
+    llm:
+      enabled: false

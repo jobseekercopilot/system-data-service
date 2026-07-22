@@ -1,0 +1,16 @@
+.git
+.github
+.idea
+.vscode
+.env
+.env.*
+dataset-repository
+generated-datasets
+libs
+logs
+reports
+target/*
+!target/system-data-service-1.0.0.jar
+*.db
+*.log
+*.zip

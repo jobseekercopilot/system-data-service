@@ -1,0 +1,14 @@
+{
+  "purchasedTokens": 600000,
+  "spentTokens": 62000,
+  "endingBalanceTokens": 538000,
+  "entries": [
+    "DEMO_PURCHASE",
+    "RESERVATION",
+    "SPEND",
+    "RESERVATION_RELEASED",
+    "RESERVATION",
+    "SPEND",
+    "RESERVATION_RELEASED"
+  ]
+}
