@@ -12,7 +12,7 @@ import org.springframework.web.client.RestTemplate;
 public class EnvironmentManagementHttpConfig {
 
     @Bean("environmentManagementRestTemplate")
-    RestTemplate environmentManagementRestTemplate() {
+    RestTemplate environmentManagementRestTemplate(DownstreamEnvironmentDataCredential credential) {
         var requestFactory = new SimpleClientHttpRequestFactory() {
             @Override
             protected void prepareConnection(HttpURLConnection connection, String httpMethod) throws IOException {
@@ -22,6 +22,13 @@ public class EnvironmentManagementHttpConfig {
         };
         requestFactory.setConnectTimeout(Duration.ofSeconds(3));
         requestFactory.setReadTimeout(Duration.ofSeconds(5));
-        return new RestTemplate(requestFactory);
+        RestTemplate restTemplate = new RestTemplate(requestFactory);
+        restTemplate.getInterceptors().add((request, body, execution) -> {
+            request.getHeaders().set(
+                    DownstreamEnvironmentDataCredential.HEADER_NAME,
+                    credential.requiredToken());
+            return execution.execute(request, body);
+        });
+        return restTemplate;
     }
 }

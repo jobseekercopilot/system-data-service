@@ -22,6 +22,7 @@ system-data:
     enabled: ${SYSTEM_DATA_ENVIRONMENT_MANAGEMENT_ENABLED:false}
     allowed-environments: ${SYSTEM_DATA_ENVIRONMENT_ALLOWED_PROFILES:local,test,demo}
     caller-key: ${SYSTEM_DATA_INTERNAL_CALLER_KEY:}
+    downstream-environment-data-token: ${SYSTEM_DATA_DOWNSTREAM_ENVIRONMENT_DATA_TOKEN:}
     target-services:
       authentication: ${AUTHENTICATION_SERVICE_URL:http://localhost:8084}
       user-profile: ${USER_PROFILE_SERVICE_URL:http://localhost:8085}
