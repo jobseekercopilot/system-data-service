@@ -60,8 +60,11 @@ must perform reset in failure cleanup. E2E must not implement database seeding.
 2. Use only isolated fictional identities and the smallest component set.
 3. Run `mvn -B clean verify`, fixture/repository policies, Gitleaks and the
    hardened container check.
-4. Coordinate downstream state contracts and the tagged E2E profile under
-   SD-07/E2E-03 before claiming stack-level readiness.
+4. Coordinate the tagged E2E lifecycle client under SD-07, then prove its
+   downstream state contracts in E2E-03's minimum stack before claiming
+   stack-level readiness.
 
-The current tests mock service-owned internal state contracts. Cross-service
-state persistence remains an explicit SD-07 dependency and is not claimed here.
+The current tests mock service-owned internal state contracts. SD-07 adds
+client-side contract tests with deterministic local doubles; actual
+cross-service state persistence remains an E2E-03 dependency and is not claimed
+here.

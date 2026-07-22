@@ -68,6 +68,10 @@ Fixture provenance, licence, expiry, generation, and refresh rules are in
 [the fixture-governance guide](docs/FIXTURE_GOVERNANCE.md).
 The discoverable prepare/verify/reset contract and state ownership rules are in
 [the named-state guide](docs/NAMED_STATES.md).
+[The E2E lifecycle contract](https://github.com/jobseekercopilot/e2e/blob/develop/docs/SYSTEM_DATA_LIFECYCLE.md)
+is the only browser-framework integration. It calls these APIs and contains no
+database seeding. E2E-03 separately owns minimum-stack wiring and persistence
+proof.
 [Live acquisition](docs/LIVE_ACQUISITION.md) is a separate, fail-closed,
 operator-only one-shot profile whose bounded output is quarantined and never
 used by E2E, demos, normal runtime, or CI.
