@@ -6,7 +6,7 @@ server:
   port: ${SERVER_PORT:8103}
 
 system-data:
-  repository-directory: ${SYSTEM_DATA_REPOSITORY_DIRECTORY:./dataset-repository}
+  repository-directory: ${SYSTEM_DATA_REPOSITORY_DIRECTORY:./fixtures/datasets}
   output-directory: ${SYSTEM_DATA_OUTPUT_DIRECTORY:./generated-datasets}
   generation:
     default-dataset-id: uk-software-developer-demo

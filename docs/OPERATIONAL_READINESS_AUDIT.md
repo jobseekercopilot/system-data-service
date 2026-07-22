@@ -53,6 +53,13 @@ Adzuna/JSearch/Reed gateways and two OpenAI outputs explicitly marked
 retention, approval, or refresh evidence accompanies them. They and two backup
 copies are quarantined in the local backup and are not in Git history.
 
+SD-04 adds a separately authored nine-job synthetic dataset. Its fictional
+employers, reserved `.test` URLs, null postcode/coordinate fields, provenance,
+proprietary licence, approval scope, lifecycle dates, deterministic source and
+payload checksums are validated in CI and again by runtime consumers. Repeated
+generation is byte-stable and negative PII/secret/captured-data/URL/licence
+tests pass. It contains none of the quarantined records or model responses.
+
 The included Alex Taylor identity and scenario records are synthetic. Stable
 UUIDs, fixed reference dates, deterministic ordering, and immutable version
 paths exist, but repeat seed/reset idempotency and guard behavior are not yet
@@ -70,7 +77,7 @@ and Python orchestration remain legacy inputs to replace in SD-07/E2E-03.
 | SD-01 | Safe source-only baseline | High / P1 | None | Yes |
 | SD-02 | Reproducible contract clients; no JARs | High / P1 | SD-01 | Yes — complete |
 | SD-03 | Production-safe authenticated reset/seed | Critical / P0 | SD-01/02 | Yes — complete locally; stack proof in SD-07 |
-| SD-04 | Governed synthetic datasets/provenance | High / P1 | SD-01 | Yes |
+| SD-04 | Governed synthetic datasets/provenance | High / P1 | SD-01 | Yes — complete |
 | SD-05 | Named states, determinism, idempotency | High / P1 | SD-02/03/04 | Yes |
 | SD-06 | Separate live acquisition boundary and validate dataset paths | High / P1 | SD-01/04 | Yes |
 | SD-07 | E2E named-state/minimum-stack integration | High / P1 | SD-03/04/05 and E2E-02/03 | Yes |

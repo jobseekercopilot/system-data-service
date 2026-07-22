@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "system-data")
 public class SystemDataProperties {
-    private Path repositoryDirectory = Path.of("./dataset-repository");
+    private Path repositoryDirectory = Path.of("./fixtures/datasets");
     private Path outputDirectory = Path.of("./generated-datasets");
     private Generation generation = new Generation();
     private Enrichment enrichment = new Enrichment();

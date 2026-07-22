@@ -3,8 +3,12 @@ set -eu
 
 image_name=${1:-system-data-service:verify}
 service_name="system-data-verify-service-$$"
+fixture_service_name="system-data-fixture-verify-service-$$"
 
-cleanup() { docker rm --force "$service_name" >/dev/null 2>&1 || true; }
+cleanup() {
+    docker rm --force "$service_name" >/dev/null 2>&1 || true
+    docker rm --force "$fixture_service_name" >/dev/null 2>&1 || true
+}
 trap cleanup EXIT INT TERM
 
 mvn -B clean verify
@@ -42,3 +46,31 @@ fi
 
 docker stop --time 25 "$service_name" >/dev/null
 test "$(docker inspect --format '{{.State.ExitCode}}' "$service_name")" = "143"
+
+docker run --detach --name "$fixture_service_name" \
+    --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m \
+    --env SPRING_PROFILES_ACTIVE=local \
+    --env SYSTEM_DATA_FIXTURES_ENABLED=true \
+    "$image_name" >/dev/null
+
+attempt=0
+while [ "$attempt" -lt 60 ]; do
+    state=$(docker inspect --format '{{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{else}}missing{{end}}' "$fixture_service_name")
+    if [ "$state" = "running healthy" ]; then break; fi
+    if [ "${state%% *}" != "running" ]; then docker logs "$fixture_service_name"; exit 1; fi
+    attempt=$((attempt + 1))
+    sleep 1
+done
+test "$(docker inspect --format '{{.State.Health.Status}}' "$fixture_service_name")" = "healthy"
+
+fixture_response=$(docker exec "$fixture_service_name" wget --quiet --timeout=3 --tries=1 -O - \
+    'http://127.0.0.1:8103/internal/fixtures/jobs/search?pageSize=20')
+printf '%s' "$fixture_response" | grep -F '"totalResults":9' >/dev/null
+printf '%s' "$fixture_response" | grep -F 'SYNTH-JOB-001' >/dev/null
+if printf '%s' "$fixture_response" | grep -F 'LIVE_CAPTURED_FIXTURE' >/dev/null; then
+    echo "fixture API returned a captured-provider marker" >&2
+    exit 1
+fi
+
+docker stop --time 25 "$fixture_service_name" >/dev/null
+test "$(docker inspect --format '{{.State.ExitCode}}' "$fixture_service_name")" = "143"

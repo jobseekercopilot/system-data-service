@@ -28,11 +28,14 @@ public class FixtureService {
     private final SystemDataProperties properties;
     private final DatasetStorageService datasetStorageService;
     private final ObjectMapper objectMapper;
+    private final GovernedFixtureValidator fixtureValidator;
 
-    public FixtureService(SystemDataProperties properties, DatasetStorageService datasetStorageService, ObjectMapper objectMapper) {
+    public FixtureService(SystemDataProperties properties, DatasetStorageService datasetStorageService,
+                          ObjectMapper objectMapper, GovernedFixtureValidator fixtureValidator) {
         this.properties = properties;
         this.datasetStorageService = datasetStorageService;
         this.objectMapper = objectMapper;
+        this.fixtureValidator = fixtureValidator;
     }
 
     public FixtureJobSearchResponse searchJobs(String datasetId, String datasetVersion, String scenario, String provider,
@@ -99,6 +102,7 @@ public class FixtureService {
         if (!Files.exists(fixturePath)) {
             return null;
         }
+        fixtureValidator.requireApproved(fixturePath.getParent());
         try {
             Map<String, FixtureLlmResponse> fixtures = objectMapper.readValue(
                     fixturePath.toFile(),
@@ -133,6 +137,7 @@ public class FixtureService {
         if (!Files.exists(directory)) {
             throw new DatasetGenerationException("Fixture dataset does not exist: " + datasetId + ":" + datasetVersion);
         }
+        fixtureValidator.requireApproved(directory);
         return datasetStorageService.read(directory).jobs().jobs();
     }
 
