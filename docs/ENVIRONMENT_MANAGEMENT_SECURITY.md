@@ -54,8 +54,8 @@ services. Operations therefore use a fail-fast saga-style contract:
 A failed standalone reset may be retried after the named dependency recovers.
 A failed seed, or any ambiguous client-side timeout, must be recovered by
 running `reset-and-seed` for the same scenario, followed by `verify`. Never
-attempt manual database cleanup. SD-07 owns the final local-stack proof of this
-full recovery journey.
+attempt manual database cleanup. SD-07 supplies the bounded E2E lifecycle
+client; E2E-03 owns final local-stack proof of this full recovery journey.
 
 ## Local invocation
 

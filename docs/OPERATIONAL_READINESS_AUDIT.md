@@ -45,8 +45,8 @@ deterministic synthetic identities and bounded component cleanup. Seed and
 reset-and-seed remain compatibility aliases. SD-03 requires an
 authenticated internal caller, rejects ambiguous/default and production-like
 profiles and targets, bounds mutation to the scenario identity, and defines a
-fail-fast non-atomic recovery contract. SD-07 still owns the complete stack
-proof.
+fail-fast non-atomic recovery contract. SD-07 supplies the authoritative E2E
+lifecycle adapter; E2E-03 still owns actual minimum-stack persistence proof.
 
 ## Data and boundary findings
 
@@ -70,7 +70,8 @@ catalog validation, and repeated prepare/verify/reset behavior are tested.
 Provider gateways own external calls. Production services own production data
 and behavior. This service owns safe datasets/state preparation. E2E requests a
 named state over HTTP and must not duplicate seeding logic. Broad root Compose
-and Python orchestration remain legacy inputs to replace in SD-07/E2E-03.
+and Python orchestration remain legacy inputs to replace through the SD-07
+lifecycle adapter and E2E-03 minimum stack.
 
 SD-06 separates acquisition into an exact, non-web `live-acquisition` profile.
 Normal runtime has no gateway client, collection service, generation service,
@@ -90,11 +91,11 @@ symlink paths without making a provider call.
 |---|---|---|---|---|
 | SD-01 | Safe source-only baseline | High / P1 | None | Yes |
 | SD-02 | Reproducible contract clients; no JARs | High / P1 | SD-01 | Yes — complete |
-| SD-03 | Production-safe authenticated reset/seed | Critical / P0 | SD-01/02 | Yes — complete locally; stack proof in SD-07 |
+| SD-03 | Production-safe authenticated reset/seed | Critical / P0 | SD-01/02 | Yes — complete locally; stack proof in E2E-03 |
 | SD-04 | Governed synthetic datasets/provenance | High / P1 | SD-01 | Yes — complete |
-| SD-05 | Named states, determinism, idempotency | High / P1 | SD-02/03/04 | Yes — complete locally; stack proof in SD-07 |
+| SD-05 | Named states, determinism, idempotency | High / P1 | SD-02/03/04 | Yes — complete locally; stack proof in E2E-03 |
 | SD-06 | Separate live acquisition boundary and validate dataset paths | High / P1 | SD-01/04 | Yes — complete locally |
-| SD-07 | E2E named-state/minimum-stack integration | High / P1 | SD-03/04/05 and E2E-02/03 | Yes |
+| SD-07 | E2E named-state lifecycle integration | High / P1 | SD-03/04/05/06 and E2E-02 | Yes — E2E client in delivery; stack proof remains E2E-03 |
 
 ## Definition of Done
 
