@@ -66,8 +66,9 @@ contracts. See [the contract-client workflow](docs/CONTRACT_CLIENTS.md).
 Fixture and environment-management endpoints are disabled by default. Provider
 gateway configuration is disabled in this baseline. Do not enable destructive
 operations against shared, production, production-like, or ambiguous/default
-targets. SD-03 must add authenticated caller and target-boundary enforcement
-before these APIs are relied upon.
+targets. Environment management requires an authenticated internal caller, one
+explicit local/test/demo profile, and bounded loopback or Docker service
+targets. See [the security and recovery contract](docs/ENVIRONMENT_MANAGEMENT_SECURITY.md).
 
 No normal build, unit test, E2E test, demo, or CI task may call a live provider.
 Do not commit real `.env` files, credentials, user data, captured provider

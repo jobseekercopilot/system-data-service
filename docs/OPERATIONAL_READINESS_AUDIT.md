@@ -39,7 +39,11 @@ its ownership.
 
 Current named states are only `EMPTY` and `DEMO_READY`. Current operations are
 reset, seed (append-like), reset-and-seed, verify, and fixture query. There is
-no separately defined append or clean contract.
+no separately defined append or clean contract. SD-03 now requires an
+authenticated internal caller, rejects ambiguous/default and production-like
+profiles and targets, bounds mutation to the scenario identity, and defines a
+fail-fast non-atomic recovery contract. SD-07 still owns the complete stack
+proof.
 
 ## Data and boundary findings
 
@@ -65,7 +69,7 @@ and Python orchestration remain legacy inputs to replace in SD-07/E2E-03.
 |---|---|---|---|---|
 | SD-01 | Safe source-only baseline | High / P1 | None | Yes |
 | SD-02 | Reproducible contract clients; no JARs | High / P1 | SD-01 | Yes — complete |
-| SD-03 | Production-safe authenticated reset/seed | Critical / P0 | SD-01/02 | Yes |
+| SD-03 | Production-safe authenticated reset/seed | Critical / P0 | SD-01/02 | Yes — complete locally; stack proof in SD-07 |
 | SD-04 | Governed synthetic datasets/provenance | High / P1 | SD-01 | Yes |
 | SD-05 | Named states, determinism, idempotency | High / P1 | SD-02/03/04 | Yes |
 | SD-06 | Separate live acquisition boundary and validate dataset paths | High / P1 | SD-01/04 | Yes |
