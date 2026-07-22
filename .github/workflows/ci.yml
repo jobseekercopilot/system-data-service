@@ -26,8 +26,12 @@ jobs:
         run: ./scripts/verify-repository-policy.sh
       - name: Test repository policy
         run: ./scripts/test-repository-policy.sh
+      - name: Verify pinned source contracts
+        run: ./scripts/verify-contracts.sh
+      - name: Test contract compatibility policy
+        run: ./scripts/test-contract-policy.sh
       - name: Verify
-        run: mvn -B verify
+        run: mvn -B clean verify
       - name: Test dependency report policy
         run: ./scripts/test-dependency-report-policy.sh
       - name: Materialize resolved runtime dependencies

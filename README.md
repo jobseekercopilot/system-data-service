@@ -18,11 +18,10 @@ The initial source-only baseline deliberately excludes:
 - 120 live-captured Adzuna/JSearch/Reed job records and two captured OpenAI
   outputs whose redistribution/provenance is not approved;
 - runtime dataset backups and generated outputs;
-- ten generated client JARs and all build output;
-- live dataset-acquisition classes that cannot build without those clients.
+- ten generated client JARs and all build output.
 
 The complete pre-import tree is preserved in a verified local backup. SD-02
-owns a reproducible contract-client build; SD-04 owns governed synthetic data;
+provides a reproducible contract-client build; SD-04 owns governed synthetic data;
 SD-06 owns the live-acquisition boundary. Until those land, fixture endpoints
 have no imported provider dataset and dataset generation is unavailable.
 
@@ -46,7 +45,9 @@ state here.
 Requires Java 17 and Maven 3.6.3 or later.
 
 ```bash
-mvn -B verify
+./scripts/verify-contracts.sh
+./scripts/test-contract-policy.sh
+mvn -B clean verify
 ./scripts/verify-repository-policy.sh
 ./scripts/test-repository-policy.sh
 ./scripts/test-dependency-report-policy.sh
@@ -56,6 +57,9 @@ Spring Boot [3.5.16](https://spring.io/blog/2026/06/25/spring-boot-3-5-16-availa
 is used as the supported Java 17 maintenance line. CI also
 runs a complete-history secret scan, resolved-runtime dependency scan, and
 hardened container build/start/health proof.
+
+Required gateway clients are generated exclusively from pinned private source
+contracts. See [the contract-client workflow](docs/CONTRACT_CLIENTS.md).
 
 ## Safety defaults
 
