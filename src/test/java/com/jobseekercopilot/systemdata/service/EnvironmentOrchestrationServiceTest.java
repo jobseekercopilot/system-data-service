@@ -19,6 +19,7 @@ import com.jobseekercopilot.systemdata.model.LocationDataset;
 import com.jobseekercopilot.systemdata.model.NamedStateDefinition;
 import com.jobseekercopilot.systemdata.model.NamedStateIdentity;
 import com.jobseekercopilot.systemdata.util.ChecksumUtil;
+import com.jobseekercopilot.systemdata.util.SemanticVersionValidator;
 import java.nio.file.Path;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -358,7 +359,7 @@ class EnvironmentOrchestrationServiceTest {
 
     private static final class SyntheticDatasetStorage extends DatasetStorageService {
         private SyntheticDatasetStorage(SystemDataProperties properties) {
-            super(new ObjectMapper(), properties);
+            super(new ObjectMapper(), properties, new DatasetPathPolicy(new SemanticVersionValidator()));
         }
 
         @Override

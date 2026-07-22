@@ -34,6 +34,14 @@ system-data:
     default-dataset-id: ${FIXTURE_DATASET_ID:uk-software-developer-demo}
     default-dataset-version: ${FIXTURE_DATASET_VERSION:1.0.0}
     default-scenario: ${FIXTURE_SCENARIO:DEMO_READY}
+  live-acquisition:
+    enabled: false
+    execute: false
+    operator-confirmation: ""
+    terms-approval-reference: ""
+    provenance-reviewer: ""
+    maximum-output-records: 120
+    approved-providers: []
   gateways:
     adzuna:
       base-url: ${ADZUNA_GATEWAY_URL:http://localhost:8101}

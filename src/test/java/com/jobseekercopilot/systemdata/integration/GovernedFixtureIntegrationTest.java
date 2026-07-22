@@ -8,10 +8,12 @@ import com.jobseekercopilot.systemdata.config.SystemDataProperties;
 import com.jobseekercopilot.systemdata.model.FixtureLlmRequest;
 import com.jobseekercopilot.systemdata.exception.GatewayUnavailableException;
 import com.jobseekercopilot.systemdata.service.DatasetStorageService;
+import com.jobseekercopilot.systemdata.service.DatasetPathPolicy;
 import com.jobseekercopilot.systemdata.service.DemoEnvironmentScenarioBuilder;
 import com.jobseekercopilot.systemdata.service.FixtureService;
 import com.jobseekercopilot.systemdata.service.GovernedFixtureValidator;
 import com.jobseekercopilot.systemdata.util.ChecksumUtil;
+import com.jobseekercopilot.systemdata.util.SemanticVersionValidator;
 import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +27,8 @@ class GovernedFixtureIntegrationTest {
     void setUp() {
         properties = new SystemDataProperties();
         ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
-        storage = new DatasetStorageService(objectMapper, properties);
+        storage = new DatasetStorageService(objectMapper, properties,
+                new DatasetPathPolicy(new SemanticVersionValidator()));
         fixtureService = new FixtureService(
                 properties,
                 storage,

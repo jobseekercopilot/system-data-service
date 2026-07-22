@@ -21,8 +21,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
+import org.springframework.context.annotation.Profile;
 
 @Service
+@Profile("live-acquisition")
 public class DatasetGenerationService {
     private final SystemDataProperties properties;
     private final JobDatasetService jobDatasetService;
@@ -34,6 +36,7 @@ public class DatasetGenerationService {
     private final DatasetStorageService storageService;
     private final SemanticVersionValidator semanticVersionValidator;
     private final DemoJobQualityAssessor qualityAssessor;
+    private final LiveAcquisitionGuard acquisitionGuard;
 
     public DatasetGenerationService(SystemDataProperties properties, JobDatasetService jobDatasetService,
                                     LocationDatasetService locationDatasetService,
@@ -43,7 +46,8 @@ public class DatasetGenerationService {
                                     DatasetManifestService manifestService,
                                     DatasetStorageService storageService,
                                     SemanticVersionValidator semanticVersionValidator,
-                                    DemoJobQualityAssessor qualityAssessor) {
+                                    DemoJobQualityAssessor qualityAssessor,
+                                    LiveAcquisitionGuard acquisitionGuard) {
         this.properties = properties;
         this.jobDatasetService = jobDatasetService;
         this.locationDatasetService = locationDatasetService;
@@ -54,6 +58,7 @@ public class DatasetGenerationService {
         this.storageService = storageService;
         this.semanticVersionValidator = semanticVersionValidator;
         this.qualityAssessor = qualityAssessor;
+        this.acquisitionGuard = acquisitionGuard;
     }
 
     public DatasetGenerationResponse generateResponse(DatasetGenerationRequest request) {
@@ -72,6 +77,7 @@ public class DatasetGenerationService {
     }
 
     public DatasetGenerationResult generate(DatasetGenerationRequest request) {
+        acquisitionGuard.requireAllowed(request);
         Instant startedAt = Instant.now();
         List<String> queries = useOrDefault(request == null ? null : request.queries(), properties.getGeneration().getQueries());
         List<String> locations = useOrDefault(request == null ? null : request.locations(), properties.getGeneration().getLocations());
@@ -92,7 +98,7 @@ public class DatasetGenerationService {
         var sanitisedJobs = sanitisationService.sanitiseJobs(providerJobs.jobs());
         int invalidRecordsRemoved = providerJobs.jobs().size() - sanitisedJobs.size();
         var deduplication = deduplicationService.deduplicateJobsWithStats(sanitisedJobs);
-        var jobs = curateForDemo(deduplication.jobs());
+        var jobs = curateForDemo(deduplication.jobs(), maximumResultsPerProvider);
         List<String> postcodes = availablePostcodes(request == null ? null : request.postcodes(), jobs);
         var providerLocations = locationDatasetService.gather(postcodes, jobs);
         var validation = validationService.validate(jobs, providerLocations.locations());
@@ -117,7 +123,7 @@ public class DatasetGenerationService {
         var warnings = new ArrayList<String>(validation.warnings());
         providerJobs.providerStatuses().forEach((provider, status) -> {
             if (status.startsWith("FAILED")) {
-                warnings.add(provider + " failed: " + status.substring("FAILED: ".length()));
+                warnings.add(provider + " gateway request failed");
             }
         });
         DatasetGenerationReport report = new DatasetGenerationReport(
@@ -155,9 +161,10 @@ public class DatasetGenerationService {
         return List.copyOf(postcodes);
     }
 
-    private List<DemoJob> curateForDemo(List<DemoJob> jobs) {
-        int perProviderLimit = 40;
-        int totalLimit = 120;
+    private List<DemoJob> curateForDemo(List<DemoJob> jobs, int requestedMaximumPerProvider) {
+        int perProviderLimit = Math.min(requestedMaximumPerProvider,
+                Math.min(40, properties.getLiveAcquisition().getMaximumOutputRecords()));
+        int totalLimit = properties.getLiveAcquisition().getMaximumOutputRecords();
         Map<String, List<DemoJob>> byProvider = new LinkedHashMap<>();
         jobs.stream()
                 .sorted(Comparator.comparingDouble(DemoJob::qualityScore).reversed()

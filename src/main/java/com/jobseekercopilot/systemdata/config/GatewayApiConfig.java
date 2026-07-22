@@ -6,8 +6,10 @@ import com.jobseekercopilot.generated.postcodeiogateway.api.PostcodeApi;
 import com.jobseekercopilot.generated.reedgateway.api.ReedJobsApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 @Configuration
+@Profile("live-acquisition")
 public class GatewayApiConfig {
 
     @Bean
