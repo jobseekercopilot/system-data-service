@@ -17,6 +17,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -33,6 +34,7 @@ public class EnvironmentOrchestrationService {
     private final DatasetStorageService datasetStorageService;
     private final EnvironmentManagementGuard guard;
     private final DemoEnvironmentScenarioBuilder scenarioBuilder;
+    private final GovernedFixtureValidator fixtureValidator;
     private final RestTemplate restTemplate;
 
     public EnvironmentOrchestrationService(
@@ -40,11 +42,13 @@ public class EnvironmentOrchestrationService {
             DatasetStorageService datasetStorageService,
             EnvironmentManagementGuard guard,
             DemoEnvironmentScenarioBuilder scenarioBuilder,
+            GovernedFixtureValidator fixtureValidator,
             @Qualifier("environmentManagementRestTemplate") RestTemplate restTemplate) {
         this.properties = properties;
         this.datasetStorageService = datasetStorageService;
         this.guard = guard;
         this.scenarioBuilder = scenarioBuilder;
+        this.fixtureValidator = fixtureValidator;
         this.restTemplate = restTemplate;
     }
 
@@ -192,7 +196,9 @@ public class EnvironmentOrchestrationService {
         String datasetId = request == null || request.datasetId() == null || request.datasetId().isBlank() ? DEFAULT_DATASET_ID : request.datasetId();
         String datasetVersion = request == null || request.datasetVersion() == null || request.datasetVersion().isBlank() ? DEFAULT_DATASET_VERSION : request.datasetVersion();
         Instant referenceDate = request == null || request.referenceDate() == null ? DEFAULT_REFERENCE_DATE : request.referenceDate();
-        DatasetGenerationResult dataset = datasetStorageService.read(datasetStorageService.datasetVersionDirectory(datasetId, datasetVersion));
+        Path datasetDirectory = datasetStorageService.datasetVersionDirectory(datasetId, datasetVersion);
+        fixtureValidator.requireApproved(datasetDirectory);
+        DatasetGenerationResult dataset = datasetStorageService.read(datasetDirectory);
         return scenarioBuilder.build(dataset.jobs(), referenceDate);
     }
 

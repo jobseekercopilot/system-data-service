@@ -10,6 +10,7 @@ RUN apk add --no-cache --upgrade \
     && adduser -S -D -H -u 10001 -G app app
 
 COPY --chown=10001:10001 target/system-data-service-1.0.0.jar app.jar
+COPY --chown=10001:10001 fixtures/datasets fixtures/datasets
 COPY --chown=10001:10001 scripts/container-healthcheck.sh /usr/local/bin/container-healthcheck
 
 EXPOSE 8103

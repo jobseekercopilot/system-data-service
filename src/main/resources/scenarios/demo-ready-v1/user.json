@@ -2,6 +2,8 @@
   "fullName": "Alex Taylor",
   "email": "alex.taylor92@example.com",
   "password": "Password123!",
+  "syntheticIdentity": true,
+  "credentialClassification": "PUBLIC_TEST_CREDENTIAL_NON_PRODUCTION",
   "homeLocation": "Reading",
   "targetRoles": [
     "Software Developer",

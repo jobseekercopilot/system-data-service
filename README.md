@@ -21,9 +21,9 @@ The initial source-only baseline deliberately excludes:
 - ten generated client JARs and all build output.
 
 The complete pre-import tree is preserved in a verified local backup. SD-02
-provides a reproducible contract-client build; SD-04 owns governed synthetic data;
-SD-06 owns the live-acquisition boundary. Until those land, fixture endpoints
-have no imported provider dataset and dataset generation is unavailable.
+provides a reproducible contract-client build. SD-04 replaces quarantined
+captures with a governed, deterministic synthetic dataset; SD-06 owns the
+separate live-acquisition boundary.
 
 ## Current safe responsibilities
 
@@ -47,6 +47,8 @@ Requires Java 17 and Maven 3.6.3 or later.
 ```bash
 ./scripts/verify-contracts.sh
 ./scripts/test-contract-policy.sh
+./scripts/verify-synthetic-fixtures.sh
+./scripts/test-synthetic-fixture-policy.sh
 mvn -B clean verify
 ./scripts/verify-repository-policy.sh
 ./scripts/test-repository-policy.sh
@@ -60,6 +62,8 @@ hardened container build/start/health proof.
 
 Required gateway clients are generated exclusively from pinned private source
 contracts. See [the contract-client workflow](docs/CONTRACT_CLIENTS.md).
+Fixture provenance, licence, expiry, generation, and refresh rules are in
+[the fixture-governance guide](docs/FIXTURE_GOVERNANCE.md).
 
 ## Safety defaults
 

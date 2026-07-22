@@ -61,7 +61,7 @@ class EnvironmentManagementControllerTest {
         private int invocations;
 
         private RecordingOrchestrationService() {
-            super(null, null, null, new DemoEnvironmentScenarioBuilder(), new RestTemplate());
+            super(null, null, null, new DemoEnvironmentScenarioBuilder(), null, new RestTemplate());
         }
 
         @Override

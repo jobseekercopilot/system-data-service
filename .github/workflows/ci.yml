@@ -30,6 +30,10 @@ jobs:
         run: ./scripts/verify-contracts.sh
       - name: Test contract compatibility policy
         run: ./scripts/test-contract-policy.sh
+      - name: Verify governed synthetic fixtures
+        run: ./scripts/verify-synthetic-fixtures.sh
+      - name: Test synthetic fixture policy and reproducibility
+        run: ./scripts/test-synthetic-fixture-policy.sh
       - name: Verify
         run: mvn -B clean verify
       - name: Test dependency report policy

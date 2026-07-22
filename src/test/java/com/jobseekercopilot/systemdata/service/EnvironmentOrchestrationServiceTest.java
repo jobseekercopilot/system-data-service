@@ -16,6 +16,7 @@ import com.jobseekercopilot.systemdata.model.EnvironmentOperationRequest;
 import com.jobseekercopilot.systemdata.model.EnvironmentScenario;
 import com.jobseekercopilot.systemdata.model.JobDataset;
 import com.jobseekercopilot.systemdata.model.LocationDataset;
+import com.jobseekercopilot.systemdata.util.ChecksumUtil;
 import java.nio.file.Path;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -54,6 +55,7 @@ class EnvironmentOrchestrationServiceTest {
                 new SyntheticDatasetStorage(properties),
                 new EnvironmentManagementGuard(properties, environment),
                 new DemoEnvironmentScenarioBuilder(),
+                noOpFixtureValidator(),
                 restTemplate);
     }
 
@@ -213,6 +215,15 @@ class EnvironmentOrchestrationServiceTest {
 
     private EnvironmentOperationRequest request(EnvironmentScenario scenario) {
         return new EnvironmentOperationRequest(scenario, null, null, null);
+    }
+
+    private GovernedFixtureValidator noOpFixtureValidator() {
+        return new GovernedFixtureValidator(new ObjectMapper(), new ChecksumUtil()) {
+            @Override
+            public void requireApproved(Path directory) {
+                // Fixture governance has dedicated tests; orchestration uses an in-memory synthetic dataset here.
+            }
+        };
     }
 
     private static final class SyntheticDatasetStorage extends DatasetStorageService {
