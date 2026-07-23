@@ -30,6 +30,10 @@ jobs:
         run: ./scripts/verify-contracts.sh
       - name: Test contract compatibility policy
         run: ./scripts/test-contract-policy.sh
+      - name: Verify fixture API producer contract
+        run: ./scripts/verify-fixture-api-contract.sh
+      - name: Test fixture API producer contract policy
+        run: ./scripts/test-fixture-api-contract-policy.sh
       - name: Verify governed synthetic fixtures
         run: ./scripts/verify-synthetic-fixtures.sh
       - name: Test synthetic fixture policy and reproducibility

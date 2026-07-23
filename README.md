@@ -49,6 +49,8 @@ Requires Java 17 and Maven 3.6.3 or later.
 ```bash
 ./scripts/verify-contracts.sh
 ./scripts/test-contract-policy.sh
+./scripts/verify-fixture-api-contract.sh
+./scripts/test-fixture-api-contract-policy.sh
 ./scripts/verify-synthetic-fixtures.sh
 ./scripts/test-synthetic-fixture-policy.sh
 mvn -B clean verify
@@ -64,6 +66,11 @@ hardened container build/start/health proof.
 
 Required gateway clients are generated exclusively from pinned private source
 contracts. See [the contract-client workflow](docs/CONTRACT_CLIENTS.md).
+The fixture API that this service produces is versioned separately in
+[`api/openapi.json`](api/openapi.json). Reed, Adzuna, JSearch and other fixture
+consumers pin an exact producer revision and the checksum recorded in
+[`api/SHA256SUMS`](api/SHA256SUMS); see the
+[`api` ownership guide](api/README.md).
 Fixture provenance, licence, expiry, generation, and refresh rules are in
 [the fixture-governance guide](docs/FIXTURE_GOVERNANCE.md).
 The discoverable prepare/verify/reset contract and state ownership rules are in
