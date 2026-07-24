@@ -9,6 +9,11 @@ reset/seed/verify APIs. Provider gateways own external API communication;
 production services own their data and behaviour; the E2E repository requests
 a named state over HTTP and does not duplicate database-seeding logic.
 
+The Infrastructure
+[Job Search architecture ADR](https://github.com/jobseekercopilot/infrastructure/blob/develop/docs/adr/0001-job-search-architecture-and-ownership.md)
+defines System Data as the non-production fixture owner, never the owner of
+production Job Search behaviour or state.
+
 ## Baseline status
 
 Status: **not operationally or beta ready**.
