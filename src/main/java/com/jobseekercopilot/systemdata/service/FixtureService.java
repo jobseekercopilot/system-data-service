@@ -50,20 +50,20 @@ public class FixtureService {
         }
         int resolvedPage = Math.max(0, page == null ? 0 : page);
         int resolvedPageSize = Math.min(100, Math.max(1, pageSize == null ? 10 : pageSize));
-        List<DemoJob> matching = readJobs(resolvedDataset, resolvedVersion).stream()
+        List<DemoJob> providerJobs = readJobs(resolvedDataset, resolvedVersion).stream()
                 .filter(job -> matchesProvider(job, provider))
-                .filter(job -> matchesQuery(job, query))
-                .filter(job -> matchesLocation(job, location))
-                .filter(job -> matchesSalary(job, salaryMin, salaryMax))
-                .filter(job -> matchesRemote(job, remoteType))
+                .toList();
+        var candidates = providerJobs.stream();
+        if (hasSearchFilters(query, location, salaryMin, salaryMax, remoteType)) {
+            candidates = candidates
+                    .filter(job -> matchesQuery(job, query))
+                    .filter(job -> matchesLocation(job, location))
+                    .filter(job -> matchesSalary(job, salaryMin, salaryMax))
+                    .filter(job -> matchesRemote(job, remoteType));
+        }
+        List<DemoJob> matching = candidates
                 .sorted(comparator(sort, query, location))
                 .toList();
-        if (matching.isEmpty()) {
-            matching = readJobs(resolvedDataset, resolvedVersion).stream()
-                    .filter(job -> matchesProvider(job, provider))
-                    .sorted(comparator(sort, query, location))
-                    .toList();
-        }
         int from = Math.min(matching.size(), resolvedPage * resolvedPageSize);
         int to = Math.min(matching.size(), from + resolvedPageSize);
         return new FixtureJobSearchResponse(resolvedDataset, resolvedVersion, resolvedScenario, provider, query, location,
@@ -179,6 +179,15 @@ public class FixtureService {
 
     private boolean matchesRemote(DemoJob job, String remoteType) {
         return !StringUtils.hasText(remoteType) || contains(job.remoteType(), remoteType.toLowerCase(Locale.ROOT));
+    }
+
+    private boolean hasSearchFilters(String query, String location, Integer salaryMin, Integer salaryMax,
+                                     String remoteType) {
+        return StringUtils.hasText(query)
+                || StringUtils.hasText(location)
+                || salaryMin != null
+                || salaryMax != null
+                || StringUtils.hasText(remoteType);
     }
 
     private Comparator<DemoJob> comparator(String sort, String query, String location) {

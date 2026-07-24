@@ -40,8 +40,6 @@ class GovernedFixtureIntegrationTest {
     void jobAndProviderFixturesUseTheApprovedSyntheticDataset() {
         var all = fixtureService.searchJobs(null, null, "DEMO_READY", null,
                 null, null, 0, 20, null, null, null, null);
-        var adzuna = fixtureService.searchJobs(null, null, "DEMO_READY", "adzuna",
-                null, null, 0, 20, null, null, null, null);
 
         assertThat(all.totalResults()).isEqualTo(9);
         assertThat(all.jobs()).hasSize(9).allSatisfy(job -> {
@@ -49,9 +47,43 @@ class GovernedFixtureIntegrationTest {
             assertThat(job.sourceProvider()).endsWith("-gateway-fixture");
             assertThat(job.sourceUrl()).startsWith("https://jobs.example.test/");
         });
-        assertThat(adzuna.jobs()).hasSize(3)
-                .allMatch(job -> "adzuna-gateway-fixture".equals(job.sourceProvider()));
+        for (String provider : new String[]{"adzuna", "jsearch", "reed"}) {
+            var providerJobs = fixtureService.searchJobs(null, null, "DEMO_READY", provider,
+                    null, null, 0, 20, null, null, null, null);
+            assertThat(providerJobs.totalResults()).isEqualTo(3);
+            assertThat(providerJobs.jobs()).hasSize(3)
+                    .allMatch(job -> (provider + "-gateway-fixture").equals(job.sourceProvider()));
+        }
         assertThat(fixtureService.job(null, null, all.jobs().get(0).id())).isEqualTo(all.jobs().get(0));
+    }
+
+    @Test
+    void matchingFiltersRemainDeterministicAcrossProviders() {
+        assertSingleMatch("adzuna", "Junior", "Manchester", "Junior Software Developer");
+        assertSingleMatch("jsearch", "Angular", "Bristol", "Angular Developer");
+        assertSingleMatch("reed", "Spring Boot", "Leeds", "Spring Boot Developer");
+    }
+
+    @Test
+    void noMatchFiltersReturnTrueEmptyResultsAcrossProviders() {
+        for (String provider : new String[]{"adzuna", "jsearch", "reed"}) {
+            var response = fixtureService.searchJobs(null, null, "DEMO_READY", provider,
+                    "COBOL mainframe archaeologist", null, 0, 20, null, null, null, null);
+
+            assertThat(response.totalResults()).isZero();
+            assertThat(response.jobs()).isEmpty();
+        }
+    }
+
+    @Test
+    void invalidLocationsReturnTrueEmptyResultsAcrossProviders() {
+        for (String provider : new String[]{"adzuna", "jsearch", "reed"}) {
+            var response = fixtureService.searchJobs(null, null, "DEMO_READY", provider,
+                    null, "Atlantis", 0, 20, null, null, null, null);
+
+            assertThat(response.totalResults()).isZero();
+            assertThat(response.jobs()).isEmpty();
+        }
     }
 
     @Test
@@ -82,5 +114,17 @@ class GovernedFixtureIntegrationTest {
                 null, null, 0, 20, null, null, null, null))
                 .isInstanceOf(GatewayUnavailableException.class)
                 .hasMessage("Synthetic provider fixture is unavailable");
+    }
+
+    private void assertSingleMatch(String provider, String query, String location, String expectedTitle) {
+        var response = fixtureService.searchJobs(null, null, "DEMO_READY", provider,
+                query, location, 0, 20, null, null, null, null);
+
+        assertThat(response.totalResults()).isEqualTo(1);
+        assertThat(response.jobs()).singleElement()
+                .satisfies(job -> {
+                    assertThat(job.title()).isEqualTo(expectedTitle);
+                    assertThat(job.sourceProvider()).isEqualTo(provider + "-gateway-fixture");
+                });
     }
 }

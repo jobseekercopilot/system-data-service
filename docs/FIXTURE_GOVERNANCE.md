@@ -37,6 +37,25 @@ copies and byte-compares them with each other and with the committed output.
 Negative cases cover captured-data classification, non-reserved email/PII,
 secret markers, unsafe URLs, missing licence metadata, and checksum tampering.
 
+## Deterministic Job Search expectations
+
+The approved dataset contains nine jobs: three each for Adzuna, JSearch and
+Reed. A request with no search filters returns all nine jobs, or all three for
+the requested provider. Known provider-specific query and location pairs return
+one stable result:
+
+| Provider | Query | Location | Expected job |
+| --- | --- | --- | --- |
+| Adzuna | `Junior` | `Manchester` | Junior Software Developer |
+| JSearch | `Angular` | `Bristol` | Angular Developer |
+| Reed | `Spring Boot` | `Leeds` | Spring Boot Developer |
+
+A supplied query, location, salary or remote filter that matches no fixture
+returns `totalResults: 0` and an empty `jobs` collection. Filtered empty results
+are never replaced with the unfiltered provider dataset. `Atlantis` is the
+documented invalid-location value and `COBOL mainframe archaeologist` is the
+documented no-match query used by the contract tests.
+
 ## Review, refresh, and expiry
 
 Review by 10 January 2027 and expire on 10 July 2027. Review earlier whenever a
