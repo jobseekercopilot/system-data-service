@@ -6,26 +6,29 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withBadRequest;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobseekercopilot.systemdata.config.SystemDataProperties;
-import com.jobseekercopilot.systemdata.model.DatasetGenerationResult;
 import com.jobseekercopilot.systemdata.model.EnvironmentOperationRequest;
 import com.jobseekercopilot.systemdata.model.EnvironmentScenario;
-import com.jobseekercopilot.systemdata.model.JobDataset;
-import com.jobseekercopilot.systemdata.model.LocationDataset;
 import com.jobseekercopilot.systemdata.model.NamedStateDefinition;
 import com.jobseekercopilot.systemdata.model.NamedStateIdentity;
 import com.jobseekercopilot.systemdata.util.ChecksumUtil;
+import com.jobseekercopilot.systemdata.util.DeterministicIds;
 import com.jobseekercopilot.systemdata.util.SemanticVersionValidator;
-import java.nio.file.Path;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -39,8 +42,11 @@ import org.springframework.web.client.RestTemplate;
 
 class EnvironmentOrchestrationServiceTest {
     private static final String USER_ID = new DemoEnvironmentScenarioBuilder().demoUserId();
+    private static final String APPLICATION_SEED_URL =
+            "http://localhost:8088/internal/system-data/v1/application-scenarios";
 
     private SystemDataProperties properties;
+    private ObjectMapper objectMapper;
     private RestTemplate restTemplate;
     private MockRestServiceServer server;
     private EnvironmentOrchestrationService service;
@@ -50,6 +56,7 @@ class EnvironmentOrchestrationServiceTest {
     void setUp() {
         properties = new SystemDataProperties();
         properties.getEnvironmentManagement().setEnabled(true);
+        objectMapper = new ObjectMapper().findAndRegisterModules();
         restTemplate = new RestTemplate();
         server = MockRestServiceServer.bindTo(restTemplate).build();
         requestBodies = new LinkedHashMap<>();
@@ -57,11 +64,14 @@ class EnvironmentOrchestrationServiceTest {
         environment.setActiveProfiles("local");
         service = new EnvironmentOrchestrationService(
                 properties,
-                new SyntheticDatasetStorage(properties),
+                new DatasetStorageService(
+                        objectMapper,
+                        properties,
+                        new DatasetPathPolicy(new SemanticVersionValidator())),
                 new EnvironmentManagementGuard(properties, environment),
                 new DemoEnvironmentScenarioBuilder(),
                 noOpFixtureValidator(),
-                new NamedStateRegistry(new ObjectMapper().findAndRegisterModules()),
+                new NamedStateRegistry(objectMapper),
                 restTemplate);
     }
 
@@ -70,7 +80,7 @@ class EnvironmentOrchestrationServiceTest {
         for (int attempt = 0; attempt < 2; attempt++) {
             expectSuccess(DELETE, "http://localhost:8099/internal/system-data/scenario/demo-ready-v1/payments/" + USER_ID, "payment-service", "RESET");
             expectSuccess(DELETE, "http://localhost:8089/internal/system-data/scenario/demo-ready-v1/documents/" + USER_ID, "document-store-service", "RESET");
-            expectSuccess(DELETE, "http://localhost:8088/internal/system-data/scenario/demo-ready-v1/applications/" + USER_ID, "application-tracker-service", "RESET");
+            expectSuccess(DELETE, applicationScenarioUrl("demo-ready-v1", USER_ID), "application-tracker-service", "RESET");
             expectSuccess(DELETE, "http://localhost:8085/internal/system-data/scenario/demo-ready-v1/profiles/" + USER_ID, "user-profile-service", "RESET");
             expectSuccess(DELETE, "http://localhost:8084/internal/system-data/scenario/demo-ready-v1/users/" + USER_ID, "authentication-service", "RESET");
         }
@@ -105,10 +115,33 @@ class EnvironmentOrchestrationServiceTest {
             assertThat(bodies.get(0)).isEqualTo(bodies.get(1));
         });
         requestBodies.forEach((url, bodies) -> {
-            if (!url.endsWith("/seed/applications")) {
-                assertThat(bodies.get(0)).contains(USER_ID);
-            }
+            assertThat(bodies.get(0)).contains(USER_ID);
         });
+        assertApplicationEnvelope(requestBodies.get(APPLICATION_SEED_URL).get(0));
+        assertThat(first.summary().applications()).isEqualTo(9);
+        assertThat(first.summary().applicationsByStatus()).containsExactlyInAnyOrderEntriesOf(Map.of(
+                "OFFER", 1,
+                "INTERVIEW", 1,
+                "APPLIED", 2,
+                "DOCUMENTS_GENERATED", 3,
+                "UNSUCCESSFUL", 1,
+                "WITHDRAWN", 1));
+        server.verify();
+    }
+
+    @Test
+    void emptyStateClearsOnlyItsOwnApplicationScenarioAndOwnerBoundary() {
+        NamedStateDefinition definition = new NamedStateRegistry(objectMapper).require(EnvironmentScenario.EMPTY);
+        NamedStateIdentity identity = definition.identities().get(0);
+        String emptyUserId = identity.userId(definition.scenarioId());
+        assertThat(emptyUserId).isNotEqualTo(USER_ID);
+        expectReset(definition);
+
+        var response = service.reset(request(EnvironmentScenario.EMPTY));
+
+        assertThat(response.status()).isEqualTo("SUCCESS");
+        assertThat(applicationScenarioUrl(definition.scenarioId(), emptyUserId))
+                .doesNotContain("demo-ready-v1", USER_ID);
         server.verify();
     }
 
@@ -175,6 +208,48 @@ class EnvironmentOrchestrationServiceTest {
     }
 
     @Test
+    void applicationContractRejectionIsVisibleAndScopedResetAndSeedCanRecover() {
+        expectSeedBeforeApplications();
+        server.expect(requestTo(APPLICATION_SEED_URL))
+                .andExpect(method(POST))
+                .andRespond(withBadRequest());
+        expectReset(new NamedStateRegistry(objectMapper).require(EnvironmentScenario.DEMO_READY));
+        expectSeedSequence();
+
+        var rejected = service.seed(request(EnvironmentScenario.DEMO_READY));
+        var recovered = service.prepare(request(EnvironmentScenario.DEMO_READY));
+
+        assertThat(rejected.status()).isEqualTo("FAILED");
+        assertThat(rejected.services()).extracting(result -> result.status())
+                .containsExactly("SUCCESS", "SUCCESS", "SUCCESS", "SUCCESS", "FAILED");
+        assertThat(rejected.warnings()).anyMatch(warning -> warning.contains("reset-and-seed"));
+        assertThat(rejected.services().get(4).details()).isEmpty();
+        assertThat(recovered.status()).isEqualTo("SUCCESS");
+        server.verify();
+    }
+
+    @Test
+    void unavailableApplicationProducerIsVisibleWithoutLeakingTransportDetails() {
+        expectSeedBeforeApplications();
+        server.expect(requestTo(APPLICATION_SEED_URL))
+                .andExpect(method(POST))
+                .andRespond(withServerError());
+
+        var response = service.seed(request(EnvironmentScenario.DEMO_READY));
+
+        assertThat(response.status()).isEqualTo("FAILED");
+        assertThat(response.services()).last().satisfies(result -> {
+            assertThat(result.service()).isEqualTo("application-tracker-service");
+            assertThat(result.status()).isEqualTo("FAILED");
+            assertThat(result.details()).isEmpty();
+            assertThat(result.warnings()).containsExactly(
+                    "Downstream operation failed; no response details are exposed.");
+        });
+        assertThat(response.toString()).doesNotContain(APPLICATION_SEED_URL, "HttpServerErrorException");
+        server.verify();
+    }
+
+    @Test
     void verifyReadsOnlyTheScenarioOwnedIdentity() {
         expectVerification(new NamedStateRegistry(new ObjectMapper().findAndRegisterModules())
                 .require(EnvironmentScenario.DEMO_READY));
@@ -230,7 +305,7 @@ class EnvironmentOrchestrationServiceTest {
     @ParameterizedTest
     @EnumSource(value = EnvironmentScenario.class, names = {
             "EMPTY", "REGISTRATION_CLEAN", "LOGIN_SESSION", "PROFILE_LOCATION",
-            "DUPLICATE_REGISTRATION", "CROSS_USER_SECURITY", "PROVIDER_FAILURE"})
+            "DUPLICATE_REGISTRATION", "CROSS_USER_SECURITY", "PROVIDER_FAILURE", "DEMO_READY"})
     void namedStatePrepareVerifyAndResetAreRepeatableAndBounded(EnvironmentScenario scenario) {
         NamedStateDefinition definition = new NamedStateRegistry(new ObjectMapper().findAndRegisterModules())
                 .require(scenario);
@@ -254,6 +329,10 @@ class EnvironmentOrchestrationServiceTest {
 
     private void expectPrepare(NamedStateDefinition definition) {
         expectReset(definition);
+        if (definition.scenario() == EnvironmentScenario.DEMO_READY) {
+            expectSeedSequence();
+            return;
+        }
         for (NamedStateIdentity identity : definition.identities()) {
             String userId = identity.userId(definition.scenarioId());
             for (String component : identity.seedComponents()) {
@@ -273,7 +352,7 @@ class EnvironmentOrchestrationServiceTest {
                 String url = switch (component) {
                     case "PAYMENT" -> "http://localhost:8099/internal/system-data/scenario/" + definition.scenarioId() + "/payments/" + userId;
                     case "DOCUMENTS" -> "http://localhost:8089/internal/system-data/scenario/" + definition.scenarioId() + "/documents/" + userId;
-                    case "APPLICATIONS" -> "http://localhost:8088/internal/system-data/scenario/" + definition.scenarioId() + "/applications/" + userId;
+                    case "APPLICATIONS" -> applicationScenarioUrl(definition.scenarioId(), userId);
                     case "USER_PROFILE" -> "http://localhost:8085/internal/system-data/scenario/" + definition.scenarioId() + "/profiles/" + userId;
                     case "AUTHENTICATION" -> "http://localhost:8084/internal/system-data/scenario/" + definition.scenarioId() + "/users/" + userId;
                     default -> throw new IllegalStateException(component);
@@ -291,7 +370,7 @@ class EnvironmentOrchestrationServiceTest {
                 String url = switch (component) {
                     case "AUTHENTICATION" -> "http://localhost:8084/internal/system-data/verify/users/" + userId;
                     case "USER_PROFILE" -> "http://localhost:8085/internal/system-data/verify/profiles/" + userId;
-                    case "APPLICATIONS" -> "http://localhost:8088/internal/system-data/verify/applications/" + userId;
+                    case "APPLICATIONS" -> applicationScenarioUrl(definition.scenarioId(), userId);
                     case "DOCUMENTS" -> "http://localhost:8089/internal/system-data/verify/documents/" + userId;
                     case "PAYMENT" -> "http://localhost:8099/internal/system-data/verify/payments/" + userId;
                     default -> throw new IllegalStateException(component);
@@ -322,11 +401,68 @@ class EnvironmentOrchestrationServiceTest {
     }
 
     private void expectSeedSequence() {
+        expectSeedBeforeApplications();
+        expectSuccess(POST, APPLICATION_SEED_URL, "application-tracker-service", "SEED");
+    }
+
+    private void expectSeedBeforeApplications() {
         expectSuccess(POST, "http://localhost:8084/internal/system-data/seed/user", "authentication-service", "SEED");
         expectSuccess(POST, "http://localhost:8085/internal/system-data/seed/profiles/" + USER_ID, "user-profile-service", "SEED");
         expectSuccess(POST, "http://localhost:8099/internal/system-data/seed/payments", "payment-service", "SEED");
         expectSuccess(POST, "http://localhost:8089/internal/system-data/seed/documents", "document-store-service", "SEED");
-        expectSuccess(POST, "http://localhost:8088/internal/system-data/seed/applications", "application-tracker-service", "SEED");
+    }
+
+    private void assertApplicationEnvelope(String body) {
+        try {
+            JsonNode envelope = objectMapper.readTree(body);
+            assertThat(fieldNames(envelope)).containsExactlyInAnyOrder(
+                    "schemaVersion", "scenarioId", "userId", "applications");
+            assertThat(envelope.path("schemaVersion").asText()).isEqualTo("1.0.0");
+            assertThat(envelope.path("scenarioId").asText()).isEqualTo("demo-ready-v1");
+            assertThat(envelope.path("userId").asText()).isEqualTo(USER_ID);
+            assertThat(envelope.path("applications")).hasSize(9);
+
+            JsonNode first = envelope.path("applications").get(0);
+            assertThat(fieldNames(first)).containsExactlyInAnyOrder(
+                    "id", "jobId", "canonicalJobId", "provider", "externalJobId",
+                    "jobTitle", "companyName", "location", "cvDocumentId",
+                    "coverLetterDocumentId", "status", "createdAt", "updatedAt", "appliedAt");
+            assertThat(first.has("userId")).isFalse();
+            assertThat(first.has("fixtureScenarioId")).isFalse();
+            assertThat(first.path("id").asText()).isEqualTo(DeterministicIds.uuidString(
+                    "demo-ready-v1:application:0:" + first.path("jobId").asText()));
+            assertThat(first.path("createdAt").asText()).isEqualTo("2026-06-19T09:00");
+            assertThat(first.path("updatedAt").asText()).isEqualTo("2026-06-23T09:00");
+            assertThat(first.path("appliedAt").asText()).isEqualTo("2026-06-21T09:00");
+
+            Map<String, Long> byStatus = StreamSupport.stream(
+                            envelope.path("applications").spliterator(), false)
+                    .collect(Collectors.groupingBy(
+                            record -> record.path("status").asText(),
+                            LinkedHashMap::new,
+                            Collectors.counting()));
+            assertThat(byStatus).containsExactlyInAnyOrderEntriesOf(Map.of(
+                    "OFFER", 1L,
+                    "INTERVIEW", 1L,
+                    "APPLIED", 2L,
+                    "DOCUMENTS_GENERATED", 3L,
+                    "UNSUCCESSFUL", 1L,
+                    "WITHDRAWN", 1L));
+        } catch (Exception exception) {
+            throw new AssertionError("Application Tracker seed body was not valid JSON", exception);
+        }
+    }
+
+    private List<String> fieldNames(JsonNode node) {
+        List<String> names = new ArrayList<>();
+        Iterator<String> fields = node.fieldNames();
+        fields.forEachRemaining(names::add);
+        return names;
+    }
+
+    private String applicationScenarioUrl(String scenarioId, String userId) {
+        return "http://localhost:8088/internal/system-data/v1/application-scenarios/"
+                + scenarioId + "/owners/" + userId;
     }
 
     private void expectSuccess(org.springframework.http.HttpMethod method, String url, String serviceName, String operation) {
@@ -357,24 +493,4 @@ class EnvironmentOrchestrationServiceTest {
         };
     }
 
-    private static final class SyntheticDatasetStorage extends DatasetStorageService {
-        private SyntheticDatasetStorage(SystemDataProperties properties) {
-            super(new ObjectMapper(), properties, new DatasetPathPolicy(new SemanticVersionValidator()));
-        }
-
-        @Override
-        public Path datasetVersionDirectory(String datasetId, String version) {
-            return Path.of("synthetic", datasetId, version);
-        }
-
-        @Override
-        public DatasetGenerationResult read(Path datasetDirectory) {
-            return new DatasetGenerationResult(
-                    null,
-                    datasetDirectory,
-                    new JobDataset("1.0", List.of()),
-                    new LocationDataset("1.0", List.of()),
-                    null);
-        }
-    }
 }

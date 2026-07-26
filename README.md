@@ -71,6 +71,10 @@ hardened container build/start/health proof.
 
 Required gateway clients are generated exclusively from pinned private source
 contracts. See [the contract-client workflow](docs/CONTRACT_CLIENTS.md).
+Application Tracker seed, reset and verification also consume its pinned
+OpenAPI `2.0.0` contract: requests use a closed `1.0.0` schema envelope and
+the same scenario-and-owner path for reset and verification. The producer and
+consumer feature branches must be released together.
 The fixture API that this service produces is versioned separately in
 [`api/openapi.json`](api/openapi.json). Reed, Adzuna, JSearch and other fixture
 consumers pin an exact producer revision and the checksum recorded in

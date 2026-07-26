@@ -2,6 +2,7 @@ package com.jobseekercopilot.systemdata.service;
 
 import com.jobseekercopilot.systemdata.model.DemoJob;
 import com.jobseekercopilot.systemdata.model.JobDataset;
+import com.jobseekercopilot.systemdata.model.SystemDataApplicationSeedRecord;
 import com.jobseekercopilot.systemdata.util.DeterministicIds;
 import org.springframework.stereotype.Service;
 
@@ -35,12 +36,12 @@ public class DemoEnvironmentScenarioBuilder {
         LocalDateTime ref = LocalDateTime.ofInstant(referenceDate, ZoneOffset.UTC);
         Map<String, Object> user = user(ref.minusDays(28));
         Map<String, Object> profile = profile();
-        List<Map<String, Object>> applications = applications(selectedJobs, ref);
+        List<SystemDataApplicationSeedRecord> applications = applications(selectedJobs, ref);
         Map<String, Object> documents = documents(selectedJobs, applications, ref);
         Map<String, Object> payment = payment(ref);
         Map<String, Integer> byStatus = applications.stream()
                 .collect(Collectors.toMap(
-                        app -> app.get("status").toString(),
+                        SystemDataApplicationSeedRecord::status,
                         app -> 1,
                         Integer::sum,
                         LinkedHashMap::new));
@@ -132,29 +133,28 @@ public class DemoEnvironmentScenarioBuilder {
                                 "keyResponsibilities", "Assisted with bug fixing, automated testing and frontend development in an Agile engineering team.")));
     }
 
-    private List<Map<String, Object>> applications(List<DemoJob> jobs, LocalDateTime ref) {
+    private List<SystemDataApplicationSeedRecord> applications(List<DemoJob> jobs, LocalDateTime ref) {
         String[] statuses = {"OFFER", "INTERVIEW", "APPLIED", "APPLIED", "DOCUMENTS_GENERATED", "DOCUMENTS_GENERATED", "UNSUCCESSFUL", "WITHDRAWN", "DOCUMENTS_GENERATED"};
         int[] createdOffsets = {21, 16, 12, 10, 14, 7, 19, 18, 24};
-        List<Map<String, Object>> applications = new ArrayList<>();
+        List<SystemDataApplicationSeedRecord> applications = new ArrayList<>();
         for (int i = 0; i < jobs.size() && i < statuses.length; i++) {
             DemoJob job = jobs.get(i);
             String appId = DeterministicIds.uuidString(SCENARIO_ID + ":application:" + i + ":" + job.id());
-            applications.add(map(
-                    "id", appId,
-                    "userId", USER_ID,
-                    "jobId", job.id(),
-                    "canonicalJobId", job.id(),
-                    "provider", job.sourceProvider(),
-                    "externalJobId", job.externalReference(),
-                    "jobTitle", job.title(),
-                    "companyName", job.companyName(),
-                    "location", job.locationName(),
-                    "cvDocumentId", DeterministicIds.uuidString(SCENARIO_ID + ":document:cv:" + appId + ":v1"),
-                    "coverLetterDocumentId", DeterministicIds.uuidString(SCENARIO_ID + ":document:cover:" + appId + ":v1"),
-                    "status", statuses[i],
-                    "createdAt", ref.minusDays(createdOffsets[i]).toString(),
-                    "updatedAt", ref.minusDays(Math.max(1, createdOffsets[i] - 4)).toString(),
-                    "appliedAt", appliedAt(statuses[i], ref.minusDays(Math.max(1, createdOffsets[i] - 2)))));
+            applications.add(new SystemDataApplicationSeedRecord(
+                    UUID.fromString(appId),
+                    job.id(),
+                    job.id(),
+                    job.sourceProvider(),
+                    job.externalReference(),
+                    job.title(),
+                    job.companyName(),
+                    job.locationName(),
+                    DeterministicIds.uuid(SCENARIO_ID + ":document:cv:" + appId + ":v1"),
+                    DeterministicIds.uuid(SCENARIO_ID + ":document:cover:" + appId + ":v1"),
+                    statuses[i],
+                    ref.minusDays(createdOffsets[i]).toString(),
+                    ref.minusDays(Math.max(1, createdOffsets[i] - 4)).toString(),
+                    appliedAt(statuses[i], ref.minusDays(Math.max(1, createdOffsets[i] - 2)))));
         }
         return applications;
     }
@@ -166,43 +166,43 @@ public class DemoEnvironmentScenarioBuilder {
         };
     }
 
-    private Map<String, Object> documents(List<DemoJob> jobs, List<Map<String, Object>> applications, LocalDateTime ref) {
+    private Map<String, Object> documents(List<DemoJob> jobs, List<SystemDataApplicationSeedRecord> applications, LocalDateTime ref) {
         List<Map<String, Object>> docs = new ArrayList<>();
         List<Map<String, Object>> files = new ArrayList<>();
         for (int i = 0; i < applications.size(); i++) {
-            Map<String, Object> app = applications.get(i);
+            SystemDataApplicationSeedRecord app = applications.get(i);
             DemoJob job = jobs.get(i);
             addDocumentPair(docs, files, app, job, ref.minusDays(20 - i), 1, true);
         }
         if (!applications.isEmpty()) {
-            Map<String, Object> app = applications.get(0);
+            SystemDataApplicationSeedRecord app = applications.get(0);
             DemoJob job = jobs.get(0);
             docs.stream()
-                    .filter(document -> app.get("cvDocumentId").equals(document.get("id")))
+                    .filter(document -> app.cvDocumentId().toString().equals(document.get("id")))
                     .findFirst()
                     .ifPresent(document -> document.put("active", false));
-            String docId = DeterministicIds.uuidString(SCENARIO_ID + ":document:cv:" + app.get("id") + ":v2");
+            String docId = DeterministicIds.uuidString(SCENARIO_ID + ":document:cv:" + app.id() + ":v2");
             docs.add(document(docId, app, job, "CV", "Tailored CV for " + job.companyName() + " - revised", ref.minusDays(6), 2, true, "UPLOADED"));
             files.add(file(docId, "alex-taylor-" + slug(job.companyName()) + "-cv-revised.pdf", ref.minusDays(6), "USER_UPLOADED"));
         }
         return map("scenarioId", SCENARIO_ID, "userId", USER_ID, "documents", docs, "files", files);
     }
 
-    private void addDocumentPair(List<Map<String, Object>> docs, List<Map<String, Object>> files, Map<String, Object> app, DemoJob job, LocalDateTime createdAt, int version, boolean active) {
-        String cvId = app.get("cvDocumentId").toString();
-        String coverId = app.get("coverLetterDocumentId").toString();
+    private void addDocumentPair(List<Map<String, Object>> docs, List<Map<String, Object>> files, SystemDataApplicationSeedRecord app, DemoJob job, LocalDateTime createdAt, int version, boolean active) {
+        String cvId = app.cvDocumentId().toString();
+        String coverId = app.coverLetterDocumentId().toString();
         docs.add(document(cvId, app, job, "CV", "Tailored CV for " + job.companyName(), createdAt, version, active, "GENERATED"));
         docs.add(document(coverId, app, job, "COVER_LETTER", "Cover letter for " + job.companyName(), createdAt.plusHours(1), version, active, "GENERATED"));
         files.add(file(cvId, "alex-taylor-" + slug(job.companyName()) + "-cv.pdf", createdAt, "GENERATED"));
         files.add(file(coverId, "alex-taylor-" + slug(job.companyName()) + "-cover-letter.pdf", createdAt.plusHours(1), "GENERATED"));
     }
 
-    private Map<String, Object> document(String id, Map<String, Object> app, DemoJob job, String type, String title, LocalDateTime createdAt, int version, boolean active, String sourceType) {
+    private Map<String, Object> document(String id, SystemDataApplicationSeedRecord app, DemoJob job, String type, String title, LocalDateTime createdAt, int version, boolean active, String sourceType) {
         return map(
                 "id", id,
                 "userId", USER_ID,
                 "jobId", job.id(),
-                "applicationId", app.get("id"),
+                "applicationId", app.id().toString(),
                 "documentType", type,
                 "title", title,
                 "content", syntheticDocumentContent(type, job),

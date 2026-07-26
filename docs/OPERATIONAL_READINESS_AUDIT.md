@@ -85,6 +85,16 @@ non-redistributable, non-runtime review record. Tests cover fail-closed modes,
 unsafe URLs and profiles, bounds, overwrite, traversal, containment, and
 symlink paths without making a provider call.
 
+APP-11-D1 pins Application Tracker OpenAPI `2.0.0` from producer commit
+`f92cbbd` and replaces the bare application array plus owner-wide legacy routes.
+System Data now sends a closed versioned owner/scenario envelope, and reset and
+verify share the producer-owned scoped route. Contract checksums and negative
+policy tests detect schema, security, ownership, operation and legacy-route
+drift. Local orchestration tests preserve all nine deterministic IDs,
+timestamps and status counts, cover repeated lifecycle operations and isolated
+empty-state cleanup, and make contract rejection/unavailability recoverable
+without exposing transport details.
+
 ## Findings and dependencies
 
 | Issue | Finding | Severity / priority | Dependency | Beta blocker |
@@ -98,6 +108,7 @@ symlink paths without making a provider call.
 | SD-07 | E2E named-state lifecycle integration | High / P1 | SD-03/04/05/06 and E2E-02 | Yes — E2E client in delivery; stack proof remains E2E-03 |
 | SD-09 | Authenticate service-owned named-state operations | High / P1 | SD-03/07 | Yes — downstream credential contract fixed locally; stack proof remains E2E-03 |
 | SD-10 | Fail closed when the history secret scan cannot inspect commits | High / P1 | None | Yes — complete |
+| APP-11-D1 | Consume Application Tracker System Data OpenAPI 2.0.0 | Critical / P0 | APP-11 producer commit `f92cbbd`; APP-16 stack proof | Yes — repository implementation complete; integrated proof remains |
 
 ## Definition of Done
 
