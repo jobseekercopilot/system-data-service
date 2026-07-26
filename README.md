@@ -65,9 +65,11 @@ mvn -B clean verify
 ```
 
 Spring Boot [3.5.16](https://spring.io/blog/2026/06/25/spring-boot-3-5-16-available-now/)
-is used as the supported Java 17 maintenance line. CI also
-runs a complete-history secret scan, resolved-runtime dependency scan, and
-hardened container build/start/health proof.
+is used as the supported Java 17 maintenance line. Its Jackson BOM is
+temporarily advanced within the same 2.21 patch line to resolve the findings
+documented in [the dependency security policy](docs/DEPENDENCY_SECURITY.md).
+CI also runs a complete-history secret scan, resolved-runtime dependency scan,
+and hardened container build/start/health proof.
 
 Required gateway clients are generated exclusively from pinned private source
 contracts. See [the contract-client workflow](docs/CONTRACT_CLIENTS.md).

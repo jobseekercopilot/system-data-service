@@ -24,6 +24,12 @@ pinned OpenAPI source contracts and OpenAPI Generator 7.22.0. A clean Maven
 build now validates, generates, compiles, and tests the clients without a local
 JAR or `systemPath`.
 
+SD-08 refreshed the resolved-runtime evidence on 26 July 2026. Spring Boot
+3.5.16 originally resolved Jackson 2.21.4, which Trivy 0.72.0 reported with
+three Medium findings. The complete Jackson BOM is overridden to the fixed
+2.21.5 patch line; compatibility and scanning evidence are documented in
+[`DEPENDENCY_SECURITY.md`](DEPENDENCY_SECURITY.md).
+
 ## Verified responsibilities
 
 This is a combined internal fixture runtime and non-production state
@@ -96,6 +102,7 @@ symlink paths without making a provider call.
 | SD-05 | Named states, determinism, idempotency | High / P1 | SD-02/03/04 | Yes — complete locally; stack proof in E2E-03 |
 | SD-06 | Separate live acquisition boundary and validate dataset paths | High / P1 | SD-01/04 | Yes — complete locally |
 | SD-07 | E2E named-state lifecycle integration | High / P1 | SD-03/04/05/06 and E2E-02 | Yes — E2E client in delivery; stack proof remains E2E-03 |
+| SD-08 | Upgrade the managed Jackson BOM to resolve three Medium findings | Medium / P2 | SD-01 | No — resolved by Jackson 2.21.5 |
 | SD-09 | Authenticate service-owned named-state operations | High / P1 | SD-03/07 | Yes — downstream credential contract fixed locally; stack proof remains E2E-03 |
 | SD-10 | Fail closed when the history secret scan cannot inspect commits | High / P1 | None | Yes — complete |
 
