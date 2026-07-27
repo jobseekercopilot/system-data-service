@@ -62,6 +62,12 @@ class GovernedFixtureIntegrationTest {
         assertSingleMatch("adzuna", "Junior", "Manchester", "Junior Software Developer");
         assertSingleMatch("jsearch", "Angular", "Bristol", "Angular Developer");
         assertSingleMatch("reed", "Spring Boot", "Leeds", "Spring Boot Developer");
+        assertSingleMatch("adzuna", "Software Developer", "RG1 1AA", "Java Software Developer");
+        assertSingleMatch(
+                "adzuna",
+                "Software Developer",
+                "Reading, South East (RG1 1AA)",
+                "Java Software Developer");
     }
 
     @Test
@@ -87,7 +93,7 @@ class GovernedFixtureIntegrationTest {
     }
 
     @Test
-    void llmFixtureAndNamedScenarioAreDeterministic() {
+    void llmFixtureAndNamedScenarioAreDeterministic() throws Exception {
         FixtureLlmRequest request = new FixtureLlmRequest(
                 null, null, "DEMO_READY", "CV_COVER_LETTER_GENERATION", null, null);
         var firstLlm = fixtureService.llm(request);
@@ -95,6 +101,14 @@ class GovernedFixtureIntegrationTest {
         assertThat(firstLlm).isEqualTo(secondLlm);
         assertThat(firstLlm.provider()).isEqualTo("FIXTURE");
         assertThat(firstLlm.fixtureMode()).isTrue();
+        var generatedDocuments = new ObjectMapper().readTree(firstLlm.response());
+        assertThat(generatedDocuments.has("cv")).isTrue();
+        assertThat(generatedDocuments.has("coverLetter")).isTrue();
+        assertThat(generatedDocuments.path("cv").path("targetRole").asText())
+                .isEqualTo("Java Software Developer");
+        assertThat(generatedDocuments.path("coverLetter").path("companyName").asText())
+                .isEqualTo("Northstar Digital Labs");
+        assertThat(generatedDocuments.path("claims")).hasSize(10);
 
         var dataset = storage.read(storage.datasetVersionDirectory(
                 properties.getFixtures().getDefaultDatasetId(),
