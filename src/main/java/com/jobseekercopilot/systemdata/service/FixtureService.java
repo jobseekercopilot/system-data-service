@@ -90,13 +90,34 @@ public class FixtureService {
                 valueOrDefault(request.scenario(), properties.getFixtures().getDefaultScenario()) + ":" + operation;
         FixtureLlmResponse captured = capturedLlmFixture(request, key);
         if (captured != null) {
-            return captured;
+            return withCurrentContractContent(operation, captured);
         }
         long input = 1_800L + Math.abs(key.hashCode() % 700);
         long output = operation.contains("COVER") ? 1_250L : operation.contains("CV") ? 1_600L : 900L;
         String content = fixtureContent(operation, key);
         return new FixtureLlmResponse("FIXTURE", "fixture-llm-demo-v1", content, input, output, input + output,
                 "stop", "2026-07-10T09:00:00Z", key, true);
+    }
+
+    private FixtureLlmResponse withCurrentContractContent(
+            String operation,
+            FixtureLlmResponse captured
+    ) {
+        if (!"CV_COVER_LETTER_GENERATION".equalsIgnoreCase(operation)) {
+            return captured;
+        }
+        return new FixtureLlmResponse(
+                captured.provider(),
+                captured.model(),
+                combinedCvCoverLetterFixtureContent(),
+                captured.inputTokens(),
+                captured.outputTokens(),
+                captured.totalTokens(),
+                captured.finishReason(),
+                captured.createdAt(),
+                captured.fixtureKey(),
+                captured.fixtureMode()
+        );
     }
 
     private FixtureLlmResponse capturedLlmFixture(FixtureLlmRequest request, String key) {
@@ -168,8 +189,20 @@ public class FixtureService {
             return true;
         }
         String loc = location.toLowerCase(Locale.ROOT);
-        return contains(job.locationName(), loc) || contains(job.region(), loc) || contains(job.postcode(), loc)
-                || loc.contains("remote") && contains(job.remoteType(), "remote");
+        if (contains(job.locationName(), loc)
+                || contains(job.region(), loc)
+                || contains(job.postcode(), loc)
+                || (StringUtils.hasText(job.locationName())
+                        && loc.contains(job.locationName().toLowerCase(Locale.ROOT)))
+                || loc.contains("remote") && contains(job.remoteType(), "remote")) {
+            return true;
+        }
+        String compact = location.toUpperCase(Locale.ROOT).replaceAll("[^A-Z0-9]", "");
+        return knownPostcodes().entrySet().stream()
+                .filter(entry -> compact.contains(entry.getKey()))
+                .map(Map.Entry::getValue)
+                .anyMatch(postcode -> contains(job.locationName(), postcode.adminDistrict().toLowerCase(Locale.ROOT))
+                        || contains(job.region(), postcode.region().toLowerCase(Locale.ROOT)));
     }
 
     private boolean matchesSalary(DemoJob job, Integer salaryMin, Integer salaryMax) {
@@ -236,82 +269,43 @@ public class FixtureService {
         return """
                 {
                   "cv": {
-                    "title": "Alex Taylor - Tailored Software Developer CV",
-                    "targetRole": "Software Developer",
-                    "personalSummary": "Software developer with hands-on experience building Java, Spring Boot and Angular applications, with a practical track record of delivering reliable APIs, clean user interfaces and well-tested services. Brings strong communication, secure coding habits and an evidence-led approach to solving delivery problems.",
-                    "coreSkills": [
-                      {
-                        "name": "Java and Spring Boot",
-                        "evidence": "Built and maintained REST APIs, service integrations and backend workflows across portfolio and commercial projects."
-                      },
-                      {
-                        "name": "Angular and TypeScript",
-                        "evidence": "Created user-focused interfaces and connected them to backend services with clear state and error handling."
-                      },
-                      {
-                        "name": "Testing and delivery discipline",
-                        "evidence": "Uses automated tests, version control and incremental delivery practices to keep releases predictable."
-                      }
-                    ],
-                    "qualifications": [
-                      {
-                        "qualificationName": "BSc Computer Science",
-                        "issuingBody": "University of Birmingham",
-                        "status": "Completed",
-                        "grade": "2:1",
-                        "dateAchieved": "2021",
-                        "expectedCompletion": null
-                      }
-                    ],
-                    "workHistory": [
-                      {
-                        "jobTitle": "Software Developer",
-                        "employer": "BrightTech Solutions",
-                        "startDate": "July 2021",
-                        "endDate": "Present",
-                        "responsibilities": [
-                          "Developed Java and Spring Boot services for customer-facing applications.",
-                          "Implemented Angular components and connected them to REST APIs.",
-                          "Worked with Git, SQL databases and CI checks to support reliable delivery."
-                        ],
-                        "tailoredDescription": "Relevant experience for software developer roles requiring strong backend engineering, frontend collaboration and production-minded delivery."
-                      },
-                      {
-                        "jobTitle": "Software Engineering Intern",
-                        "employer": "CodeBridge Ltd",
-                        "startDate": "June 2020",
-                        "endDate": "August 2020",
-                        "responsibilities": [
-                          "Supported internal tooling using Java and TypeScript.",
-                          "Contributed to API testing and documentation improvements.",
-                          "Worked with senior engineers during agile delivery ceremonies."
-                        ],
-                        "tailoredDescription": "Early career experience that demonstrates practical engineering foundations and team collaboration."
-                      }
-                    ]
+                    "title": "Tailored Java Software Developer CV",
+                    "targetRole": "Java Software Developer",
+                    "personalSummary": "Software developer with Java experience focused on useful and reliable services.",
+                    "coreSkills": [],
+                    "qualifications": [],
+                    "workHistory": []
                   },
                   "coverLetter": {
-                    "title": "Alex Taylor - Software Developer Cover Letter",
-                    "jobTitle": "Software Developer",
-                    "companyName": "Forward Role",
+                    "title": "Java Software Developer Cover Letter",
+                    "jobTitle": "Java Software Developer",
+                    "companyName": "Northstar Digital Labs",
                     "greeting": "Dear Hiring Manager,",
-                    "openingParagraph": "I am pleased to apply for the Software Developer role. My experience with Java, Spring Boot, Angular and REST API delivery aligns closely with the practical engineering skills described in the vacancy.",
+                    "openingParagraph": "I am applying for the Java Software Developer role.",
                     "bodyParagraphs": [
-                      "In my current role I have developed backend services, integrated user-facing features and worked with SQL-backed systems, giving me a solid understanding of how reliable applications are built and maintained.",
-                      "I also bring a careful approach to testing, code review and incremental delivery. I enjoy working with product and engineering colleagues to turn requirements into clear, maintainable software.",
-                      "The role appeals to me because it combines hands-on development with the chance to contribute to meaningful, well-engineered systems."
+                      "I use Java to build reliable services.",
+                      "I value automated testing and supportive collaboration."
                     ],
-                    "closingParagraph": "Thank you for considering my application. I would welcome the opportunity to discuss how my skills and experience could support your team.",
-                    "signOff": "Yours sincerely,\\nAlex Taylor"
+                    "closingParagraph": "Thank you for considering my application.",
+                    "signOff": "Yours sincerely"
                   },
                   "generationNotes": {
-                    "assumptionsMade": [
-                      "Used the selected job details and Alex Taylor's seeded profile to tailor the documents.",
-                      "Kept the tone professional and suitable for a UK software developer application."
-                    ],
+                    "assumptionsMade": [],
                     "missingInformation": [],
-                    "tailoringSummary": "Emphasised Java, Spring Boot, Angular, REST APIs, testing and delivery experience for the selected software developer role."
-                  }
+                    "tailoringSummary": "Fixture-generated documents tailored to the governed synthetic Java vacancy."
+                  },
+                  "claims": [
+                    {"claimId":"CLAIM-001","disposition":"REWORDED","evidenceIds":["PROFILE.SKILL.1","JOB.TITLE"],"contentPaths":["/cv/title"],"reviewText":""},
+                    {"claimId":"CLAIM-002","disposition":"SUPPORTED","evidenceIds":["JOB.TITLE"],"contentPaths":["/cv/targetRole"],"reviewText":""},
+                    {"claimId":"CLAIM-003","disposition":"REWORDED","evidenceIds":["PROFILE.SKILL.1","JOB.DESCRIPTION"],"contentPaths":["/cv/personalSummary"],"reviewText":""},
+                    {"claimId":"CLAIM-004","disposition":"REWORDED","evidenceIds":["JOB.TITLE"],"contentPaths":["/coverLetter/title"],"reviewText":""},
+                    {"claimId":"CLAIM-005","disposition":"SUPPORTED","evidenceIds":["JOB.TITLE"],"contentPaths":["/coverLetter/jobTitle"],"reviewText":""},
+                    {"claimId":"CLAIM-006","disposition":"SUPPORTED","evidenceIds":["JOB.COMPANY"],"contentPaths":["/coverLetter/companyName"],"reviewText":""},
+                    {"claimId":"CLAIM-007","disposition":"REWORDED","evidenceIds":["REQUEST.GENERATION_INTENT","JOB.TITLE"],"contentPaths":["/coverLetter/openingParagraph"],"reviewText":""},
+                    {"claimId":"CLAIM-008","disposition":"REWORDED","evidenceIds":["PROFILE.SKILL.1","PROFILE.EMPLOYMENT.1.RESPONSIBILITIES"],"contentPaths":["/coverLetter/bodyParagraphs/0"],"reviewText":""},
+                    {"claimId":"CLAIM-009","disposition":"REWORDED","evidenceIds":["JOB.DESCRIPTION"],"contentPaths":["/coverLetter/bodyParagraphs/1"],"reviewText":""},
+                    {"claimId":"CLAIM-010","disposition":"SUPPORTED","evidenceIds":["JOB.DESCRIPTION"],"contentPaths":["/coverLetter/closingParagraph"],"reviewText":""}
+                  ]
                 }
                 """;
     }
