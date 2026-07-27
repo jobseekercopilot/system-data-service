@@ -49,6 +49,16 @@ the state and identity. `verify` reports per-service results and measurable
 counts. `REGISTRATION_CLEAN`, `EMPTY`, and `PROVIDER_FAILURE` deliberately have
 no seed payload.
 
+Application Tracker uses its closed OpenAPI `3.0.0` boundary. `DEMO_READY`
+sends `schemaVersion`, `scenarioId`, `userId`, and at most 100 constrained
+records to `POST /internal/system-data/v1/application-scenarios`; records do
+not contain an owner or persistence-only fixture field. Each record carries
+the exact CV and cover-letter document ID, family ID, version and SHA-256
+evidence also sent to Document Store. Application reset and verification both use
+`/internal/system-data/v1/application-scenarios/{scenarioId}/owners/{userId}`.
+Consequently `empty-v1` cleanup cannot delete `demo-ready-v1` records even if
+the same service participates in both states.
+
 The legacy `seed` and `reset-and-seed` aliases remain for existing local demo
 scripts. New E2E scenarios should use list/describe/prepare/verify/reset and
 must perform reset in failure cleanup. E2E must not implement database seeding.
@@ -64,7 +74,8 @@ must perform reset in failure cleanup. E2E must not implement database seeding.
    downstream state contracts in E2E-03's minimum stack before claiming
    stack-level readiness.
 
-The current tests mock service-owned internal state contracts. SD-07 adds
-client-side contract tests with deterministic local doubles; actual
-cross-service state persistence remains an E2E-03 dependency and is not claimed
-here.
+The current tests mock service-owned internal state contracts and pin the
+Application Tracker producer artifact and checksum. They prove exact payloads,
+routes, repeatability, failure recovery and owner/scenario isolation. Actual
+cross-service state persistence remains an APP-16/E2E-03 dependency and is not
+claimed here.

@@ -91,6 +91,18 @@ non-redistributable, non-runtime review record. Tests cover fail-closed modes,
 unsafe URLs and profiles, bounds, overwrite, traversal, containment, and
 symlink paths without making a provider call.
 
+APP-11-D1 pins Application Tracker OpenAPI `3.0.0` from merged producer commit
+`a217182` and replaces the bare application array plus owner-wide legacy routes.
+System Data now sends the closed `2.0.0` owner/scenario envelope with exact
+immutable CV and cover-letter family, version and checksum evidence; reset and
+verify share the producer-owned scoped route. Contract checksums and negative
+policy tests detect schema, security, ownership, document-evidence, operation
+and legacy-route drift. Local orchestration tests preserve all nine
+deterministic IDs, timestamps and status counts, prove application references
+match the seeded documents, cover repeated lifecycle operations and isolated
+empty-state cleanup, and make contract rejection/unavailability recoverable
+without exposing transport details.
+
 ## Findings and dependencies
 
 | Issue | Finding | Severity / priority | Dependency | Beta blocker |
@@ -105,6 +117,7 @@ symlink paths without making a provider call.
 | SD-08 | Upgrade the managed Jackson BOM to resolve three Medium findings | Medium / P2 | SD-01 | No — resolved by Jackson 2.21.5 |
 | SD-09 | Authenticate service-owned named-state operations | High / P1 | SD-03/07 | Yes — downstream credential contract fixed locally; stack proof remains E2E-03 |
 | SD-10 | Fail closed when the history secret scan cannot inspect commits | High / P1 | None | Yes — complete |
+| APP-11-D1 | Consume Application Tracker OpenAPI 3.0.0 / seed envelope 2.0.0 | Critical / P0 | APP-11 producer commit `a217182`; APP-16 stack proof | Yes — repository implementation complete; integrated proof remains |
 
 ## Definition of Done
 

@@ -9,6 +9,7 @@ import com.jobseekercopilot.systemdata.model.EnvironmentServiceResult;
 import com.jobseekercopilot.systemdata.model.EnvironmentSummary;
 import com.jobseekercopilot.systemdata.model.NamedStateDefinition;
 import com.jobseekercopilot.systemdata.model.NamedStateIdentity;
+import com.jobseekercopilot.systemdata.model.SystemDataApplicationSeedRequest;
 import com.jobseekercopilot.systemdata.util.DeterministicIds;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 @Service
@@ -167,7 +169,7 @@ public class EnvironmentOrchestrationService {
             switch (component) {
                 case "PAYMENT" -> operations.add(operation("payment-service", () -> delete("payment-service", targets.getPayment() + "/internal/system-data/scenario/" + scenarioId + "/payments/" + userId)));
                 case "DOCUMENTS" -> operations.add(operation("document-store-service", () -> delete("document-store-service", targets.getDocumentStore() + "/internal/system-data/scenario/" + scenarioId + "/documents/" + userId)));
-                case "APPLICATIONS" -> operations.add(operation("application-tracker-service", () -> delete("application-tracker-service", targets.getApplicationTracker() + "/internal/system-data/scenario/" + scenarioId + "/applications/" + userId)));
+                case "APPLICATIONS" -> operations.add(operation("application-tracker-service", () -> delete("application-tracker-service", applicationScenarioUrl(targets.getApplicationTracker(), scenarioId, userId))));
                 case "USER_PROFILE" -> operations.add(operation("user-profile-service", () -> delete("user-profile-service", targets.getUserProfile() + "/internal/system-data/scenario/" + scenarioId + "/profiles/" + userId)));
                 case "AUTHENTICATION" -> operations.add(operation("authentication-service", () -> delete("authentication-service", targets.getAuthentication() + "/internal/system-data/scenario/" + scenarioId + "/users/" + userId)));
                 default -> throw new IllegalStateException("Unsupported named-state component");
@@ -197,7 +199,14 @@ public class EnvironmentOrchestrationService {
                 operation("user-profile-service", () -> post("user-profile-service", targets.getUserProfile() + "/internal/system-data/seed/profiles/" + scenario.userId(), scenario.profile())),
                 operation("payment-service", () -> post("payment-service", targets.getPayment() + "/internal/system-data/seed/payments", scenario.payment())),
                 operation("document-store-service", () -> post("document-store-service", targets.getDocumentStore() + "/internal/system-data/seed/documents", scenario.documents())),
-                operation("application-tracker-service", () -> post("application-tracker-service", targets.getApplicationTracker() + "/internal/system-data/seed/applications", scenario.applications()))));
+                operation("application-tracker-service", () -> post(
+                        "application-tracker-service",
+                        targets.getApplicationTracker() + "/internal/system-data/v1/application-scenarios",
+                        new SystemDataApplicationSeedRequest(
+                                SystemDataApplicationSeedRequest.SCHEMA_VERSION,
+                                scenario.scenarioId(),
+                                UUID.fromString(scenario.userId()),
+                                scenario.applications())))));
     }
 
     private void addSyntheticIdentitySeedOperations(List<DownstreamOperation> operations, String scenarioId,
@@ -280,7 +289,7 @@ public class EnvironmentOrchestrationService {
                 switch (component) {
                     case "AUTHENTICATION" -> operations.add(operation("authentication-service", () -> get("authentication-service", targets.getAuthentication() + "/internal/system-data/verify/users/" + userId)));
                     case "USER_PROFILE" -> operations.add(operation("user-profile-service", () -> get("user-profile-service", targets.getUserProfile() + "/internal/system-data/verify/profiles/" + userId)));
-                    case "APPLICATIONS" -> operations.add(operation("application-tracker-service", () -> get("application-tracker-service", targets.getApplicationTracker() + "/internal/system-data/verify/applications/" + userId)));
+                    case "APPLICATIONS" -> operations.add(operation("application-tracker-service", () -> get("application-tracker-service", applicationScenarioUrl(targets.getApplicationTracker(), definition.scenarioId(), userId))));
                     case "DOCUMENTS" -> operations.add(operation("document-store-service", () -> get("document-store-service", targets.getDocumentStore() + "/internal/system-data/verify/documents/" + userId)));
                     case "PAYMENT" -> operations.add(operation("payment-service", () -> get("payment-service", targets.getPayment() + "/internal/system-data/verify/payments/" + userId)));
                     default -> throw new IllegalStateException("Unsupported named-state component");
@@ -288,6 +297,11 @@ public class EnvironmentOrchestrationService {
             }
         }
         return executeFailFast(operations);
+    }
+
+    private String applicationScenarioUrl(String baseUrl, String scenarioId, String userId) {
+        return baseUrl + "/internal/system-data/v1/application-scenarios/"
+                + scenarioId + "/owners/" + userId;
     }
 
     private EnvironmentOperationResponse response(String operation, EnvironmentScenario scenario, Instant startedAt, List<EnvironmentServiceResult> services, EnvironmentSummary summary, List<String> warnings) {

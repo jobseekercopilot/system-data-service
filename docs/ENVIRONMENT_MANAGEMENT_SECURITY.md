@@ -44,10 +44,17 @@ to the exact loopback or Compose service names and ports described above.
 ## Identity and mutation boundary
 
 Reset paths are constructed internally from the selected named scenario and
-the fixed synthetic Alex Taylor UUID produced by
-`DemoEnvironmentScenarioBuilder`. A caller cannot provide a user ID, service
-URL, path, database, or delete predicate. Seed bodies use deterministic IDs and
-the same scenario-owned identity. No broad-delete endpoint is invoked.
+its deterministic synthetic identity. A caller cannot provide a user ID,
+service URL, path, database, or delete predicate. Seed bodies use deterministic
+IDs and the same scenario-owned identity. No broad-delete endpoint is invoked.
+
+Application Tracker is additionally constrained by its pinned OpenAPI `3.0.0`
+contract. Its `2.0.0` seed envelope is closed; individual records have no owner
+or fixture-persistence field and must include exact immutable document family,
+version and checksum evidence. Its GET verification and DELETE reset share one
+scenario-and-owner path. The previous bare-array seed, owner-wide verify, and
+legacy reset paths are rejected by repository policy and are not compatibility
+aliases.
 
 ## Atomicity and retry contract
 
@@ -62,7 +69,10 @@ services. Operations therefore use a fail-fast saga-style contract:
 - failure details and internal URLs are not returned to callers;
 - a successful repeated reset is a no-op for already absent scenario records;
 - repeated seed sends byte-identical deterministic scenario payloads to
-  service-owned idempotent seed endpoints.
+  service-owned idempotent seed endpoints;
+- an Application Tracker contract rejection or unavailable producer is reported
+  as a failed downstream phase, after which the same scenario must recover via
+  reset-and-seed and verify.
 
 A failed standalone reset may be retried after the named dependency recovers.
 A failed seed, or any ambiguous client-side timeout, must be recovered by
