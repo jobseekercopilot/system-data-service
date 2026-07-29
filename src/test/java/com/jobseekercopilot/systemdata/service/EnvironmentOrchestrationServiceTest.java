@@ -22,6 +22,7 @@ import com.jobseekercopilot.systemdata.util.DeterministicIds;
 import com.jobseekercopilot.systemdata.util.SemanticVersionValidator;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -46,6 +47,8 @@ class EnvironmentOrchestrationServiceTest {
             "http://localhost:8088/internal/system-data/v1/application-scenarios";
     private static final String DOCUMENT_SEED_URL =
             "http://localhost:8089/internal/system-data/seed/documents";
+    private static final String PAYMENT_SEED_URL =
+            "http://localhost:8099/internal/system-data/seed/payments";
 
     private SystemDataProperties properties;
     private ObjectMapper objectMapper;
@@ -149,6 +152,49 @@ class EnvironmentOrchestrationServiceTest {
         assertThat(dateAchieved)
                 .isEqualTo("2021-06")
                 .matches("[0-9]{4}-[0-9]{2}(?:-[0-9]{2})?");
+        server.verify();
+    }
+
+    @Test
+    void demoReadyPaymentSeedMatchesPublishedLedgerContract() throws Exception {
+        expectSeedSequence();
+        expectSeedSequence();
+
+        var firstResponse = service.seed(request(EnvironmentScenario.DEMO_READY));
+        var secondResponse = service.seed(request(EnvironmentScenario.DEMO_READY));
+
+        assertThat(firstResponse.status()).isEqualTo("SUCCESS");
+        assertThat(secondResponse.status()).isEqualTo("SUCCESS");
+        JsonNode firstPayment = objectMapper.readTree(requestBodies.get(PAYMENT_SEED_URL).get(0));
+        JsonNode secondPayment = objectMapper.readTree(requestBodies.get(PAYMENT_SEED_URL).get(1));
+        JsonNode wallet = firstPayment.path("wallet");
+        assertCanonicalUtcInstant(wallet.path("createdAt"));
+        assertCanonicalUtcInstant(wallet.path("updatedAt"));
+
+        List<JsonNode> firstTransactions = StreamSupport.stream(
+                        firstPayment.path("transactions").spliterator(), false)
+                .toList();
+        assertThat(firstTransactions)
+                .extracting(transaction -> transaction.path("balanceDeltaTokens").asLong())
+                .containsExactly(600_000L, -40_000L, 0L, 8_000L, -35_000L, 0L, 5_000L);
+        firstTransactions.forEach(transaction -> {
+            assertCanonicalUtcInstant(transaction.path("createdAt"));
+            assertThat(transaction.path("balanceDeltaTokens").asLong())
+                    .isEqualTo(transaction.path("balanceAfter").asLong()
+                            - transaction.path("balanceBefore").asLong());
+        });
+
+        List<String> firstOperationIds = firstTransactions.stream()
+                .map(transaction -> transaction.path("operationId").asText())
+                .toList();
+        List<String> secondOperationIds = StreamSupport.stream(
+                        secondPayment.path("transactions").spliterator(), false)
+                .map(transaction -> transaction.path("operationId").asText())
+                .toList();
+        assertThat(firstOperationIds)
+                .allSatisfy(operationId -> assertThat(operationId).isNotBlank())
+                .doesNotHaveDuplicates()
+                .containsExactlyElementsOf(secondOperationIds);
         server.verify();
     }
 
@@ -505,6 +551,12 @@ class EnvironmentOrchestrationServiceTest {
         Iterator<String> fields = node.fieldNames();
         fields.forEachRemaining(names::add);
         return names;
+    }
+
+    private void assertCanonicalUtcInstant(JsonNode timestamp) {
+        String value = timestamp.asText();
+        assertThat(value).endsWith("Z");
+        assertThat(Instant.parse(value).toString()).isEqualTo(value);
     }
 
     private String applicationScenarioUrl(String scenarioId, String userId) {

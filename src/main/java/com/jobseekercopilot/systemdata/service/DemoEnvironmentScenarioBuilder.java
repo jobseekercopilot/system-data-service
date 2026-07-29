@@ -314,8 +314,8 @@ public class DemoEnvironmentScenarioBuilder {
                         "lifetimeSpentTokens", spent,
                         "lifetimeRefundedTokens", 0,
                         "freeTrialGranted", false,
-                        "createdAt", ref.minusDays(23).toString(),
-                        "updatedAt", ref.minusDays(3).plusMinutes(4).toString()),
+                        "createdAt", utcTimestamp(ref.minusDays(23)),
+                        "updatedAt", utcTimestamp(ref.minusDays(3).plusMinutes(4))),
                 "transactions", transactions,
                 "reservations", List.of());
     }
@@ -327,12 +327,18 @@ public class DemoEnvironmentScenarioBuilder {
                 "walletId", walletId.toString(),
                 "transactionType", type,
                 "tokenAmount", amount,
+                "balanceDeltaTokens", Math.subtractExact(after, before),
                 "balanceBefore", before,
                 "balanceAfter", after,
+                "operationId", DeterministicIds.uuidString(SCENARIO_ID + ":payment-operation:" + key),
                 "description", description,
                 "referenceType", referenceType,
                 "referenceId", referenceId,
-                "createdAt", createdAt.toString());
+                "createdAt", utcTimestamp(createdAt));
+    }
+
+    private String utcTimestamp(LocalDateTime value) {
+        return value.toInstant(ZoneOffset.UTC).toString();
     }
 
     private String slug(String value) {
