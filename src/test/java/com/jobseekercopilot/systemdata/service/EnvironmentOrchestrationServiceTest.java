@@ -54,6 +54,8 @@ import org.w3c.dom.NodeList;
 
 class EnvironmentOrchestrationServiceTest {
     private static final String USER_ID = new DemoEnvironmentScenarioBuilder().demoUserId();
+    private static final String AUTHENTICATION_SEED_URL =
+            "http://localhost:8084/internal/system-data/seed/user";
     private static final String APPLICATION_SEED_URL =
             "http://localhost:8088/internal/system-data/v1/application-scenarios";
     private static final String DOCUMENT_SEED_URL =
@@ -144,6 +146,20 @@ class EnvironmentOrchestrationServiceTest {
                 "DOCUMENTS_GENERATED", 3,
                 "UNSUCCESSFUL", 1,
                 "WITHDRAWN", 1));
+        server.verify();
+    }
+
+    @Test
+    void demoReadyUsesThePublishedNamedStateCredential() throws Exception {
+        expectSeedSequence();
+
+        var response = service.seed(request(EnvironmentScenario.DEMO_READY));
+
+        assertThat(response.status()).isEqualTo("SUCCESS");
+        JsonNode authenticationSeed =
+                objectMapper.readTree(requestBodies.get(AUTHENTICATION_SEED_URL).get(0));
+        assertThat(authenticationSeed.path("password").asText())
+                .isEqualTo("PublicTestPassword123!");
         server.verify();
     }
 
@@ -377,7 +393,7 @@ class EnvironmentOrchestrationServiceTest {
 
     @Test
     void downstreamSeedFailureStopsRemainingWritesAndRequiresResetAndSeedRetry() {
-        expectSuccess(POST, "http://localhost:8084/internal/system-data/seed/user", "authentication-service", "SEED");
+        expectSuccess(POST, AUTHENTICATION_SEED_URL, "authentication-service", "SEED");
         server.expect(requestTo("http://localhost:8085/internal/system-data/seed/profiles/" + USER_ID))
                 .andExpect(method(POST))
                 .andRespond(withServerError());
@@ -521,7 +537,7 @@ class EnvironmentOrchestrationServiceTest {
             String userId = identity.userId(definition.scenarioId());
             for (String component : identity.seedComponents()) {
                 if ("AUTHENTICATION".equals(component)) {
-                    expectSuccess(POST, "http://localhost:8084/internal/system-data/seed/user", "authentication-service", "SEED");
+                    expectSuccess(POST, AUTHENTICATION_SEED_URL, "authentication-service", "SEED");
                 } else if ("USER_PROFILE".equals(component)) {
                     expectSuccess(POST, "http://localhost:8085/internal/system-data/seed/profiles/" + userId, "user-profile-service", "SEED");
                 }
@@ -590,7 +606,7 @@ class EnvironmentOrchestrationServiceTest {
     }
 
     private void expectSeedBeforeApplications() {
-        expectSuccess(POST, "http://localhost:8084/internal/system-data/seed/user", "authentication-service", "SEED");
+        expectSuccess(POST, AUTHENTICATION_SEED_URL, "authentication-service", "SEED");
         expectSuccess(POST, "http://localhost:8085/internal/system-data/seed/profiles/" + USER_ID, "user-profile-service", "SEED");
         expectSuccess(POST, "http://localhost:8099/internal/system-data/seed/payments", "payment-service", "SEED");
         expectSuccess(POST, "http://localhost:8089/internal/system-data/seed/documents", "document-store-service", "SEED");

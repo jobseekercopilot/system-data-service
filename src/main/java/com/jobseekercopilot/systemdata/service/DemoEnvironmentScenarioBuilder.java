@@ -31,6 +31,7 @@ public class DemoEnvironmentScenarioBuilder {
     private static final String SCENARIO_ID = "demo-ready-v1";
     private static final String USER_ID = DeterministicIds.uuidString(SCENARIO_ID + ":alex-taylor:user");
     private static final String EMAIL = "alex.taylor92@example.com";
+    private static final String PUBLIC_NAMED_STATE_PASSWORD = "PublicTestPassword123!";
     private static final String DOCX_MIME_TYPE =
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     private static final long FIXED_ZIP_ENTRY_TIME_MILLIS = 315_532_800_000L;
@@ -140,7 +141,7 @@ public class DemoEnvironmentScenarioBuilder {
                 "userId", USER_ID,
                 "name", "Alex Taylor",
                 "email", EMAIL,
-                "password", "Password123!",
+                "password", PUBLIC_NAMED_STATE_PASSWORD,
                 "createdAt", createdAt.toString());
     }
 
