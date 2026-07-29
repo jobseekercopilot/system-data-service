@@ -134,6 +134,25 @@ class EnvironmentOrchestrationServiceTest {
     }
 
     @Test
+    void demoReadyProfileSeedUsesPublishedProfileDatePrecision() throws Exception {
+        expectSeedSequence();
+
+        var response = service.seed(request(EnvironmentScenario.DEMO_READY));
+
+        assertThat(response.status()).isEqualTo("SUCCESS");
+        String profileSeedUrl =
+                "http://localhost:8085/internal/system-data/seed/profiles/" + USER_ID;
+        JsonNode profile = objectMapper.readTree(requestBodies.get(profileSeedUrl).get(0));
+        JsonNode qualifications = profile.path("qualifications");
+        assertThat(qualifications).hasSize(1);
+        String dateAchieved = qualifications.get(0).path("dateAchieved").asText();
+        assertThat(dateAchieved)
+                .isEqualTo("2021-06")
+                .matches("[0-9]{4}-[0-9]{2}(?:-[0-9]{2})?");
+        server.verify();
+    }
+
+    @Test
     void emptyStateClearsOnlyItsOwnApplicationScenarioAndOwnerBoundary() {
         NamedStateDefinition definition = new NamedStateRegistry(objectMapper).require(EnvironmentScenario.EMPTY);
         NamedStateIdentity identity = definition.identities().get(0);

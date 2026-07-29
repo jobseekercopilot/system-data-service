@@ -126,7 +126,7 @@ public class DemoEnvironmentScenarioBuilder {
                         "issuingBody", "University of Birmingham",
                         "status", "COMPLETED",
                         "grade", "2:1",
-                        "dateAchieved", "2021",
+                        "dateAchieved", "2021-06",
                         "expectedCompletion", null)),
                 "roles", List.of(
                         map("jobTitle", "Software Developer", "employer", "BrightTech Solutions", "status", "CURRENT", "startDate", "2021-07", "endDate", null,
