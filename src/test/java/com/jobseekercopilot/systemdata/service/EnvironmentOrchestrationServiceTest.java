@@ -20,17 +20,24 @@ import com.jobseekercopilot.systemdata.model.NamedStateIdentity;
 import com.jobseekercopilot.systemdata.util.ChecksumUtil;
 import com.jobseekercopilot.systemdata.util.DeterministicIds;
 import com.jobseekercopilot.systemdata.util.SemanticVersionValidator;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,6 +48,9 @@ import org.springframework.mock.env.MockEnvironment;
 import org.springframework.mock.http.client.MockClientHttpRequest;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 class EnvironmentOrchestrationServiceTest {
     private static final String USER_ID = new DemoEnvironmentScenarioBuilder().demoUserId();
@@ -241,6 +251,65 @@ class EnvironmentOrchestrationServiceTest {
                         Collectors.counting()));
         assertThat(currentByFamily.keySet()).containsExactlyInAnyOrderElementsOf(documentFamilies);
         assertThat(currentByFamily.values()).allMatch(count -> count == 1L);
+        server.verify();
+    }
+
+    @Test
+    void demoReadyDocumentSeedEmitsDeterministicSafeUploadedDocx() throws Exception {
+        expectSeedSequence();
+        expectSeedSequence();
+
+        var firstResponse = service.seed(request(EnvironmentScenario.DEMO_READY));
+        var secondResponse = service.seed(request(EnvironmentScenario.DEMO_READY));
+
+        assertThat(firstResponse.status()).isEqualTo("SUCCESS");
+        assertThat(secondResponse.status()).isEqualTo("SUCCESS");
+        JsonNode firstSeed = objectMapper.readTree(requestBodies.get(DOCUMENT_SEED_URL).get(0));
+        JsonNode secondSeed = objectMapper.readTree(requestBodies.get(DOCUMENT_SEED_URL).get(1));
+        JsonNode firstFiles = firstSeed.path("files");
+        JsonNode secondFiles = secondSeed.path("files");
+        assertThat(firstFiles).isEqualTo(secondFiles);
+
+        List<JsonNode> files = StreamSupport.stream(firstFiles.spliterator(), false).toList();
+        List<JsonNode> uploadedFiles = files.stream()
+                .filter(file -> "USER_UPLOADED".equals(file.path("source").asText()))
+                .toList();
+        assertThat(uploadedFiles).hasSize(1);
+        JsonNode uploaded = uploadedFiles.get(0);
+        assertThat(uploaded.path("fileType").asText()).isEqualTo("DOCX");
+        assertThat(uploaded.path("mimeType").asText()).isEqualTo(
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        assertThat(uploaded.path("fileName").asText()).endsWith(".docx");
+
+        byte[] uploadedContent = Base64.getDecoder().decode(uploaded.path("fileContent").asText());
+        byte[] repeatedContent = Base64.getDecoder().decode(
+                StreamSupport.stream(secondFiles.spliterator(), false)
+                        .filter(file -> "USER_UPLOADED".equals(file.path("source").asText()))
+                        .findFirst()
+                        .orElseThrow()
+                        .path("fileContent")
+                        .asText());
+        assertThat(uploadedContent)
+                .isEqualTo(repeatedContent)
+                .startsWith((byte) 'P', (byte) 'K', (byte) 3, (byte) 4);
+
+        Map<String, byte[]> entries = readDocxEntries(uploadedContent);
+        assertThat(entries.keySet()).containsExactly(
+                "[Content_Types].xml",
+                "_rels/.rels",
+                "word/document.xml");
+        assertSafeDocxXml(entries);
+
+        List<JsonNode> generatedFiles = files.stream()
+                .filter(file -> "GENERATED".equals(file.path("source").asText()))
+                .toList();
+        assertThat(generatedFiles).hasSize(18).allSatisfy(file -> {
+            assertThat(file.path("fileType").asText()).isEqualTo("PDF");
+            assertThat(file.path("mimeType").asText()).isEqualTo("application/pdf");
+            assertThat(file.path("fileName").asText()).endsWith(".pdf");
+            assertThat(Base64.getDecoder().decode(file.path("fileContent").asText()))
+                    .startsWith("%PDF-".getBytes(StandardCharsets.US_ASCII));
+        });
         server.verify();
     }
 
@@ -609,6 +678,74 @@ class EnvironmentOrchestrationServiceTest {
         String value = timestamp.asText();
         assertThat(value).isNotBlank();
         assertThat(LocalDateTime.parse(value).toString()).isEqualTo(value);
+    }
+
+    private Map<String, byte[]> readDocxEntries(byte[] content) throws Exception {
+        Map<String, byte[]> entries = new LinkedHashMap<>();
+        try (ZipInputStream zip =
+                new ZipInputStream(new ByteArrayInputStream(content), StandardCharsets.UTF_8)) {
+            ZipEntry entry;
+            while ((entry = zip.getNextEntry()) != null) {
+                String name = entry.getName();
+                assertThat(name)
+                        .doesNotStartWith("/")
+                        .doesNotContain("\\", "../", "/../", "\0");
+                ByteArrayOutputStream entryContent = new ByteArrayOutputStream();
+                zip.transferTo(entryContent);
+                assertThat(entries.put(name, entryContent.toByteArray())).isNull();
+                zip.closeEntry();
+            }
+        }
+        return entries;
+    }
+
+    private void assertSafeDocxXml(Map<String, byte[]> entries) throws Exception {
+        Document contentTypes = parseSafeXml(entries.get("[Content_Types].xml"));
+        assertThat(contentTypes.getDocumentElement().getLocalName()).isEqualTo("Types");
+        NodeList overrides = contentTypes.getElementsByTagNameNS("*", "Override");
+        boolean hasMainDocument = false;
+        for (int index = 0; index < overrides.getLength(); index++) {
+            Element override = (Element) overrides.item(index);
+            String contentType = override.getAttribute("ContentType");
+            assertThat(contentType.toLowerCase())
+                    .doesNotContain("macroenabled", "activex", "oleobject");
+            if ("/word/document.xml".equals(override.getAttribute("PartName"))
+                    && "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"
+                            .equals(contentType)) {
+                hasMainDocument = true;
+            }
+        }
+        assertThat(hasMainDocument).isTrue();
+
+        Document relationships = parseSafeXml(entries.get("_rels/.rels"));
+        NodeList relationshipNodes =
+                relationships.getElementsByTagNameNS("*", "Relationship");
+        assertThat(relationshipNodes.getLength()).isEqualTo(1);
+        Element relationship = (Element) relationshipNodes.item(0);
+        assertThat(relationship.getAttribute("Target")).isEqualTo("word/document.xml");
+        assertThat(relationship.getAttribute("TargetMode"))
+                .doesNotContainIgnoringCase("external");
+
+        Document document = parseSafeXml(entries.get("word/document.xml"));
+        assertThat(document.getDocumentElement().getLocalName()).isEqualTo("document");
+        assertThat(document.getElementsByTagNameNS("*", "altChunk").getLength()).isZero();
+        assertThat(document.getElementsByTagNameNS("*", "object").getLength()).isZero();
+        assertThat(document.getElementsByTagNameNS("*", "control").getLength()).isZero();
+        assertThat(document.getDocumentElement().getTextContent())
+                .contains("Alex Taylor revised CV");
+    }
+
+    private Document parseSafeXml(byte[] content) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        factory.setXIncludeAware(false);
+        factory.setExpandEntityReferences(false);
+        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+        return factory.newDocumentBuilder().parse(new ByteArrayInputStream(content));
     }
 
     private String applicationScenarioUrl(String scenarioId, String userId) {
