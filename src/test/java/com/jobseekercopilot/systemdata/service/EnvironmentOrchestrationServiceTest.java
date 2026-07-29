@@ -23,6 +23,7 @@ import com.jobseekercopilot.systemdata.util.SemanticVersionValidator;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -195,6 +196,51 @@ class EnvironmentOrchestrationServiceTest {
                 .allSatisfy(operationId -> assertThat(operationId).isNotBlank())
                 .doesNotHaveDuplicates()
                 .containsExactlyElementsOf(secondOperationIds);
+        server.verify();
+    }
+
+    @Test
+    void demoReadyDocumentSeedCarriesStableOwnerApprovalAudit() throws Exception {
+        expectSeedSequence();
+        expectSeedSequence();
+
+        var firstResponse = service.seed(request(EnvironmentScenario.DEMO_READY));
+        var secondResponse = service.seed(request(EnvironmentScenario.DEMO_READY));
+
+        assertThat(firstResponse.status()).isEqualTo("SUCCESS");
+        assertThat(secondResponse.status()).isEqualTo("SUCCESS");
+        JsonNode firstSeed = objectMapper.readTree(requestBodies.get(DOCUMENT_SEED_URL).get(0));
+        JsonNode secondSeed = objectMapper.readTree(requestBodies.get(DOCUMENT_SEED_URL).get(1));
+        JsonNode firstDocumentPayload = firstSeed.path("documents");
+        assertThat(firstDocumentPayload).isEqualTo(secondSeed.path("documents"));
+
+        List<JsonNode> documents =
+                StreamSupport.stream(firstDocumentPayload.spliterator(), false).toList();
+        assertThat(documents).hasSize(19).allSatisfy(document -> {
+            assertThat(document.path("lifecycleState").asText()).isEqualTo("APPROVED");
+            assertThat(document.path("approvedBy").asText())
+                    .isEqualTo(firstSeed.path("userId").asText())
+                    .isEqualTo(document.path("userId").asText());
+            assertCanonicalLocalDateTime(document.path("approvedAt"));
+            assertThat(document.path("approvedAt").asText())
+                    .isEqualTo(document.path("createdAt").asText());
+            if (document.path("active").asBoolean()) {
+                assertThat(document.path("lifecycleState").asText()).isEqualTo("APPROVED");
+            }
+        });
+
+        List<String> documentFamilies = documents.stream()
+                .map(document -> document.path("documentFamilyId").asText())
+                .distinct()
+                .toList();
+        Map<String, Long> currentByFamily = documents.stream()
+                .filter(document -> document.path("active").asBoolean())
+                .collect(Collectors.groupingBy(
+                        document -> document.path("documentFamilyId").asText(),
+                        LinkedHashMap::new,
+                        Collectors.counting()));
+        assertThat(currentByFamily.keySet()).containsExactlyInAnyOrderElementsOf(documentFamilies);
+        assertThat(currentByFamily.values()).allMatch(count -> count == 1L);
         server.verify();
     }
 
@@ -557,6 +603,12 @@ class EnvironmentOrchestrationServiceTest {
         String value = timestamp.asText();
         assertThat(value).endsWith("Z");
         assertThat(Instant.parse(value).toString()).isEqualTo(value);
+    }
+
+    private void assertCanonicalLocalDateTime(JsonNode timestamp) {
+        String value = timestamp.asText();
+        assertThat(value).isNotBlank();
+        assertThat(LocalDateTime.parse(value).toString()).isEqualTo(value);
     }
 
     private String applicationScenarioUrl(String scenarioId, String userId) {

@@ -263,6 +263,8 @@ public class DemoEnvironmentScenarioBuilder {
                 "version", version,
                 "active", active,
                 "lifecycleState", "APPROVED",
+                "approvedAt", createdAt.toString(),
+                "approvedBy", USER_ID,
                 "contentSha256", CHECKSUM.sha256(content),
                 "originalFilename", null,
                 "sourceType", sourceType,
