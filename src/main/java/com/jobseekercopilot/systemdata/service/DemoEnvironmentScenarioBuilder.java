@@ -7,6 +7,8 @@ import com.jobseekercopilot.systemdata.util.ChecksumUtil;
 import com.jobseekercopilot.systemdata.util.DeterministicIds;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -20,12 +22,44 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.zip.CRC32;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Service
 public class DemoEnvironmentScenarioBuilder {
     private static final String SCENARIO_ID = "demo-ready-v1";
     private static final String USER_ID = DeterministicIds.uuidString(SCENARIO_ID + ":alex-taylor:user");
     private static final String EMAIL = "alex.taylor92@example.com";
+    private static final String PUBLIC_NAMED_STATE_PASSWORD = "PublicTestPassword123!";
+    private static final String DOCX_MIME_TYPE =
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    private static final long FIXED_ZIP_ENTRY_TIME_MILLIS = 315_532_800_000L;
+    private static final String DOCX_CONTENT_TYPES = """
+            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+            <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+              <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+              <Default Extension="xml" ContentType="application/xml"/>
+              <Override PartName="/word/document.xml"
+                ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+            </Types>
+            """;
+    private static final String DOCX_PACKAGE_RELATIONSHIPS = """
+            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+              <Relationship Id="rId1"
+                Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"
+                Target="word/document.xml"/>
+            </Relationships>
+            """;
+    private static final String DOCX_DOCUMENT = """
+            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+            <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+              <w:body>
+                <w:p><w:r><w:t>Alex Taylor revised CV</w:t></w:r></w:p>
+              </w:body>
+            </w:document>
+            """;
     private static final ChecksumUtil CHECKSUM = new ChecksumUtil();
 
     public DemoEnvironmentScenario build(JobDataset dataset, Instant referenceDate) {
@@ -107,7 +141,7 @@ public class DemoEnvironmentScenarioBuilder {
                 "userId", USER_ID,
                 "name", "Alex Taylor",
                 "email", EMAIL,
-                "password", "Password123!",
+                "password", PUBLIC_NAMED_STATE_PASSWORD,
                 "createdAt", createdAt.toString());
     }
 
@@ -126,7 +160,7 @@ public class DemoEnvironmentScenarioBuilder {
                         "issuingBody", "University of Birmingham",
                         "status", "COMPLETED",
                         "grade", "2:1",
-                        "dateAchieved", "2021",
+                        "dateAchieved", "2021-06",
                         "expectedCompletion", null)),
                 "roles", List.of(
                         map("jobTitle", "Software Developer", "employer", "BrightTech Solutions", "status", "CURRENT", "startDate", "2021-07", "endDate", null,
@@ -205,7 +239,7 @@ public class DemoEnvironmentScenarioBuilder {
                     2,
                     true,
                     "UPLOADED"));
-            files.add(file(docId, "alex-taylor-" + slug(job.companyName()) + "-cv-revised.pdf", ref.minusDays(6), "USER_UPLOADED"));
+            files.add(file(docId, "alex-taylor-" + slug(job.companyName()) + "-cv-revised.docx", ref.minusDays(6), "USER_UPLOADED"));
         }
         return map("scenarioId", SCENARIO_ID, "userId", USER_ID, "documents", docs, "files", files);
     }
@@ -263,6 +297,8 @@ public class DemoEnvironmentScenarioBuilder {
                 "version", version,
                 "active", active,
                 "lifecycleState", "APPROVED",
+                "approvedAt", createdAt.toString(),
+                "approvedBy", USER_ID,
                 "contentSha256", CHECKSUM.sha256(content),
                 "originalFilename", null,
                 "sourceType", sourceType,
@@ -272,17 +308,53 @@ public class DemoEnvironmentScenarioBuilder {
     }
 
     private Map<String, Object> file(String documentId, String fileName, LocalDateTime createdAt, String source) {
+        boolean userUploaded = "USER_UPLOADED".equals(source);
+        String fileType = userUploaded ? "DOCX" : "PDF";
+        String mimeType = userUploaded ? DOCX_MIME_TYPE : "application/pdf";
+        byte[] content = userUploaded
+                ? minimalSafeDocx()
+                : ("%PDF-1.4\n% Job Seeker Copilot demo fixture\n" + fileName + "\n%%EOF\n")
+                        .getBytes(StandardCharsets.UTF_8);
         return map(
                 "id", DeterministicIds.uuidString(SCENARIO_ID + ":file:" + documentId + ":" + fileName),
                 "generatedDocumentId", documentId,
-                "fileType", "PDF",
+                "fileType", fileType,
                 "fileName", fileName,
-                "mimeType", "application/pdf",
+                "mimeType", mimeType,
                 "source", source,
                 "active", true,
-                "fileContent", Base64.getEncoder().encodeToString(("%PDF-1.4\n% Job Seeker Copilot demo fixture\n" + fileName + "\n%%EOF\n").getBytes(StandardCharsets.UTF_8)),
+                "fileContent", Base64.getEncoder().encodeToString(content),
                 "createdAt", createdAt.toString(),
                 "updatedAt", createdAt.toString());
+    }
+
+    private byte[] minimalSafeDocx() {
+        try (ByteArrayOutputStream output = new ByteArrayOutputStream();
+                ZipOutputStream zip = new ZipOutputStream(output, StandardCharsets.UTF_8)) {
+            writeStoredEntry(zip, "[Content_Types].xml", DOCX_CONTENT_TYPES);
+            writeStoredEntry(zip, "_rels/.rels", DOCX_PACKAGE_RELATIONSHIPS);
+            writeStoredEntry(zip, "word/document.xml", DOCX_DOCUMENT);
+            zip.finish();
+            return output.toByteArray();
+        } catch (IOException exception) {
+            throw new IllegalStateException("Could not create deterministic demo DOCX", exception);
+        }
+    }
+
+    private void writeStoredEntry(ZipOutputStream zip, String name, String value)
+            throws IOException {
+        byte[] content = value.getBytes(StandardCharsets.UTF_8);
+        CRC32 checksum = new CRC32();
+        checksum.update(content);
+        ZipEntry entry = new ZipEntry(name);
+        entry.setMethod(ZipEntry.STORED);
+        entry.setSize(content.length);
+        entry.setCompressedSize(content.length);
+        entry.setCrc(checksum.getValue());
+        entry.setTime(FIXED_ZIP_ENTRY_TIME_MILLIS);
+        zip.putNextEntry(entry);
+        zip.write(content);
+        zip.closeEntry();
     }
 
     private String syntheticDocumentContent(String type, DemoJob job) {
@@ -314,8 +386,8 @@ public class DemoEnvironmentScenarioBuilder {
                         "lifetimeSpentTokens", spent,
                         "lifetimeRefundedTokens", 0,
                         "freeTrialGranted", false,
-                        "createdAt", ref.minusDays(23).toString(),
-                        "updatedAt", ref.minusDays(3).plusMinutes(4).toString()),
+                        "createdAt", utcTimestamp(ref.minusDays(23)),
+                        "updatedAt", utcTimestamp(ref.minusDays(3).plusMinutes(4))),
                 "transactions", transactions,
                 "reservations", List.of());
     }
@@ -327,12 +399,18 @@ public class DemoEnvironmentScenarioBuilder {
                 "walletId", walletId.toString(),
                 "transactionType", type,
                 "tokenAmount", amount,
+                "balanceDeltaTokens", Math.subtractExact(after, before),
                 "balanceBefore", before,
                 "balanceAfter", after,
+                "operationId", DeterministicIds.uuidString(SCENARIO_ID + ":payment-operation:" + key),
                 "description", description,
                 "referenceType", referenceType,
                 "referenceId", referenceId,
-                "createdAt", createdAt.toString());
+                "createdAt", utcTimestamp(createdAt));
+    }
+
+    private String utcTimestamp(LocalDateTime value) {
+        return value.toInstant(ZoneOffset.UTC).toString();
     }
 
     private String slug(String value) {

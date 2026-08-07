@@ -20,15 +20,24 @@ import com.jobseekercopilot.systemdata.model.NamedStateIdentity;
 import com.jobseekercopilot.systemdata.util.ChecksumUtil;
 import com.jobseekercopilot.systemdata.util.DeterministicIds;
 import com.jobseekercopilot.systemdata.util.SemanticVersionValidator;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -39,13 +48,20 @@ import org.springframework.mock.env.MockEnvironment;
 import org.springframework.mock.http.client.MockClientHttpRequest;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 class EnvironmentOrchestrationServiceTest {
     private static final String USER_ID = new DemoEnvironmentScenarioBuilder().demoUserId();
+    private static final String AUTHENTICATION_SEED_URL =
+            "http://localhost:8084/internal/system-data/seed/user";
     private static final String APPLICATION_SEED_URL =
             "http://localhost:8088/internal/system-data/v1/application-scenarios";
     private static final String DOCUMENT_SEED_URL =
             "http://localhost:8089/internal/system-data/seed/documents";
+    private static final String PAYMENT_SEED_URL =
+            "http://localhost:8099/internal/system-data/seed/payments";
 
     private SystemDataProperties properties;
     private ObjectMapper objectMapper;
@@ -134,6 +150,186 @@ class EnvironmentOrchestrationServiceTest {
     }
 
     @Test
+    void demoReadyUsesThePublishedNamedStateCredential() throws Exception {
+        expectSeedSequence();
+
+        var response = service.seed(request(EnvironmentScenario.DEMO_READY));
+
+        assertThat(response.status()).isEqualTo("SUCCESS");
+        JsonNode authenticationSeed =
+                objectMapper.readTree(requestBodies.get(AUTHENTICATION_SEED_URL).get(0));
+        assertThat(authenticationSeed.path("password").asText())
+                .isEqualTo("PublicTestPassword123!");
+        server.verify();
+    }
+
+    @Test
+    void demoReadyProfileSeedUsesPublishedProfileDatePrecision() throws Exception {
+        expectSeedSequence();
+
+        var response = service.seed(request(EnvironmentScenario.DEMO_READY));
+
+        assertThat(response.status()).isEqualTo("SUCCESS");
+        String profileSeedUrl =
+                "http://localhost:8085/internal/system-data/seed/profiles/" + USER_ID;
+        JsonNode profile = objectMapper.readTree(requestBodies.get(profileSeedUrl).get(0));
+        JsonNode qualifications = profile.path("qualifications");
+        assertThat(qualifications).hasSize(1);
+        String dateAchieved = qualifications.get(0).path("dateAchieved").asText();
+        assertThat(dateAchieved)
+                .isEqualTo("2021-06")
+                .matches("[0-9]{4}-[0-9]{2}(?:-[0-9]{2})?");
+        server.verify();
+    }
+
+    @Test
+    void demoReadyPaymentSeedMatchesPublishedLedgerContract() throws Exception {
+        expectSeedSequence();
+        expectSeedSequence();
+
+        var firstResponse = service.seed(request(EnvironmentScenario.DEMO_READY));
+        var secondResponse = service.seed(request(EnvironmentScenario.DEMO_READY));
+
+        assertThat(firstResponse.status()).isEqualTo("SUCCESS");
+        assertThat(secondResponse.status()).isEqualTo("SUCCESS");
+        JsonNode firstPayment = objectMapper.readTree(requestBodies.get(PAYMENT_SEED_URL).get(0));
+        JsonNode secondPayment = objectMapper.readTree(requestBodies.get(PAYMENT_SEED_URL).get(1));
+        JsonNode wallet = firstPayment.path("wallet");
+        assertCanonicalUtcInstant(wallet.path("createdAt"));
+        assertCanonicalUtcInstant(wallet.path("updatedAt"));
+
+        List<JsonNode> firstTransactions = StreamSupport.stream(
+                        firstPayment.path("transactions").spliterator(), false)
+                .toList();
+        assertThat(firstTransactions)
+                .extracting(transaction -> transaction.path("balanceDeltaTokens").asLong())
+                .containsExactly(600_000L, -40_000L, 0L, 8_000L, -35_000L, 0L, 5_000L);
+        firstTransactions.forEach(transaction -> {
+            assertCanonicalUtcInstant(transaction.path("createdAt"));
+            assertThat(transaction.path("balanceDeltaTokens").asLong())
+                    .isEqualTo(transaction.path("balanceAfter").asLong()
+                            - transaction.path("balanceBefore").asLong());
+        });
+
+        List<String> firstOperationIds = firstTransactions.stream()
+                .map(transaction -> transaction.path("operationId").asText())
+                .toList();
+        List<String> secondOperationIds = StreamSupport.stream(
+                        secondPayment.path("transactions").spliterator(), false)
+                .map(transaction -> transaction.path("operationId").asText())
+                .toList();
+        assertThat(firstOperationIds)
+                .allSatisfy(operationId -> assertThat(operationId).isNotBlank())
+                .doesNotHaveDuplicates()
+                .containsExactlyElementsOf(secondOperationIds);
+        server.verify();
+    }
+
+    @Test
+    void demoReadyDocumentSeedCarriesStableOwnerApprovalAudit() throws Exception {
+        expectSeedSequence();
+        expectSeedSequence();
+
+        var firstResponse = service.seed(request(EnvironmentScenario.DEMO_READY));
+        var secondResponse = service.seed(request(EnvironmentScenario.DEMO_READY));
+
+        assertThat(firstResponse.status()).isEqualTo("SUCCESS");
+        assertThat(secondResponse.status()).isEqualTo("SUCCESS");
+        JsonNode firstSeed = objectMapper.readTree(requestBodies.get(DOCUMENT_SEED_URL).get(0));
+        JsonNode secondSeed = objectMapper.readTree(requestBodies.get(DOCUMENT_SEED_URL).get(1));
+        JsonNode firstDocumentPayload = firstSeed.path("documents");
+        assertThat(firstDocumentPayload).isEqualTo(secondSeed.path("documents"));
+
+        List<JsonNode> documents =
+                StreamSupport.stream(firstDocumentPayload.spliterator(), false).toList();
+        assertThat(documents).hasSize(19).allSatisfy(document -> {
+            assertThat(document.path("lifecycleState").asText()).isEqualTo("APPROVED");
+            assertThat(document.path("approvedBy").asText())
+                    .isEqualTo(firstSeed.path("userId").asText())
+                    .isEqualTo(document.path("userId").asText());
+            assertCanonicalLocalDateTime(document.path("approvedAt"));
+            assertThat(document.path("approvedAt").asText())
+                    .isEqualTo(document.path("createdAt").asText());
+            if (document.path("active").asBoolean()) {
+                assertThat(document.path("lifecycleState").asText()).isEqualTo("APPROVED");
+            }
+        });
+
+        List<String> documentFamilies = documents.stream()
+                .map(document -> document.path("documentFamilyId").asText())
+                .distinct()
+                .toList();
+        Map<String, Long> currentByFamily = documents.stream()
+                .filter(document -> document.path("active").asBoolean())
+                .collect(Collectors.groupingBy(
+                        document -> document.path("documentFamilyId").asText(),
+                        LinkedHashMap::new,
+                        Collectors.counting()));
+        assertThat(currentByFamily.keySet()).containsExactlyInAnyOrderElementsOf(documentFamilies);
+        assertThat(currentByFamily.values()).allMatch(count -> count == 1L);
+        server.verify();
+    }
+
+    @Test
+    void demoReadyDocumentSeedEmitsDeterministicSafeUploadedDocx() throws Exception {
+        expectSeedSequence();
+        expectSeedSequence();
+
+        var firstResponse = service.seed(request(EnvironmentScenario.DEMO_READY));
+        var secondResponse = service.seed(request(EnvironmentScenario.DEMO_READY));
+
+        assertThat(firstResponse.status()).isEqualTo("SUCCESS");
+        assertThat(secondResponse.status()).isEqualTo("SUCCESS");
+        JsonNode firstSeed = objectMapper.readTree(requestBodies.get(DOCUMENT_SEED_URL).get(0));
+        JsonNode secondSeed = objectMapper.readTree(requestBodies.get(DOCUMENT_SEED_URL).get(1));
+        JsonNode firstFiles = firstSeed.path("files");
+        JsonNode secondFiles = secondSeed.path("files");
+        assertThat(firstFiles).isEqualTo(secondFiles);
+
+        List<JsonNode> files = StreamSupport.stream(firstFiles.spliterator(), false).toList();
+        List<JsonNode> uploadedFiles = files.stream()
+                .filter(file -> "USER_UPLOADED".equals(file.path("source").asText()))
+                .toList();
+        assertThat(uploadedFiles).hasSize(1);
+        JsonNode uploaded = uploadedFiles.get(0);
+        assertThat(uploaded.path("fileType").asText()).isEqualTo("DOCX");
+        assertThat(uploaded.path("mimeType").asText()).isEqualTo(
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        assertThat(uploaded.path("fileName").asText()).endsWith(".docx");
+
+        byte[] uploadedContent = Base64.getDecoder().decode(uploaded.path("fileContent").asText());
+        byte[] repeatedContent = Base64.getDecoder().decode(
+                StreamSupport.stream(secondFiles.spliterator(), false)
+                        .filter(file -> "USER_UPLOADED".equals(file.path("source").asText()))
+                        .findFirst()
+                        .orElseThrow()
+                        .path("fileContent")
+                        .asText());
+        assertThat(uploadedContent)
+                .isEqualTo(repeatedContent)
+                .startsWith((byte) 'P', (byte) 'K', (byte) 3, (byte) 4);
+
+        Map<String, byte[]> entries = readDocxEntries(uploadedContent);
+        assertThat(entries.keySet()).containsExactly(
+                "[Content_Types].xml",
+                "_rels/.rels",
+                "word/document.xml");
+        assertSafeDocxXml(entries);
+
+        List<JsonNode> generatedFiles = files.stream()
+                .filter(file -> "GENERATED".equals(file.path("source").asText()))
+                .toList();
+        assertThat(generatedFiles).hasSize(18).allSatisfy(file -> {
+            assertThat(file.path("fileType").asText()).isEqualTo("PDF");
+            assertThat(file.path("mimeType").asText()).isEqualTo("application/pdf");
+            assertThat(file.path("fileName").asText()).endsWith(".pdf");
+            assertThat(Base64.getDecoder().decode(file.path("fileContent").asText()))
+                    .startsWith("%PDF-".getBytes(StandardCharsets.US_ASCII));
+        });
+        server.verify();
+    }
+
+    @Test
     void emptyStateClearsOnlyItsOwnApplicationScenarioAndOwnerBoundary() {
         NamedStateDefinition definition = new NamedStateRegistry(objectMapper).require(EnvironmentScenario.EMPTY);
         NamedStateIdentity identity = definition.identities().get(0);
@@ -197,7 +393,7 @@ class EnvironmentOrchestrationServiceTest {
 
     @Test
     void downstreamSeedFailureStopsRemainingWritesAndRequiresResetAndSeedRetry() {
-        expectSuccess(POST, "http://localhost:8084/internal/system-data/seed/user", "authentication-service", "SEED");
+        expectSuccess(POST, AUTHENTICATION_SEED_URL, "authentication-service", "SEED");
         server.expect(requestTo("http://localhost:8085/internal/system-data/seed/profiles/" + USER_ID))
                 .andExpect(method(POST))
                 .andRespond(withServerError());
@@ -341,7 +537,7 @@ class EnvironmentOrchestrationServiceTest {
             String userId = identity.userId(definition.scenarioId());
             for (String component : identity.seedComponents()) {
                 if ("AUTHENTICATION".equals(component)) {
-                    expectSuccess(POST, "http://localhost:8084/internal/system-data/seed/user", "authentication-service", "SEED");
+                    expectSuccess(POST, AUTHENTICATION_SEED_URL, "authentication-service", "SEED");
                 } else if ("USER_PROFILE".equals(component)) {
                     expectSuccess(POST, "http://localhost:8085/internal/system-data/seed/profiles/" + userId, "user-profile-service", "SEED");
                 }
@@ -410,7 +606,7 @@ class EnvironmentOrchestrationServiceTest {
     }
 
     private void expectSeedBeforeApplications() {
-        expectSuccess(POST, "http://localhost:8084/internal/system-data/seed/user", "authentication-service", "SEED");
+        expectSuccess(POST, AUTHENTICATION_SEED_URL, "authentication-service", "SEED");
         expectSuccess(POST, "http://localhost:8085/internal/system-data/seed/profiles/" + USER_ID, "user-profile-service", "SEED");
         expectSuccess(POST, "http://localhost:8099/internal/system-data/seed/payments", "payment-service", "SEED");
         expectSuccess(POST, "http://localhost:8089/internal/system-data/seed/documents", "document-store-service", "SEED");
@@ -486,6 +682,86 @@ class EnvironmentOrchestrationServiceTest {
         Iterator<String> fields = node.fieldNames();
         fields.forEachRemaining(names::add);
         return names;
+    }
+
+    private void assertCanonicalUtcInstant(JsonNode timestamp) {
+        String value = timestamp.asText();
+        assertThat(value).endsWith("Z");
+        assertThat(Instant.parse(value).toString()).isEqualTo(value);
+    }
+
+    private void assertCanonicalLocalDateTime(JsonNode timestamp) {
+        String value = timestamp.asText();
+        assertThat(value).isNotBlank();
+        assertThat(LocalDateTime.parse(value).toString()).isEqualTo(value);
+    }
+
+    private Map<String, byte[]> readDocxEntries(byte[] content) throws Exception {
+        Map<String, byte[]> entries = new LinkedHashMap<>();
+        try (ZipInputStream zip =
+                new ZipInputStream(new ByteArrayInputStream(content), StandardCharsets.UTF_8)) {
+            ZipEntry entry;
+            while ((entry = zip.getNextEntry()) != null) {
+                String name = entry.getName();
+                assertThat(name)
+                        .doesNotStartWith("/")
+                        .doesNotContain("\\", "../", "/../", "\0");
+                ByteArrayOutputStream entryContent = new ByteArrayOutputStream();
+                zip.transferTo(entryContent);
+                assertThat(entries.put(name, entryContent.toByteArray())).isNull();
+                zip.closeEntry();
+            }
+        }
+        return entries;
+    }
+
+    private void assertSafeDocxXml(Map<String, byte[]> entries) throws Exception {
+        Document contentTypes = parseSafeXml(entries.get("[Content_Types].xml"));
+        assertThat(contentTypes.getDocumentElement().getLocalName()).isEqualTo("Types");
+        NodeList overrides = contentTypes.getElementsByTagNameNS("*", "Override");
+        boolean hasMainDocument = false;
+        for (int index = 0; index < overrides.getLength(); index++) {
+            Element override = (Element) overrides.item(index);
+            String contentType = override.getAttribute("ContentType");
+            assertThat(contentType.toLowerCase())
+                    .doesNotContain("macroenabled", "activex", "oleobject");
+            if ("/word/document.xml".equals(override.getAttribute("PartName"))
+                    && "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"
+                            .equals(contentType)) {
+                hasMainDocument = true;
+            }
+        }
+        assertThat(hasMainDocument).isTrue();
+
+        Document relationships = parseSafeXml(entries.get("_rels/.rels"));
+        NodeList relationshipNodes =
+                relationships.getElementsByTagNameNS("*", "Relationship");
+        assertThat(relationshipNodes.getLength()).isEqualTo(1);
+        Element relationship = (Element) relationshipNodes.item(0);
+        assertThat(relationship.getAttribute("Target")).isEqualTo("word/document.xml");
+        assertThat(relationship.getAttribute("TargetMode"))
+                .doesNotContainIgnoringCase("external");
+
+        Document document = parseSafeXml(entries.get("word/document.xml"));
+        assertThat(document.getDocumentElement().getLocalName()).isEqualTo("document");
+        assertThat(document.getElementsByTagNameNS("*", "altChunk").getLength()).isZero();
+        assertThat(document.getElementsByTagNameNS("*", "object").getLength()).isZero();
+        assertThat(document.getElementsByTagNameNS("*", "control").getLength()).isZero();
+        assertThat(document.getDocumentElement().getTextContent())
+                .contains("Alex Taylor revised CV");
+    }
+
+    private Document parseSafeXml(byte[] content) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        factory.setXIncludeAware(false);
+        factory.setExpandEntityReferences(false);
+        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+        return factory.newDocumentBuilder().parse(new ByteArrayInputStream(content));
     }
 
     private String applicationScenarioUrl(String scenarioId, String userId) {
