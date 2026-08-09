@@ -16,6 +16,8 @@
       "title": "Java Software Developer",
       "company": "Northstar Digital Labs",
       "location": "Reading",
+      "latitude": 51.45,
+      "longitude": -0.97,
       "salaryMinimum": 45000,
       "salaryMaximum": 60000,
       "remoteType": "HYBRID",
