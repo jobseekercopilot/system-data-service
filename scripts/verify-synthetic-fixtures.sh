@@ -79,6 +79,7 @@ jq -e '
   and (.jobs | length == 9)
   and ([.jobs[].id] | unique | length == 9)
   and ([.jobs[].externalReference] | unique | length == 9)
+  and ([.jobs[] | select(.latitude != null and .longitude != null)] | length >= 1)
   and all(.jobs[];
     (.id | test("^[0-9a-f-]{36}$"))
     and (.externalReference | startswith("SYNTH-JOB-"))
@@ -89,6 +90,9 @@ jq -e '
     and (.description | ascii_downcase | test("synthetic|fictional"))
     and (.salaryMinimum >= 20000)
     and (.salaryMaximum >= .salaryMinimum)
+    and ((.latitude == null and .longitude == null)
+      or ((.latitude >= -90 and .latitude <= 90)
+        and (.longitude >= -180 and .longitude <= 180)))
     and (.sourceUrl | test("^https://jobs\\.example\\.test/synthetic/SYNTH-JOB-[0-9]{3}$"))
     and .sourceMetadata.fixture == true
     and .sourceMetadata.classification == "FULLY_SYNTHETIC"
