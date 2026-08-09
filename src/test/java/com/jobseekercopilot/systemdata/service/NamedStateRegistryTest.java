@@ -35,7 +35,7 @@ class NamedStateRegistryTest {
                 .getContentAsString(StandardCharsets.UTF_8);
 
         assertThat(new ChecksumUtil().sha256(catalog))
-                .isEqualTo("439b8b2bd834bdfe67b9bf428c4e278dd10df7d8c4c004dcbc9ad1f9d678526f");
+                .isEqualTo("a997a06b735886dcab688e93589b16d1a14294ecbb40e90562a5e08e429bf350");
     }
 
     @Test

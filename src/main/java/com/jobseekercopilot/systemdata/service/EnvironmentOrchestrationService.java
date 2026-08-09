@@ -165,11 +165,19 @@ public class EnvironmentOrchestrationService {
     private void addResetOperations(List<DownstreamOperation> operations, String scenarioId, NamedStateIdentity identity) {
         var targets = properties.getEnvironmentManagement().getTargetServices();
         String userId = identity.userId(scenarioId);
-        for (String component : identity.resetComponents()) {
+        for (String component : List.of(
+                "APPLICATIONS",
+                "DOCUMENTS",
+                "PAYMENT",
+                "USER_PROFILE",
+                "AUTHENTICATION")) {
+            if (!identity.resetComponents().contains(component)) {
+                continue;
+            }
             switch (component) {
-                case "PAYMENT" -> operations.add(operation("payment-service", () -> delete("payment-service", targets.getPayment() + "/internal/system-data/scenario/" + scenarioId + "/payments/" + userId)));
-                case "DOCUMENTS" -> operations.add(operation("document-store-service", () -> delete("document-store-service", targets.getDocumentStore() + "/internal/system-data/scenario/" + scenarioId + "/documents/" + userId)));
-                case "APPLICATIONS" -> operations.add(operation("application-tracker-service", () -> delete("application-tracker-service", applicationScenarioUrl(targets.getApplicationTracker(), scenarioId, userId))));
+                case "APPLICATIONS" -> operations.add(operation("application-tracker-service", () -> delete("application-tracker-service", runtimeOwnerUrl(targets.getApplicationTracker(), scenarioId, identity.key(), userId))));
+                case "DOCUMENTS" -> operations.add(operation("document-store-service", () -> delete("document-store-service", runtimeOwnerUrl(targets.getDocumentStore(), scenarioId, identity.key(), userId))));
+                case "PAYMENT" -> operations.add(operation("payment-service", () -> delete("payment-service", runtimeOwnerUrl(targets.getPayment(), scenarioId, identity.key(), userId))));
                 case "USER_PROFILE" -> operations.add(operation("user-profile-service", () -> delete("user-profile-service", targets.getUserProfile() + "/internal/system-data/scenario/" + scenarioId + "/profiles/" + userId)));
                 case "AUTHENTICATION" -> operations.add(operation("authentication-service", () -> delete("authentication-service", targets.getAuthentication() + "/internal/system-data/scenario/" + scenarioId + "/users/" + userId)));
                 default -> throw new IllegalStateException("Unsupported named-state component");
@@ -289,9 +297,9 @@ public class EnvironmentOrchestrationService {
                 switch (component) {
                     case "AUTHENTICATION" -> operations.add(operation("authentication-service", () -> get("authentication-service", targets.getAuthentication() + "/internal/system-data/verify/users/" + userId)));
                     case "USER_PROFILE" -> operations.add(operation("user-profile-service", () -> get("user-profile-service", targets.getUserProfile() + "/internal/system-data/verify/profiles/" + userId)));
-                    case "APPLICATIONS" -> operations.add(operation("application-tracker-service", () -> get("application-tracker-service", applicationScenarioUrl(targets.getApplicationTracker(), definition.scenarioId(), userId))));
-                    case "DOCUMENTS" -> operations.add(operation("document-store-service", () -> get("document-store-service", targets.getDocumentStore() + "/internal/system-data/verify/documents/" + userId)));
-                    case "PAYMENT" -> operations.add(operation("payment-service", () -> get("payment-service", targets.getPayment() + "/internal/system-data/verify/payments/" + userId)));
+                    case "APPLICATIONS" -> operations.add(operation("application-tracker-service", () -> get("application-tracker-service", runtimeOwnerUrl(targets.getApplicationTracker(), definition.scenarioId(), identity.key(), userId))));
+                    case "DOCUMENTS" -> operations.add(operation("document-store-service", () -> get("document-store-service", runtimeOwnerUrl(targets.getDocumentStore(), definition.scenarioId(), identity.key(), userId))));
+                    case "PAYMENT" -> operations.add(operation("payment-service", () -> get("payment-service", runtimeOwnerUrl(targets.getPayment(), definition.scenarioId(), identity.key(), userId))));
                     default -> throw new IllegalStateException("Unsupported named-state component");
                 }
             }
@@ -299,9 +307,18 @@ public class EnvironmentOrchestrationService {
         return executeFailFast(operations);
     }
 
-    private String applicationScenarioUrl(String baseUrl, String scenarioId, String userId) {
-        return baseUrl + "/internal/system-data/v1/application-scenarios/"
-                + scenarioId + "/owners/" + userId;
+    private String runtimeOwnerUrl(
+            String baseUrl,
+            String scenarioId,
+            String identityKey,
+            String userId) {
+        return baseUrl
+                + "/internal/system-data/v1/runtime-owners/"
+                + scenarioId
+                + "/identities/"
+                + identityKey
+                + "/owners/"
+                + userId;
     }
 
     private EnvironmentOperationResponse response(String operation, EnvironmentScenario scenario, Instant startedAt, List<EnvironmentServiceResult> services, EnvironmentSummary summary, List<String> warnings) {
@@ -465,41 +482,37 @@ public class EnvironmentOrchestrationService {
     private int intDetail(List<EnvironmentServiceResult> services, String serviceName, String key) {
         return services.stream()
                 .filter(result -> serviceName.equals(result.service()))
-                .findFirst()
                 .map(result -> result.details().get(key))
                 .filter(Number.class::isInstance)
                 .map(Number.class::cast)
-                .map(Number::intValue)
-                .orElse(0);
+                .mapToInt(Number::intValue)
+                .sum();
     }
 
     private Long longDetail(List<EnvironmentServiceResult> services, String serviceName, String key) {
         return services.stream()
                 .filter(result -> serviceName.equals(result.service()))
-                .findFirst()
                 .map(result -> result.details().get(key))
                 .filter(Number.class::isInstance)
                 .map(Number.class::cast)
-                .map(Number::longValue)
-                .orElse(0L);
+                .mapToLong(Number::longValue)
+                .sum();
     }
 
     @SuppressWarnings("unchecked")
     private Map<String, Integer> applicationsByStatus(List<EnvironmentServiceResult> services) {
-        Object byStatus = services.stream()
-                .filter(result -> "application-tracker-service".equals(result.service()))
-                .findFirst()
-                .map(result -> result.details().get("byStatus"))
-                .orElse(null);
-        if (!(byStatus instanceof Map<?, ?> rawStatuses)) {
-            return Map.of();
-        }
         Map<String, Integer> statuses = new LinkedHashMap<>();
-        rawStatuses.forEach((key, value) -> {
-            if (value instanceof Number number) {
-                statuses.put(key.toString(), number.intValue());
-            }
-        });
+        services.stream()
+                .filter(result -> "application-tracker-service".equals(result.service()))
+                .map(result -> result.details().get("byStatus"))
+                .filter(Map.class::isInstance)
+                .map(Map.class::cast)
+                .forEach(rawStatuses -> rawStatuses.forEach((key, value) -> {
+                    if (value instanceof Number number) {
+                        statuses.merge(
+                                key.toString(), number.intValue(), Integer::sum);
+                    }
+                }));
         return statuses;
     }
 
