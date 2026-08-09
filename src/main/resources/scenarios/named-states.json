@@ -9,7 +9,7 @@
     "datasetVersion": "1.0.0",
     "referenceDate": "2026-07-10T09:00:00Z",
     "identities": [{"key":"empty-primary","email":"empty.primary@example.com","displayName":"Empty State Tester","resetComponents":["PAYMENT","DOCUMENTS","APPLICATIONS","USER_PROFILE","AUTHENTICATION"],"seedComponents":[]}],
-    "expected": {"users": 0, "profiles": 0}
+    "expected": {"users": 0, "profiles": 0, "applications": 0, "documents": 0, "documentVersions": 0, "ledgerEntries": 0}
   },
   {
     "scenarioId": "registration-clean-v1",
@@ -69,10 +69,10 @@
     "datasetVersion": "1.0.0",
     "referenceDate": "2026-07-10T09:00:00Z",
     "identities": [
-      {"key":"claimant-a","email":"claimant.a@example.com","displayName":"Claimant A","resetComponents":["USER_PROFILE","AUTHENTICATION"],"seedComponents":["AUTHENTICATION","USER_PROFILE"]},
-      {"key":"claimant-b","email":"claimant.b@example.com","displayName":"Claimant B","resetComponents":["USER_PROFILE","AUTHENTICATION"],"seedComponents":["AUTHENTICATION","USER_PROFILE"]}
+      {"key":"claimant-a","email":"claimant.a@example.com","displayName":"Claimant A","resetComponents":["PAYMENT","DOCUMENTS","APPLICATIONS","USER_PROFILE","AUTHENTICATION"],"seedComponents":["AUTHENTICATION","USER_PROFILE"]},
+      {"key":"claimant-b","email":"claimant.b@example.com","displayName":"Claimant B","resetComponents":["PAYMENT","DOCUMENTS","APPLICATIONS","USER_PROFILE","AUTHENTICATION"],"seedComponents":["AUTHENTICATION","USER_PROFILE"]}
     ],
-    "expected": {"users": 2, "profiles": 2}
+    "expected": {"users": 2, "profiles": 2, "applications": 0, "documents": 0, "documentVersions": 0, "ledgerEntries": 0}
   },
   {
     "scenarioId": "provider-failure-v1",

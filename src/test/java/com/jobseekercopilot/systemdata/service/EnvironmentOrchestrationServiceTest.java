@@ -96,9 +96,9 @@ class EnvironmentOrchestrationServiceTest {
     @Test
     void repeatedResetIsBoundedToTheScenarioIdentityAndSafeToRetry() {
         for (int attempt = 0; attempt < 2; attempt++) {
-            expectSuccess(DELETE, "http://localhost:8099/internal/system-data/scenario/demo-ready-v1/payments/" + USER_ID, "payment-service", "RESET");
-            expectSuccess(DELETE, "http://localhost:8089/internal/system-data/scenario/demo-ready-v1/documents/" + USER_ID, "document-store-service", "RESET");
-            expectSuccess(DELETE, applicationScenarioUrl("demo-ready-v1", USER_ID), "application-tracker-service", "RESET");
+            expectSuccess(DELETE, runtimeOwnerUrl("http://localhost:8088", "demo-ready-v1", "alex-taylor", USER_ID), "application-tracker-service", "RESET");
+            expectSuccess(DELETE, runtimeOwnerUrl("http://localhost:8089", "demo-ready-v1", "alex-taylor", USER_ID), "document-store-service", "RESET");
+            expectSuccess(DELETE, runtimeOwnerUrl("http://localhost:8099", "demo-ready-v1", "alex-taylor", USER_ID), "payment-service", "RESET");
             expectSuccess(DELETE, "http://localhost:8085/internal/system-data/scenario/demo-ready-v1/profiles/" + USER_ID, "user-profile-service", "RESET");
             expectSuccess(DELETE, "http://localhost:8084/internal/system-data/scenario/demo-ready-v1/users/" + USER_ID, "authentication-service", "RESET");
         }
@@ -340,14 +340,22 @@ class EnvironmentOrchestrationServiceTest {
         var response = service.reset(request(EnvironmentScenario.EMPTY));
 
         assertThat(response.status()).isEqualTo("SUCCESS");
-        assertThat(applicationScenarioUrl(definition.scenarioId(), emptyUserId))
+        assertThat(runtimeOwnerUrl(
+                "http://localhost:8088",
+                definition.scenarioId(),
+                identity.key(),
+                emptyUserId))
                 .doesNotContain("demo-ready-v1", USER_ID);
         server.verify();
     }
 
     @Test
     void downstreamResetFailureStopsFurtherMutationAndMakesRetryExplicit() {
-        server.expect(requestTo("http://localhost:8099/internal/system-data/scenario/demo-ready-v1/payments/" + USER_ID))
+        server.expect(requestTo(runtimeOwnerUrl(
+                        "http://localhost:8088",
+                        "demo-ready-v1",
+                        "alex-taylor",
+                        USER_ID)))
                 .andExpect(method(DELETE))
                 .andRespond(withServerError());
 
@@ -363,7 +371,11 @@ class EnvironmentOrchestrationServiceTest {
 
     @Test
     void resetAndSeedNeverSeedsAfterIncompleteReset() {
-        server.expect(requestTo("http://localhost:8099/internal/system-data/scenario/demo-ready-v1/payments/" + USER_ID))
+        server.expect(requestTo(runtimeOwnerUrl(
+                        "http://localhost:8088",
+                        "demo-ready-v1",
+                        "alex-taylor",
+                        USER_ID)))
                 .andExpect(method(DELETE))
                 .andRespond(withServerError());
 
@@ -377,7 +389,11 @@ class EnvironmentOrchestrationServiceTest {
 
     @Test
     void redirectResponseCannotEscapeTheValidatedTargetBoundary() {
-        server.expect(requestTo("http://localhost:8099/internal/system-data/scenario/demo-ready-v1/payments/" + USER_ID))
+        server.expect(requestTo(runtimeOwnerUrl(
+                        "http://localhost:8088",
+                        "demo-ready-v1",
+                        "alex-taylor",
+                        USER_ID)))
                 .andExpect(method(DELETE))
                 .andRespond(org.springframework.test.web.client.response.MockRestResponseCreators
                         .withStatus(HttpStatus.FOUND)
@@ -483,6 +499,58 @@ class EnvironmentOrchestrationServiceTest {
     }
 
     @Test
+    void crossUserVerificationFailsWhenEitherSyntheticOwnerHasResidualRuntimeState() {
+        NamedStateDefinition definition = new NamedStateRegistry(
+                new ObjectMapper().findAndRegisterModules())
+                .require(EnvironmentScenario.CROSS_USER_SECURITY);
+        for (NamedStateIdentity identity : definition.identities()) {
+            String userId = identity.userId(definition.scenarioId());
+            expectVerificationResult(
+                    "http://localhost:8084/internal/system-data/verify/users/"
+                            + userId,
+                    "{\"exists\":true}");
+            expectVerificationResult(
+                    "http://localhost:8085/internal/system-data/verify/profiles/"
+                            + userId,
+                    "{\"exists\":true}");
+            expectVerificationResult(
+                    runtimeOwnerUrl(
+                            "http://localhost:8088",
+                            definition.scenarioId(),
+                            identity.key(),
+                            userId),
+                    "{\"applications\":"
+                            + ("claimant-b".equals(identity.key()) ? 1 : 0)
+                            + ",\"byStatus\":{}}");
+            expectVerificationResult(
+                    runtimeOwnerUrl(
+                            "http://localhost:8089",
+                            definition.scenarioId(),
+                            identity.key(),
+                            userId),
+                    "{\"documents\":0,\"documentVersions\":0}");
+            expectVerificationResult(
+                    runtimeOwnerUrl(
+                            "http://localhost:8099",
+                            definition.scenarioId(),
+                            identity.key(),
+                            userId),
+                    "{\"walletExists\":false,\"ledgerEntries\":0,\"balanceTokens\":0}");
+        }
+
+        var response = service.verify(
+                request(EnvironmentScenario.CROSS_USER_SECURITY));
+
+        assertThat(response.status()).isEqualTo("FAILED");
+        assertThat(response.summary().applications()).isEqualTo(1);
+        assertThat(response.services()).last().satisfies(result -> {
+            assertThat(result.service()).isEqualTo("named-state-catalog");
+            assertThat(result.status()).isEqualTo("FAILED");
+        });
+        server.verify();
+    }
+
+    @Test
     void statusDoesNotDiscloseValidatedTargetUrls() {
         Map<String, Object> status = service.status();
 
@@ -548,11 +616,19 @@ class EnvironmentOrchestrationServiceTest {
     private void expectReset(NamedStateDefinition definition) {
         for (NamedStateIdentity identity : definition.identities()) {
             String userId = identity.userId(definition.scenarioId());
-            for (String component : identity.resetComponents()) {
+            for (String component : List.of(
+                    "APPLICATIONS",
+                    "DOCUMENTS",
+                    "PAYMENT",
+                    "USER_PROFILE",
+                    "AUTHENTICATION")) {
+                if (!identity.resetComponents().contains(component)) {
+                    continue;
+                }
                 String url = switch (component) {
-                    case "PAYMENT" -> "http://localhost:8099/internal/system-data/scenario/" + definition.scenarioId() + "/payments/" + userId;
-                    case "DOCUMENTS" -> "http://localhost:8089/internal/system-data/scenario/" + definition.scenarioId() + "/documents/" + userId;
-                    case "APPLICATIONS" -> applicationScenarioUrl(definition.scenarioId(), userId);
+                    case "APPLICATIONS" -> runtimeOwnerUrl("http://localhost:8088", definition.scenarioId(), identity.key(), userId);
+                    case "DOCUMENTS" -> runtimeOwnerUrl("http://localhost:8089", definition.scenarioId(), identity.key(), userId);
+                    case "PAYMENT" -> runtimeOwnerUrl("http://localhost:8099", definition.scenarioId(), identity.key(), userId);
                     case "USER_PROFILE" -> "http://localhost:8085/internal/system-data/scenario/" + definition.scenarioId() + "/profiles/" + userId;
                     case "AUTHENTICATION" -> "http://localhost:8084/internal/system-data/scenario/" + definition.scenarioId() + "/users/" + userId;
                     default -> throw new IllegalStateException(component);
@@ -570,9 +646,9 @@ class EnvironmentOrchestrationServiceTest {
                 String url = switch (component) {
                     case "AUTHENTICATION" -> "http://localhost:8084/internal/system-data/verify/users/" + userId;
                     case "USER_PROFILE" -> "http://localhost:8085/internal/system-data/verify/profiles/" + userId;
-                    case "APPLICATIONS" -> applicationScenarioUrl(definition.scenarioId(), userId);
-                    case "DOCUMENTS" -> "http://localhost:8089/internal/system-data/verify/documents/" + userId;
-                    case "PAYMENT" -> "http://localhost:8099/internal/system-data/verify/payments/" + userId;
+                    case "APPLICATIONS" -> runtimeOwnerUrl("http://localhost:8088", definition.scenarioId(), identity.key(), userId);
+                    case "DOCUMENTS" -> runtimeOwnerUrl("http://localhost:8089", definition.scenarioId(), identity.key(), userId);
+                    case "PAYMENT" -> runtimeOwnerUrl("http://localhost:8099", definition.scenarioId(), identity.key(), userId);
                     default -> throw new IllegalStateException(component);
                 };
                 boolean seeded = identity.seedComponents().contains(component);
@@ -769,6 +845,20 @@ class EnvironmentOrchestrationServiceTest {
                 + scenarioId + "/owners/" + userId;
     }
 
+    private String runtimeOwnerUrl(
+            String baseUrl,
+            String scenarioId,
+            String identityKey,
+            String userId) {
+        return baseUrl
+                + "/internal/system-data/v1/runtime-owners/"
+                + scenarioId
+                + "/identities/"
+                + identityKey
+                + "/owners/"
+                + userId;
+    }
+
     private void expectSuccess(org.springframework.http.HttpMethod method, String url, String serviceName, String operation) {
         server.expect(requestTo(url))
                 .andExpect(method(method))
@@ -781,6 +871,16 @@ class EnvironmentOrchestrationServiceTest {
                 .andRespond(withSuccess(
                         "{\"service\":\"" + serviceName + "\",\"operation\":\"" + operation
                                 + "\",\"status\":\"SUCCESS\",\"recordsAffected\":1}",
+                        MediaType.APPLICATION_JSON));
+    }
+
+    private void expectVerificationResult(String url, String details) {
+        server.expect(requestTo(url))
+                .andExpect(method(GET))
+                .andRespond(withSuccess(
+                        "{\"status\":\"SUCCESS\",\"recordsAffected\":0,\"details\":"
+                                + details
+                                + "}",
                         MediaType.APPLICATION_JSON));
     }
 
