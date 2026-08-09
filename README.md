@@ -1,5 +1,13 @@
 # System Data Service
 
+## Role in Job Seeker Copilot
+
+| Role | Called by | Calls | Data | Local port |
+|---|---|---|---|---:|
+| Non-production owner of versioned synthetic fixtures and named environment states | Provider gateways, E2E/operator | Guarded reset/seed/verify APIs on service owners | Versioned filesystem datasets; no production domain DB | 8103 |
+
+See the central [fixture boundary](https://docs.jobseekercopilot.com/architecture/dependency-maps/), [provider integrations](https://docs.jobseekercopilot.com/services/provider-integrations/), and [local development](https://docs.jobseekercopilot.com/infrastructure/local-development/).
+
 Private, proprietary tooling for deterministic Job Seeker Copilot fixtures and
 explicitly bounded non-production state preparation.
 
