@@ -20,11 +20,12 @@ personal data.
 | State | Versioned ID | Purpose | Seeded scope |
 | --- | --- | --- | --- |
 | `EMPTY` | `empty-v1` | Scenario-owned data is absent | cleanup only |
-| `REGISTRATION_CLEAN` | `registration-clean-v1` | New registration | cleanup only |
+| `REGISTRATION_CLEAN` | `registration-clean-v1` | Alex Taylor new-account product showcase | cleanup across payment, documents, applications, profile and authentication |
 | `LOGIN_SESSION` | `login-session-v1` | Login, reload, expiry and logout | authentication |
 | `PROFILE_LOCATION` | `profile-location-v1` | Profile, location and application-start journeys | authentication and profile seed; application/profile/auth cleanup |
 | `DUPLICATE_REGISTRATION` | `duplicate-registration-v1` | Duplicate-account denial | authentication |
 | `CROSS_USER_SECURITY` | `cross-user-security-v1` | Ownership denial using two claimants | authentication, profile |
+| `REAL_WORLD_PERSONAS` | `real-world-personas-v1` | Seven sparse, typical, rich, stress, CV-led, manual-first and career-change users | authentication and current profile contract |
 | `PROVIDER_FAILURE` | `provider-failure-v1` | Offline all-provider failure | none; deterministic `502` fixture |
 | `DEMO_READY` | `demo-ready-v1` | Existing populated demonstration | full governed demo state |
 
@@ -48,6 +49,14 @@ seed operations must upsert their deterministic IDs, and reset paths name both
 the state and identity. `verify` reports per-service results and measurable
 counts. `REGISTRATION_CLEAN`, `EMPTY`, and `PROVIDER_FAILURE` deliberately have
 no seed payload.
+
+The `REAL_WORLD_PERSONAS` profiles are owned by
+`src/main/resources/personas/personas.json`. They intentionally use only fields
+accepted by the current User Profile contract, include canonical location
+provenance and structured work/commute/availability preferences, and vary from
+three skills/no roles to a plausible 60-skill/seven-role stress profile. Legacy
+roles and qualifications are migrated by User Profile into its versioned
+evidence library; System Data does not write evidence tables directly.
 
 Application Tracker uses its closed OpenAPI `3.0.0` boundary. `DEMO_READY`
 sends `schemaVersion`, `scenarioId`, `userId`, and at most 100 constrained

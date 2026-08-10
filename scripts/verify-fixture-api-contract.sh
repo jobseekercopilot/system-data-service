@@ -23,6 +23,7 @@ jq -e '
     (.paths["/internal/fixtures/jobs/search"].get.operationId == "searchJobs") and
     (.paths["/internal/fixtures/jobs/{jobId}"].get.operationId == "job") and
     (.paths["/internal/fixtures/postcodes/{postcode}"].get.operationId == "postcode") and
+    (.paths["/internal/fixtures/places"].get.operationId == "places") and
     (.paths["/internal/fixtures/llm/respond"].post.operationId == "llm") and
     (.paths["/internal/fixtures/stripe/respond"].post.operationId == "stripe") and
     (

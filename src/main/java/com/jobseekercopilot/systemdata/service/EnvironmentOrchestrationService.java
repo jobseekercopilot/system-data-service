@@ -42,6 +42,7 @@ public class EnvironmentOrchestrationService {
     private final DemoEnvironmentScenarioBuilder scenarioBuilder;
     private final GovernedFixtureValidator fixtureValidator;
     private final NamedStateRegistry stateRegistry;
+    private final PersonaCatalog personaCatalog;
     private final RestTemplate restTemplate;
 
     public EnvironmentOrchestrationService(
@@ -51,6 +52,7 @@ public class EnvironmentOrchestrationService {
             DemoEnvironmentScenarioBuilder scenarioBuilder,
             GovernedFixtureValidator fixtureValidator,
             NamedStateRegistry stateRegistry,
+            PersonaCatalog personaCatalog,
             @Qualifier("environmentManagementRestTemplate") RestTemplate restTemplate) {
         this.properties = properties;
         this.datasetStorageService = datasetStorageService;
@@ -58,6 +60,7 @@ public class EnvironmentOrchestrationService {
         this.scenarioBuilder = scenarioBuilder;
         this.fixtureValidator = fixtureValidator;
         this.stateRegistry = stateRegistry;
+        this.personaCatalog = personaCatalog;
         this.restTemplate = restTemplate;
     }
 
@@ -264,11 +267,13 @@ public class EnvironmentOrchestrationService {
         Map<String, Object> user = map(
                 "scenarioId", scenarioId, "userId", userId, "name", identity.displayName(),
                 "email", identity.email(), "password", "PublicTestPassword123!", "syntheticIdentity", true);
-        Map<String, Object> profile = map(
-                "userId", userId, "skills", List.of("Java", "Testing"),
-                "aspirations", map("targetRoles", List.of("Software Developer"), "targetWeeklyHours", "FULL_TIME"),
-                "workPreferences", map("location", map("postcode", "RG1 1AA", "region", "South East", "adminDistrict", "Reading"), "commuteRange", 25),
-                "qualifications", List.of(), "roles", List.of());
+        Map<String, Object> profile = scenarioId.equals("real-world-personas-v1")
+                ? personaCatalog.profile(identity.key(), userId)
+                : map(
+                        "userId", userId, "skills", List.of("Java", "Testing"),
+                        "aspirations", map("targetRoles", List.of("Software Developer"), "targetWeeklyHours", "FULL_TIME"),
+                        "workPreferences", map("location", map("postcode", "RG1 1AA", "region", "South East", "adminDistrict", "Reading"), "commuteRange", 25),
+                        "qualifications", List.of(), "roles", List.of());
         for (String component : identity.seedComponents()) {
             switch (component) {
                 case "AUTHENTICATION" -> operations.add(operation("authentication-service", () -> post("authentication-service", targets.getAuthentication() + "/internal/system-data/seed/user", user)));

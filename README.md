@@ -36,7 +36,9 @@ separate live-acquisition boundary.
   profile/location, duplicate-account, cross-user, provider-failure, empty and
   populated-demo journeys.
 - Serve deterministic fixture responses when explicitly enabled in an allowed
-  non-production profile and a governed dataset is present.
+  non-production profile and a governed dataset is present, including paged
+  job search, postcode lookup, bounded place autocomplete, LLM and Stripe
+  fixture operations.
 - Coordinate reset, seed, reset-and-seed, and verify through service-owned
   internal APIs for authentication, profile, applications, documents, and
   payment state.

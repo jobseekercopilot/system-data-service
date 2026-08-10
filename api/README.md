@@ -26,4 +26,6 @@ To update the contract:
 
 The policy protects every published operation plus the job-search parameter
 order, `DemoJob` model and paged fixture response consumed by Reed, Adzuna and
-JSearch.
+JSearch. Version `1.1.0` adds bounded `GET /internal/fixtures/places` support
+for current Postcode gateway autocomplete without weakening or renaming the
+existing `1.0.0` operations.

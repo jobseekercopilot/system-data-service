@@ -90,6 +90,7 @@ class EnvironmentOrchestrationServiceTest {
                 new DemoEnvironmentScenarioBuilder(),
                 noOpFixtureValidator(),
                 new NamedStateRegistry(objectMapper),
+                new PersonaCatalog(objectMapper),
                 restTemplate);
     }
 
@@ -573,7 +574,8 @@ class EnvironmentOrchestrationServiceTest {
     @ParameterizedTest
     @EnumSource(value = EnvironmentScenario.class, names = {
             "EMPTY", "REGISTRATION_CLEAN", "LOGIN_SESSION", "PROFILE_LOCATION",
-            "DUPLICATE_REGISTRATION", "CROSS_USER_SECURITY", "PROVIDER_FAILURE", "DEMO_READY"})
+            "DUPLICATE_REGISTRATION", "CROSS_USER_SECURITY", "REAL_WORLD_PERSONAS",
+            "PROVIDER_FAILURE", "DEMO_READY"})
     void namedStatePrepareVerifyAndResetAreRepeatableAndBounded(EnvironmentScenario scenario) {
         NamedStateDefinition definition = new NamedStateRegistry(new ObjectMapper().findAndRegisterModules())
                 .require(scenario);
@@ -602,6 +604,15 @@ class EnvironmentOrchestrationServiceTest {
         NamedStateIdentity identity = definition.identities().get(0);
         String runtimeUserId = "c1dfc1da-590e-47b3-9634-db65a2786f42";
         expectRegistrationResolution(identity, true, runtimeUserId);
+        expectSuccess(DELETE,
+                runtimeOwnerUrl("http://localhost:8088", "registration-clean-v1", "registration-primary", runtimeUserId),
+                "application-tracker-service", "RESET");
+        expectSuccess(DELETE,
+                runtimeOwnerUrl("http://localhost:8089", "registration-clean-v1", "registration-primary", runtimeUserId),
+                "document-store-service", "RESET");
+        expectSuccess(DELETE,
+                runtimeOwnerUrl("http://localhost:8099", "registration-clean-v1", "registration-primary", runtimeUserId),
+                "payment-service", "RESET");
         expectSuccess(DELETE,
                 "http://localhost:8085/internal/system-data/scenario/registration-clean-v1/profiles/" + runtimeUserId,
                 "user-profile-service", "RESET");

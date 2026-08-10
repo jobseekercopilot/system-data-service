@@ -10,6 +10,7 @@ import com.jobseekercopilot.systemdata.model.FixtureJobSearchResponse;
 import com.jobseekercopilot.systemdata.model.FixtureLlmRequest;
 import com.jobseekercopilot.systemdata.model.FixtureLlmResponse;
 import com.jobseekercopilot.systemdata.model.FixturePostcodeResponse;
+import com.jobseekercopilot.systemdata.model.FixturePlaceResponse;
 import com.jobseekercopilot.systemdata.model.FixtureStripeRequest;
 import com.jobseekercopilot.systemdata.model.FixtureStripeResponse;
 import com.jobseekercopilot.systemdata.util.DeterministicIds;
@@ -82,6 +83,30 @@ public class FixtureService {
         String clean = postcode == null ? "" : postcode.replaceAll("\\s+", "").toUpperCase(Locale.ROOT);
         return knownPostcodes().getOrDefault(clean,
                 new FixturePostcodeResponse(postcode, "England", "South East", "Reading", 51.4543, -0.9781, false, "fallback"));
+    }
+
+    public List<FixturePlaceResponse> places(String query, Integer limit) {
+        String requested = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
+        int boundedLimit = Math.min(10, Math.max(1, limit == null ? 10 : limit));
+        if (requested.length() < 2) {
+            return List.of();
+        }
+        return knownPostcodes().values().stream()
+                .filter(FixturePostcodeResponse::found)
+                .filter(place -> contains(place.adminDistrict(), requested)
+                        || contains(place.region(), requested)
+                        || contains(place.postcode(), requested))
+                .sorted(Comparator.comparing(FixturePostcodeResponse::adminDistrict))
+                .limit(boundedLimit)
+                .map(place -> new FixturePlaceResponse(
+                        DeterministicIds.uuidString("fixture-place:" + place.postcode()),
+                        place.adminDistrict() + ", " + place.region(),
+                        place.postcode(),
+                        place.region(),
+                        place.adminDistrict(),
+                        place.latitude(),
+                        place.longitude()))
+                .toList();
     }
 
     public FixtureLlmResponse llm(FixtureLlmRequest request) {
@@ -271,7 +296,7 @@ public class FixtureService {
                   "cv": {
                     "title": "Tailored Java Software Developer CV",
                     "targetRole": "Java Software Developer",
-                    "personalSummary": "Software developer with Java experience focused on useful and reliable services.",
+                    "personalSummary": "Java software developer experienced in building reliable Spring Boot microservices and accessible Angular products. Combines pragmatic API design, automated testing and cloud delivery with a record of improving deployment speed and reducing escaped defects in collaborative Agile teams.",
                     "coreSkills": [],
                     "qualifications": [],
                     "workHistory": []
@@ -281,12 +306,12 @@ public class FixtureService {
                     "jobTitle": "Java Software Developer",
                     "companyName": "Northstar Digital Labs",
                     "greeting": "Dear Hiring Manager,",
-                    "openingParagraph": "I am applying for the Java Software Developer role.",
+                    "openingParagraph": "I am applying for the Java Software Developer role at Northstar Digital Labs because its focus on dependable digital products closely matches the work I enjoy most.",
                     "bodyParagraphs": [
-                      "I use Java to build reliable services.",
-                      "I value automated testing and supportive collaboration."
+                      "At BrightTech Solutions I design Java and Spring Boot microservices, build Angular features and work with product colleagues to turn user needs into dependable releases. I helped reduce deployment time by 40% and introduced contract testing across six services.",
+                      "I would bring hands-on experience with REST APIs, PostgreSQL, Docker, AWS and CI/CD, together with an emphasis on accessible interfaces, automated quality checks and supportive code review. Northstar Digital Labs offers the opportunity to apply that delivery experience where reliable engineering and useful customer outcomes matter."
                     ],
-                    "closingParagraph": "Thank you for considering my application.",
+                    "closingParagraph": "Thank you for considering my application. I would welcome the opportunity to discuss how my Java delivery experience could contribute to Northstar Digital Labs.",
                     "signOff": "Yours sincerely"
                   },
                   "generationNotes": {

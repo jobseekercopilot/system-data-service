@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Job Seeker Copilot System Data Fixture API",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Producer-owned contract for deterministic, explicitly enabled non-production fixture responses."
   },
   "tags": [
@@ -232,6 +232,23 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/internal/fixtures/places": {
+      "get": {
+        "tags": ["Fixture Controller"],
+        "operationId": "places",
+        "summary": "Search deterministic UK fixture places",
+        "parameters": [
+          {"name":"query","in":"query","required":false,"schema":{"type":"string","default":""}},
+          {"name":"limit","in":"query","required":false,"schema":{"type":"integer","format":"int32","minimum":1,"maximum":10,"default":10}}
+        ],
+        "responses": {
+          "200": {
+            "description": "Bounded fixture place results",
+            "content": {"application/json":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/FixturePlaceResponse"}}}}
           }
         }
       }
@@ -544,6 +561,19 @@
           "fixtureSource": {
             "type": "string"
           }
+        }
+      },
+      "FixturePlaceResponse": {
+        "type": "object",
+        "required": ["id", "name", "postcode", "region", "adminDistrict", "latitude", "longitude"],
+        "properties": {
+          "id": {"type":"string"},
+          "name": {"type":"string"},
+          "postcode": {"type":"string"},
+          "region": {"type":"string"},
+          "adminDistrict": {"type":"string"},
+          "latitude": {"type":"number","format":"double"},
+          "longitude": {"type":"number","format":"double"}
         }
       },
       "FixtureLlmRequest": {

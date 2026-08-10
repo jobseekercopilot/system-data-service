@@ -93,6 +93,18 @@ class GovernedFixtureIntegrationTest {
     }
 
     @Test
+    void placeSearchSupportsCurrentLocationAutocompleteWithoutLiveCalls() {
+        assertThat(fixtureService.places("Leeds", 10)).singleElement().satisfies(place -> {
+            assertThat(place.name()).isEqualTo("Leeds, Yorkshire and The Humber");
+            assertThat(place.postcode()).isEqualTo("LS1 1UR");
+            assertThat(place.id()).matches("[0-9a-f-]{36}");
+        });
+        assertThat(fixtureService.places("South", 2)).hasSize(2);
+        assertThat(fixtureService.places("x", 10)).isEmpty();
+        assertThat(fixtureService.places("Atlantis", 10)).isEmpty();
+    }
+
+    @Test
     void llmFixtureAndNamedScenarioAreDeterministic() throws Exception {
         FixtureLlmRequest request = new FixtureLlmRequest(
                 null, null, "DEMO_READY", "CV_COVER_LETTER_GENERATION", null, null);
@@ -108,6 +120,9 @@ class GovernedFixtureIntegrationTest {
                 .isEqualTo("Java Software Developer");
         assertThat(generatedDocuments.path("coverLetter").path("companyName").asText())
                 .isEqualTo("Northstar Digital Labs");
+        assertThat(generatedDocuments.path("cv").path("personalSummary").asText())
+                .contains("Spring Boot microservices", "Angular products", "automated testing");
+        assertThat(generatedDocuments.path("coverLetter").path("bodyParagraphs")).hasSize(2);
         assertThat(generatedDocuments.path("claims")).hasSize(10);
 
         var dataset = storage.read(storage.datasetVersionDirectory(
