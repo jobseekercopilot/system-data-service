@@ -3,10 +3,11 @@ set -eu
 
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 repository_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
-fixture_dir=${1:-$repository_root/fixtures/datasets/uk-software-developer-demo/1.0.0}
+fixture_root="$repository_root/fixtures/datasets/uk-software-developer-demo"
+fixture_dir=${1:-$fixture_root/1.1.0}
 scenario_dir="$repository_root/src/main/resources/scenarios/demo-ready-v1"
 scenario_catalog="$repository_root/src/main/resources/scenarios/named-states.json"
-source_specification="$repository_root/fixtures/source/uk-software-developer-demo-v1.json"
+source_specification="$repository_root/fixtures/source/uk-software-developer-demo-v1.1.json"
 
 fail() {
     echo "synthetic fixture policy: $1" >&2
@@ -24,22 +25,22 @@ done
 if [ "$#" -eq 0 ]; then
     while IFS= read -r candidate || test -n "$candidate"; do
         case "$candidate" in
-            "$fixture_dir"/*) ;;
+            "$fixture_root/1.0.0"/*|"$fixture_root/1.1.0"/*) ;;
             *) fail "ungoverned dataset file detected: $candidate" ;;
         esac
     done <<EOF
 $(find "$repository_root/fixtures/datasets" -type f | sort)
 EOF
     source_count=$(find "$repository_root/fixtures/source" -type f | wc -l | tr -d ' ')
-    test "$source_count" = "1" || fail "unexpected fixture source specification detected"
+    test "$source_count" = "2" || fail "unexpected fixture source specification detected"
 fi
 
 jq -e '
   .scenarioId == "demo-ready-v1"
   and .scenario == "DEMO_READY"
   and .datasetId == "uk-software-developer-demo"
-  and .datasetVersion == "1.0.0"
-  and .provenance == "fixtures/datasets/uk-software-developer-demo/1.0.0/provenance.json"
+  and .datasetVersion == "1.1.0"
+  and .provenance == "fixtures/datasets/uk-software-developer-demo/1.1.0/provenance.json"
 ' "$scenario_dir/scenario.json" >/dev/null || fail "demo scenario does not reference the governed dataset"
 jq -e '
   .syntheticIdentity == true
@@ -61,14 +62,14 @@ jq -e '
 
 jq -e '
   .datasetId == "uk-software-developer-demo"
-  and .version == "1.0.0"
+  and .version == "1.1.0"
   and .schemaVersion == "1.0"
   and .status == "APPROVED_SYNTHETIC"
   and .sanitised == true
   and .validation.valid == true
   and .generationParameters.liveProvidersCalled == false
   and .generationParameters.containsCapturedProviderData == false
-  and .recordCounts.jobs == 9
+  and .recordCounts.jobs == 10
   and .recordCounts.locations == 6
   and (.sources | length == 1)
   and .sources[0].status == "SYNTHETIC"
@@ -76,9 +77,11 @@ jq -e '
 
 jq -e '
   .schemaVersion == "1.0"
-  and (.jobs | length == 9)
-  and ([.jobs[].id] | unique | length == 9)
-  and ([.jobs[].externalReference] | unique | length == 9)
+  and (.jobs | length == 10)
+  and ([.jobs[].id] | unique | length == 10)
+  and ([.jobs[].externalReference] | unique | length == 10)
+  and ([.jobs[] | select(.suitableForDemo == true)] | length == 9)
+  and ([.jobs[] | select(.suitableForDemo == false)] | length == 1)
   and ([.jobs[] | select(.latitude != null and .longitude != null)] | length >= 1)
   and all(.jobs[];
     (.id | test("^[0-9a-f-]{36}$"))
@@ -96,7 +99,7 @@ jq -e '
     and (.sourceUrl | test("^https://jobs\\.example\\.test/synthetic/SYNTH-JOB-[0-9]{3}$"))
     and .sourceMetadata.fixture == true
     and .sourceMetadata.classification == "FULLY_SYNTHETIC"
-    and .suitableForDemo == true)
+    and (.suitableForDemo | type == "boolean"))
 ' "$fixture_dir/jobs.json" >/dev/null || fail "job dataset schema or synthetic-content policy is invalid"
 
 jq -e '
@@ -114,7 +117,7 @@ jq -e '
 jq -e '
   .schemaVersion == "1.0"
   and .datasetId == "uk-software-developer-demo"
-  and .datasetVersion == "1.0.0"
+  and .datasetVersion == "1.1.0"
   and .classification == "FULLY_SYNTHETIC"
   and .creation.method == "DETERMINISTIC_LOCAL_GENERATOR"
   and .creation.liveProvidersCalled == false

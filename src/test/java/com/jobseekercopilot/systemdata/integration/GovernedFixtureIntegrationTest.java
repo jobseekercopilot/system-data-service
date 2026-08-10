@@ -41,8 +41,8 @@ class GovernedFixtureIntegrationTest {
         var all = fixtureService.searchJobs(null, null, "DEMO_READY", null,
                 null, null, 0, 20, null, null, null, null);
 
-        assertThat(all.totalResults()).isEqualTo(9);
-        assertThat(all.jobs()).hasSize(9).allSatisfy(job -> {
+        assertThat(all.totalResults()).isEqualTo(10);
+        assertThat(all.jobs()).hasSize(10).allSatisfy(job -> {
             assertThat(job.externalReference()).startsWith("SYNTH-JOB-");
             assertThat(job.sourceProvider()).endsWith("-gateway-fixture");
             assertThat(job.sourceUrl()).startsWith("https://jobs.example.test/");
@@ -50,8 +50,9 @@ class GovernedFixtureIntegrationTest {
         for (String provider : new String[]{"adzuna", "jsearch", "reed"}) {
             var providerJobs = fixtureService.searchJobs(null, null, "DEMO_READY", provider,
                     null, null, 0, 20, null, null, null, null);
-            assertThat(providerJobs.totalResults()).isEqualTo(3);
-            assertThat(providerJobs.jobs()).hasSize(3)
+            int expectedCount = "adzuna".equals(provider) ? 4 : 3;
+            assertThat(providerJobs.totalResults()).isEqualTo(expectedCount);
+            assertThat(providerJobs.jobs()).hasSize(expectedCount)
                     .allMatch(job -> (provider + "-gateway-fixture").equals(job.sourceProvider()));
         }
         assertThat(fixtureService.job(null, null, all.jobs().get(0).id())).isEqualTo(all.jobs().get(0));
@@ -62,6 +63,7 @@ class GovernedFixtureIntegrationTest {
         assertSingleMatch("adzuna", "Junior", "Manchester", "Junior Software Developer");
         assertSingleMatch("jsearch", "Angular", "Bristol", "Angular Developer");
         assertSingleMatch("reed", "Spring Boot", "Leeds", "Spring Boot Developer");
+        assertSingleMatch("adzuna", "Software Developer", "LS1 1UR", "Cloud Software Developer");
         assertSingleMatch("adzuna", "Software Developer", "RG1 1AA", "Java Software Developer");
         assertSingleMatch(
                 "adzuna",
@@ -119,6 +121,8 @@ class GovernedFixtureIntegrationTest {
 
         assertThat(firstScenario).isEqualTo(secondScenario);
         assertThat(firstScenario.applications()).hasSize(9);
+        assertThat(firstScenario.selectedJobIds())
+                .doesNotContain("10000000-0000-4000-8000-000000000010");
         assertThat(firstScenario.userId()).isEqualTo(builder.demoUserId());
     }
 

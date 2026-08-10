@@ -3,8 +3,8 @@ set -eu
 
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 repository_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
-source_file=${1:-$repository_root/fixtures/source/uk-software-developer-demo-v1.json}
-output_dir=${2:-$repository_root/fixtures/datasets/uk-software-developer-demo/1.0.0}
+source_file=${1:-$repository_root/fixtures/source/uk-software-developer-demo-v1.1.json}
+output_dir=${2:-$repository_root/fixtures/datasets/uk-software-developer-demo/1.1.0}
 scenario_dir="$repository_root/src/main/resources/scenarios/demo-ready-v1"
 temporary_dir=$(mktemp -d)
 cleanup() { rm -rf "$temporary_dir"; }
@@ -16,7 +16,7 @@ for command in jq sha256sum; do
         exit 1
     }
 done
-jq -e '.dataset.id and .dataset.version and (.jobs | length == 9) and (.locations | length > 0)' \
+jq -e '.dataset.id and .dataset.version and (.jobs | length == 10) and (.locations | length > 0)' \
     "$source_file" >/dev/null
 
 jq -S '{
@@ -56,7 +56,7 @@ jq -S '{
     sourceLocation: .location,
     sourceMetadata: {fixture: true, classification: "FULLY_SYNTHETIC"},
     generatedMetadata: {generator: "generate-synthetic-fixtures.sh", sourceKey: .externalReference},
-    suitableForDemo: true,
+    suitableForDemo: (if has("suitableForDemo") then .suitableForDemo else true end),
     qualityScore: 95.0
   }]
 }' "$source_file" > "$temporary_dir/jobs.json"
@@ -170,7 +170,7 @@ jq -n -S \
       creation: {
         method: "DETERMINISTIC_LOCAL_GENERATOR",
         generator: "scripts/generate-synthetic-fixtures.sh",
-        sourceSpecification: "fixtures/source/uk-software-developer-demo-v1.json",
+        sourceSpecification: "fixtures/source/uk-software-developer-demo-v1.1.json",
         sourceSpecificationSha256: $sourceChecksum,
         createdAt: $createdAt,
         liveProvidersCalled: false

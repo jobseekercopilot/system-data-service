@@ -1,0 +1,14 @@
+{
+  "DEMO_READY:CV_COVER_LETTER_GENERATION": {
+    "createdAt": "2026-07-10T09:00:00Z",
+    "finishReason": "stop",
+    "fixtureKey": "DEMO_READY:CV_COVER_LETTER_GENERATION",
+    "fixtureMode": true,
+    "inputTokens": 2100,
+    "model": "fixture-llm-synthetic-v1",
+    "outputTokens": 1600,
+    "provider": "FIXTURE",
+    "response": "Synthetic CV and cover-letter content for Alex Taylor. It references only fictional employers and the selected synthetic vacancy.",
+    "totalTokens": 3700
+  }
+}
