@@ -22,7 +22,7 @@ personal data.
 | `EMPTY` | `empty-v1` | Scenario-owned data is absent | cleanup only |
 | `REGISTRATION_CLEAN` | `registration-clean-v1` | New registration | cleanup only |
 | `LOGIN_SESSION` | `login-session-v1` | Login, reload, expiry and logout | authentication |
-| `PROFILE_LOCATION` | `profile-location-v1` | Profile and location journeys | authentication, profile |
+| `PROFILE_LOCATION` | `profile-location-v1` | Profile, location and application-start journeys | authentication and profile seed; application/profile/auth cleanup |
 | `DUPLICATE_REGISTRATION` | `duplicate-registration-v1` | Duplicate-account denial | authentication |
 | `CROSS_USER_SECURITY` | `cross-user-security-v1` | Ownership denial using two claimants | authentication, profile |
 | `PROVIDER_FAILURE` | `provider-failure-v1` | Offline all-provider failure | none; deterministic `502` fixture |

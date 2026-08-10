@@ -120,6 +120,8 @@ class GovernedFixtureIntegrationTest {
         assertThat(firstScenario).isEqualTo(secondScenario);
         assertThat(firstScenario.applications()).hasSize(9);
         assertThat(firstScenario.userId()).isEqualTo(builder.demoUserId());
+        assertThat(firstScenario.profile().toString())
+                .contains("workplaceArrangements=[HYBRID]");
     }
 
     @Test

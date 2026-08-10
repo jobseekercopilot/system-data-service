@@ -21,6 +21,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.nio.file.Path;
+import java.net.URLEncoder;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -157,14 +160,51 @@ public class EnvironmentOrchestrationService {
     private List<EnvironmentServiceResult> resetServices(NamedStateDefinition definition) {
         List<DownstreamOperation> operations = new ArrayList<>();
         for (NamedStateIdentity identity : definition.identities()) {
-            addResetOperations(operations, definition.scenarioId(), identity);
+            String userId = identity.userId(definition.scenarioId());
+            if (definition.scenario() == EnvironmentScenario.REGISTRATION_CLEAN) {
+                userId = resolveRuntimeRegistrationUserId(identity, userId);
+                if (userId == null) {
+                    return List.of(failure("authentication-service", "RESOLVE"));
+                }
+            }
+            addResetOperations(operations, definition.scenarioId(), identity, userId);
         }
         return executeFailFast(operations);
     }
 
-    private void addResetOperations(List<DownstreamOperation> operations, String scenarioId, NamedStateIdentity identity) {
+    private String resolveRuntimeRegistrationUserId(NamedStateIdentity identity, String deterministicUserId) {
         var targets = properties.getEnvironmentManagement().getTargetServices();
-        String userId = identity.userId(scenarioId);
+        String encodedEmail = URLEncoder.encode(identity.email(), StandardCharsets.UTF_8);
+        try {
+            URI resolveUrl = URI.create(
+                    targets.getAuthentication() + "/internal/system-data/resolve/users?email=" + encodedEmail);
+            ResponseEntity<Map> response = restTemplate.getForEntity(resolveUrl, Map.class);
+            Map body = response.getBody();
+            if (!response.getStatusCode().is2xxSuccessful()
+                    || body == null
+                    || !"SUCCESS".equalsIgnoreCase(String.valueOf(body.get("status")))) {
+                return null;
+            }
+            Object detailsValue = body.get("details");
+            if (!(detailsValue instanceof Map<?, ?> details)
+                    || !Boolean.TRUE.equals(details.get("exists"))) {
+                return deterministicUserId;
+            }
+            Object runtimeUserId = details.get("userId");
+            return runtimeUserId instanceof String value && value.matches("[a-f0-9-]{36}")
+                    ? value
+                    : null;
+        } catch (RestClientException exception) {
+            return null;
+        }
+    }
+
+    private void addResetOperations(
+            List<DownstreamOperation> operations,
+            String scenarioId,
+            NamedStateIdentity identity,
+            String userId) {
+        var targets = properties.getEnvironmentManagement().getTargetServices();
         for (String component : List.of(
                 "APPLICATIONS",
                 "DOCUMENTS",

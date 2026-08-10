@@ -44,7 +44,7 @@
     "datasetId": "uk-software-developer-demo",
     "datasetVersion": "1.0.0",
     "referenceDate": "2026-07-10T09:00:00Z",
-    "identities": [{"key":"profile-primary","email":"profile.primary@example.com","displayName":"Profile Tester","resetComponents":["USER_PROFILE","AUTHENTICATION"],"seedComponents":["AUTHENTICATION","USER_PROFILE"]}],
+    "identities": [{"key":"profile-primary","email":"profile.primary@example.com","displayName":"Profile Tester","resetComponents":["APPLICATIONS","USER_PROFILE","AUTHENTICATION"],"seedComponents":["AUTHENTICATION","USER_PROFILE"]}],
     "expected": {"users": 1, "profiles": 1}
   },
   {
