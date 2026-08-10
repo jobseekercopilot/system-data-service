@@ -31,7 +31,7 @@ import java.util.function.Supplier;
 @Service
 public class EnvironmentOrchestrationService {
     private static final String DEFAULT_DATASET_ID = "uk-software-developer-demo";
-    private static final String DEFAULT_DATASET_VERSION = "1.0.0";
+    private static final String DEFAULT_DATASET_VERSION = "1.1.0";
 
     private final SystemDataProperties properties;
     private final DatasetStorageService datasetStorageService;

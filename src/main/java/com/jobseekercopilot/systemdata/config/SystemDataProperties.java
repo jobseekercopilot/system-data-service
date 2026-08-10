@@ -196,7 +196,7 @@ public class SystemDataProperties {
         private boolean enabled = false;
         private List<String> allowedEnvironments = new ArrayList<>(List.of("local", "test", "demo", "default"));
         private String defaultDatasetId = "uk-software-developer-demo";
-        private String defaultDatasetVersion = "1.0.0";
+        private String defaultDatasetVersion = "1.1.0";
         private String defaultScenario = "DEMO_READY";
 
         public boolean isEnabled() { return enabled; }

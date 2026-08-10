@@ -20,7 +20,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 class GovernedFixtureValidatorTest {
     private static final Path COMMITTED_FIXTURE =
-            Path.of("fixtures/datasets/uk-software-developer-demo/1.0.0");
+            Path.of("fixtures/datasets/uk-software-developer-demo/1.1.0");
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     @TempDir

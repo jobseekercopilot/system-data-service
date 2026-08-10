@@ -1,0 +1,64 @@
+{
+  "approval": {
+    "approvedAt": "2026-07-22",
+    "approvedBy": "jobseekercopilot repository owner",
+    "scope": "Private beta test, local demo and CI fixtures only",
+    "status": "APPROVED_FOR_NON_PRODUCTION_TESTING"
+  },
+  "attribution": [],
+  "classification": "FULLY_SYNTHETIC",
+  "creation": {
+    "createdAt": "2026-07-10T09:00:00Z",
+    "generator": "scripts/generate-synthetic-fixtures.sh",
+    "liveProvidersCalled": false,
+    "method": "DETERMINISTIC_LOCAL_GENERATOR",
+    "sourceSpecification": "fixtures/source/uk-software-developer-demo-v1.1.json",
+    "sourceSpecificationSha256": "26fbadc9f40c6c2a160af7cce68588ac4d037b2e528b20f497c3b5a4a2e2a3a0"
+  },
+  "dataPolicy": {
+    "containsCapturedProviderData": false,
+    "containsProviderCredentials": false,
+    "containsRealPersonalData": false,
+    "externalUrlsAllowed": [
+      "https://jobs.example.test/"
+    ],
+    "minimisation": "Only fields required by fixture consumers are populated."
+  },
+  "datasetId": "uk-software-developer-demo",
+  "datasetVersion": "1.1.0",
+  "licence": {
+    "externalDatasets": [],
+    "identifier": "LicenseRef-JobSeekerCopilot-Proprietary",
+    "owner": "jobseekercopilot",
+    "redistribution": "PROHIBITED"
+  },
+  "lifecycle": {
+    "expiresAt": "2027-07-10",
+    "immutableVersion": true,
+    "refreshTrigger": "Schema, consumer, policy or scenario change",
+    "reviewBy": "2027-01-10"
+  },
+  "payloadChecksums": {
+    "jobs.json": "09e67c12f731db0c6798d000cbfd4ef9180c4a718732ae4c21b0a57b4d996756",
+    "llm-fixtures.json": "9042f24183be782c8c02dcf7cc30b571e47d3ece8f742ea246a001f643a11b69",
+    "locations.json": "7656bb77f470bb08b0861fb1c0092c808ec5ceba136e0947620a0642f2d16ec3"
+  },
+  "purpose": [
+    "LOCAL_DEVELOPMENT",
+    "AUTOMATED_TESTING",
+    "DEMO"
+  ],
+  "scenarioBundle": {
+    "files": [
+      "activities.json",
+      "applications.json",
+      "documents.json",
+      "payment-ledger.json",
+      "scenario.json",
+      "user.json"
+    ],
+    "path": "src/main/resources/scenarios/demo-ready-v1",
+    "sha256": "ab9f6675c046b8581a11359ea1863357a3968c016cd03be3929d30bc87f77469"
+  },
+  "schemaVersion": "1.0"
+}
