@@ -48,9 +48,9 @@ jq -e '
   and (.email | endswith("@example.com"))
 ' "$scenario_dir/user.json" >/dev/null || fail "demo identity is not explicitly synthetic and reserved"
 jq -e '
-  length == 8
-  and ([.[].scenario] | unique | length == 8)
-  and ([.[].scenarioId] | unique | length == 8)
+  length == 9
+  and ([.[].scenario] | unique | length == 9)
+  and ([.[].scenarioId] | unique | length == 9)
   and all(.[];
     (.scenarioId | test("^[a-z0-9-]+-v[1-9][0-9]*$"))
     and (.version | test("^[1-9][0-9]*\\.[0-9]+\\.[0-9]+$"))

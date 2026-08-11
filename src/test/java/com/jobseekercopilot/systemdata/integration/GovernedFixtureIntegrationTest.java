@@ -95,6 +95,18 @@ class GovernedFixtureIntegrationTest {
     }
 
     @Test
+    void placeSearchSupportsCurrentLocationAutocompleteWithoutLiveCalls() {
+        assertThat(fixtureService.places("Leeds", 10)).singleElement().satisfies(place -> {
+            assertThat(place.name()).isEqualTo("Leeds, Yorkshire and The Humber");
+            assertThat(place.postcode()).isEqualTo("LS1 1UR");
+            assertThat(place.id()).matches("[0-9a-f-]{36}");
+        });
+        assertThat(fixtureService.places("South", 2)).hasSize(2);
+        assertThat(fixtureService.places("x", 10)).isEmpty();
+        assertThat(fixtureService.places("Atlantis", 10)).isEmpty();
+    }
+
+    @Test
     void llmFixtureAndNamedScenarioAreDeterministic() throws Exception {
         FixtureLlmRequest request = new FixtureLlmRequest(
                 null, null, "DEMO_READY", "CV_COVER_LETTER_GENERATION", null, null);
@@ -110,7 +122,21 @@ class GovernedFixtureIntegrationTest {
                 .isEqualTo("Java Software Developer");
         assertThat(generatedDocuments.path("coverLetter").path("companyName").asText())
                 .isEqualTo("Northstar Digital Labs");
-        assertThat(generatedDocuments.path("claims")).hasSize(10);
+        assertThat(generatedDocuments.path("cv").path("personalSummary").asText())
+                .contains("Spring Boot microservices", "Angular products", "automated testing");
+        assertThat(generatedDocuments.path("coverLetter").path("bodyParagraphs"))
+                .hasSize(4)
+                .allSatisfy(paragraph -> {
+                    assertThat(paragraph.path("text").asText()).isNotBlank();
+                    assertThat(paragraph.path("evidenceIds")).isNotEmpty();
+                });
+        assertThat(generatedDocuments.path("claims")).hasSize(3);
+        assertThat(generatedDocuments.at("/canonicalApplicationClaims/opening/claimId").asText())
+                .isEqualTo("CLAIM-9001");
+        assertThat(generatedDocuments.at("/canonicalApplicationClaims/closing/claimId").asText())
+                .isEqualTo("CLAIM-9002");
+        assertThat(generatedDocuments.at("/personalSummaryClaim/claimId").asText())
+                .isEqualTo("CLAIM-9003");
 
         var dataset = storage.read(storage.datasetVersionDirectory(
                 properties.getFixtures().getDefaultDatasetId(),
@@ -124,6 +150,8 @@ class GovernedFixtureIntegrationTest {
         assertThat(firstScenario.selectedJobIds())
                 .doesNotContain("10000000-0000-4000-8000-000000000010");
         assertThat(firstScenario.userId()).isEqualTo(builder.demoUserId());
+        assertThat(firstScenario.profile().toString())
+                .contains("workplaceArrangements=[HYBRID]");
     }
 
     @Test

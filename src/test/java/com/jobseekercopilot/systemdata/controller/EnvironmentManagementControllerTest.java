@@ -11,6 +11,7 @@ import com.jobseekercopilot.systemdata.service.DemoEnvironmentScenarioBuilder;
 import com.jobseekercopilot.systemdata.service.EnvironmentOrchestrationService;
 import com.jobseekercopilot.systemdata.service.InternalCallerGuard;
 import com.jobseekercopilot.systemdata.service.NamedStateRegistry;
+import com.jobseekercopilot.systemdata.service.PersonaCatalog;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -80,7 +81,9 @@ class EnvironmentManagementControllerTest {
 
         private RecordingOrchestrationService() {
             super(null, null, null, new DemoEnvironmentScenarioBuilder(), null,
-                    new NamedStateRegistry(new ObjectMapper().findAndRegisterModules()), new RestTemplate());
+                    new NamedStateRegistry(new ObjectMapper().findAndRegisterModules()),
+                    new PersonaCatalog(new ObjectMapper().findAndRegisterModules()),
+                    new RestTemplate());
         }
 
         @Override

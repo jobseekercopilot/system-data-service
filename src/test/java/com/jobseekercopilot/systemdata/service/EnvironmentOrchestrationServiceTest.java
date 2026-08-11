@@ -90,6 +90,7 @@ class EnvironmentOrchestrationServiceTest {
                 new DemoEnvironmentScenarioBuilder(),
                 noOpFixtureValidator(),
                 new NamedStateRegistry(objectMapper),
+                new PersonaCatalog(objectMapper),
                 restTemplate);
     }
 
@@ -573,7 +574,8 @@ class EnvironmentOrchestrationServiceTest {
     @ParameterizedTest
     @EnumSource(value = EnvironmentScenario.class, names = {
             "EMPTY", "REGISTRATION_CLEAN", "LOGIN_SESSION", "PROFILE_LOCATION",
-            "DUPLICATE_REGISTRATION", "CROSS_USER_SECURITY", "PROVIDER_FAILURE", "DEMO_READY"})
+            "DUPLICATE_REGISTRATION", "CROSS_USER_SECURITY", "REAL_WORLD_PERSONAS",
+            "PROVIDER_FAILURE", "DEMO_READY"})
     void namedStatePrepareVerifyAndResetAreRepeatableAndBounded(EnvironmentScenario scenario) {
         NamedStateDefinition definition = new NamedStateRegistry(new ObjectMapper().findAndRegisterModules())
                 .require(scenario);
@@ -592,6 +594,35 @@ class EnvironmentOrchestrationServiceTest {
         assertThat(first.summary()).isEqualTo(second.summary());
         assertThat(verification.status()).isEqualTo("SUCCESS");
         assertThat(reset.status()).isEqualTo("SUCCESS");
+        server.verify();
+    }
+
+    @Test
+    void registrationCleanupUsesTheRuntimeAccountIdCreatedByThePublicJourney() {
+        NamedStateDefinition definition = new NamedStateRegistry(new ObjectMapper().findAndRegisterModules())
+                .require(EnvironmentScenario.REGISTRATION_CLEAN);
+        NamedStateIdentity identity = definition.identities().get(0);
+        String runtimeUserId = "c1dfc1da-590e-47b3-9634-db65a2786f42";
+        expectRegistrationResolution(identity, true, runtimeUserId);
+        expectSuccess(DELETE,
+                runtimeOwnerUrl("http://localhost:8088", "registration-clean-v1", "registration-primary", runtimeUserId),
+                "application-tracker-service", "RESET");
+        expectSuccess(DELETE,
+                runtimeOwnerUrl("http://localhost:8089", "registration-clean-v1", "registration-primary", runtimeUserId),
+                "document-store-service", "RESET");
+        expectSuccess(DELETE,
+                runtimeOwnerUrl("http://localhost:8099", "registration-clean-v1", "registration-primary", runtimeUserId),
+                "payment-service", "RESET");
+        expectSuccess(DELETE,
+                "http://localhost:8085/internal/system-data/scenario/registration-clean-v1/profiles/" + runtimeUserId,
+                "user-profile-service", "RESET");
+        expectSuccess(DELETE,
+                "http://localhost:8084/internal/system-data/scenario/registration-clean-v1/users/" + runtimeUserId,
+                "authentication-service", "RESET");
+
+        var result = service.reset(request(EnvironmentScenario.REGISTRATION_CLEAN));
+
+        assertThat(result.status()).isEqualTo("SUCCESS");
         server.verify();
     }
 
@@ -616,6 +647,9 @@ class EnvironmentOrchestrationServiceTest {
     private void expectReset(NamedStateDefinition definition) {
         for (NamedStateIdentity identity : definition.identities()) {
             String userId = identity.userId(definition.scenarioId());
+            if (definition.scenario() == EnvironmentScenario.REGISTRATION_CLEAN) {
+                expectRegistrationResolution(identity, false, null);
+            }
             for (String component : List.of(
                     "APPLICATIONS",
                     "DOCUMENTS",
@@ -636,6 +670,23 @@ class EnvironmentOrchestrationServiceTest {
                 expectSuccess(DELETE, url, "reset", "RESET");
             }
         }
+    }
+
+    private void expectRegistrationResolution(
+            NamedStateIdentity identity,
+            boolean exists,
+            String runtimeUserId) {
+        String details = exists
+                ? "{\"exists\":true,\"userId\":\"" + runtimeUserId + "\"}"
+                : "{\"exists\":false}";
+        server.expect(requestTo(
+                        "http://localhost:8084/internal/system-data/resolve/users?email="
+                                + identity.email().replace("@", "%40")))
+                .andExpect(method(GET))
+                .andRespond(withSuccess(
+                        "{\"status\":\"SUCCESS\",\"recordsAffected\":" + (exists ? 1 : 0)
+                                + ",\"details\":" + details + "}",
+                        MediaType.APPLICATION_JSON));
     }
 
     private void expectVerification(NamedStateDefinition definition) {

@@ -21,6 +21,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.nio.file.Path;
+import java.net.URLEncoder;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,6 +42,7 @@ public class EnvironmentOrchestrationService {
     private final DemoEnvironmentScenarioBuilder scenarioBuilder;
     private final GovernedFixtureValidator fixtureValidator;
     private final NamedStateRegistry stateRegistry;
+    private final PersonaCatalog personaCatalog;
     private final RestTemplate restTemplate;
 
     public EnvironmentOrchestrationService(
@@ -48,6 +52,7 @@ public class EnvironmentOrchestrationService {
             DemoEnvironmentScenarioBuilder scenarioBuilder,
             GovernedFixtureValidator fixtureValidator,
             NamedStateRegistry stateRegistry,
+            PersonaCatalog personaCatalog,
             @Qualifier("environmentManagementRestTemplate") RestTemplate restTemplate) {
         this.properties = properties;
         this.datasetStorageService = datasetStorageService;
@@ -55,6 +60,7 @@ public class EnvironmentOrchestrationService {
         this.scenarioBuilder = scenarioBuilder;
         this.fixtureValidator = fixtureValidator;
         this.stateRegistry = stateRegistry;
+        this.personaCatalog = personaCatalog;
         this.restTemplate = restTemplate;
     }
 
@@ -157,14 +163,51 @@ public class EnvironmentOrchestrationService {
     private List<EnvironmentServiceResult> resetServices(NamedStateDefinition definition) {
         List<DownstreamOperation> operations = new ArrayList<>();
         for (NamedStateIdentity identity : definition.identities()) {
-            addResetOperations(operations, definition.scenarioId(), identity);
+            String userId = identity.userId(definition.scenarioId());
+            if (definition.scenario() == EnvironmentScenario.REGISTRATION_CLEAN) {
+                userId = resolveRuntimeRegistrationUserId(identity, userId);
+                if (userId == null) {
+                    return List.of(failure("authentication-service", "RESOLVE"));
+                }
+            }
+            addResetOperations(operations, definition.scenarioId(), identity, userId);
         }
         return executeFailFast(operations);
     }
 
-    private void addResetOperations(List<DownstreamOperation> operations, String scenarioId, NamedStateIdentity identity) {
+    private String resolveRuntimeRegistrationUserId(NamedStateIdentity identity, String deterministicUserId) {
         var targets = properties.getEnvironmentManagement().getTargetServices();
-        String userId = identity.userId(scenarioId);
+        String encodedEmail = URLEncoder.encode(identity.email(), StandardCharsets.UTF_8);
+        try {
+            URI resolveUrl = URI.create(
+                    targets.getAuthentication() + "/internal/system-data/resolve/users?email=" + encodedEmail);
+            ResponseEntity<Map> response = restTemplate.getForEntity(resolveUrl, Map.class);
+            Map body = response.getBody();
+            if (!response.getStatusCode().is2xxSuccessful()
+                    || body == null
+                    || !"SUCCESS".equalsIgnoreCase(String.valueOf(body.get("status")))) {
+                return null;
+            }
+            Object detailsValue = body.get("details");
+            if (!(detailsValue instanceof Map<?, ?> details)
+                    || !Boolean.TRUE.equals(details.get("exists"))) {
+                return deterministicUserId;
+            }
+            Object runtimeUserId = details.get("userId");
+            return runtimeUserId instanceof String value && value.matches("[a-f0-9-]{36}")
+                    ? value
+                    : null;
+        } catch (RestClientException exception) {
+            return null;
+        }
+    }
+
+    private void addResetOperations(
+            List<DownstreamOperation> operations,
+            String scenarioId,
+            NamedStateIdentity identity,
+            String userId) {
+        var targets = properties.getEnvironmentManagement().getTargetServices();
         for (String component : List.of(
                 "APPLICATIONS",
                 "DOCUMENTS",
@@ -224,11 +267,13 @@ public class EnvironmentOrchestrationService {
         Map<String, Object> user = map(
                 "scenarioId", scenarioId, "userId", userId, "name", identity.displayName(),
                 "email", identity.email(), "password", "PublicTestPassword123!", "syntheticIdentity", true);
-        Map<String, Object> profile = map(
-                "userId", userId, "skills", List.of("Java", "Testing"),
-                "aspirations", map("targetRoles", List.of("Software Developer"), "targetWeeklyHours", "FULL_TIME"),
-                "workPreferences", map("location", map("postcode", "RG1 1AA", "region", "South East", "adminDistrict", "Reading"), "commuteRange", 25),
-                "qualifications", List.of(), "roles", List.of());
+        Map<String, Object> profile = scenarioId.equals("real-world-personas-v2")
+                ? personaCatalog.profile(identity.key(), userId)
+                : map(
+                        "userId", userId, "skills", List.of("Java", "Testing"),
+                        "aspirations", map("targetRoles", List.of("Software Developer"), "targetWeeklyHours", "FULL_TIME"),
+                        "workPreferences", map("location", map("postcode", "RG1 1AA", "region", "South East", "adminDistrict", "Reading"), "commuteRange", 25),
+                        "qualifications", List.of(), "roles", List.of());
         for (String component : identity.seedComponents()) {
             switch (component) {
                 case "AUTHENTICATION" -> operations.add(operation("authentication-service", () -> post("authentication-service", targets.getAuthentication() + "/internal/system-data/seed/user", user)));
