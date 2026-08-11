@@ -22,11 +22,13 @@ The Infrastructure
 defines System Data as the non-production fixture owner, never the owner of
 production Job Search behaviour or state.
 
-## Baseline status
+## Current status
 
-Status: **not operationally or beta ready**.
+Status: **operational non-production fixture tooling**. It drives the governed
+deterministic E2E/persona environment and remains deliberately unavailable as a
+production data source.
 
-The initial source-only baseline deliberately excludes:
+The source-only migration deliberately excluded:
 
 - 120 live-captured Adzuna/JSearch/Reed job records and two captured OpenAI
   outputs whose redistribution/provenance is not approved;
