@@ -298,6 +298,7 @@ public class FixtureService {
                     "targetRole": "Java Software Developer",
                     "personalSummary": "Java software developer experienced in building reliable Spring Boot microservices and accessible Angular products. Combines pragmatic API design, automated testing and cloud delivery with a record of improving deployment speed and reducing escaped defects in collaborative Agile teams.",
                     "coreSkills": [],
+                    "projects": [],
                     "qualifications": [],
                     "workHistory": []
                   },
@@ -306,12 +307,14 @@ public class FixtureService {
                     "jobTitle": "Java Software Developer",
                     "companyName": "Northstar Digital Labs",
                     "greeting": "Dear Hiring Manager,",
-                    "openingParagraph": "I am applying for the Java Software Developer role at Northstar Digital Labs because its focus on dependable digital products closely matches the work I enjoy most.",
+                    "openingParagraph": "Please consider my application for this role.",
                     "bodyParagraphs": [
-                      "At BrightTech Solutions I design Java and Spring Boot microservices, build Angular features and work with product colleagues to turn user needs into dependable releases. I helped reduce deployment time by 40% and introduced contract testing across six services.",
-                      "I would bring hands-on experience with REST APIs, PostgreSQL, Docker, AWS and CI/CD, together with an emphasis on accessible interfaces, automated quality checks and supportive code review. Northstar Digital Labs offers the opportunity to apply that delivery experience where reliable engineering and useful customer outcomes matter."
+                      {"text":"My profile includes confirmed software-delivery experience.","disposition":"REWORDED","evidenceIds":["PROFILE.SKILL.1"]},
+                      {"text":"That confirmed experience is relevant to this Java Software Developer role.","disposition":"REWORDED","evidenceIds":["PROFILE.SKILL.1","JOB.TITLE"]},
+                      {"text":"I would bring that confirmed experience to the role.","disposition":"REWORDED","evidenceIds":["PROFILE.SKILL.1"]},
+                      {"text":"I welcome the opportunity to discuss how that experience supports the Java Software Developer role.","disposition":"REWORDED","evidenceIds":["PROFILE.SKILL.1","JOB.TITLE"]}
                     ],
-                    "closingParagraph": "Thank you for considering my application. I would welcome the opportunity to discuss how my Java delivery experience could contribute to Northstar Digital Labs.",
+                    "closingParagraph": "Thank you for considering my application.",
                     "signOff": "Yours sincerely"
                   },
                   "generationNotes": {
@@ -320,17 +323,29 @@ public class FixtureService {
                     "tailoringSummary": "Fixture-generated documents tailored to the governed synthetic Java vacancy."
                   },
                   "claims": [
-                    {"claimId":"CLAIM-001","disposition":"REWORDED","evidenceIds":["PROFILE.SKILL.1","JOB.TITLE"],"contentPaths":["/cv/title"],"reviewText":""},
-                    {"claimId":"CLAIM-002","disposition":"SUPPORTED","evidenceIds":["JOB.TITLE"],"contentPaths":["/cv/targetRole"],"reviewText":""},
-                    {"claimId":"CLAIM-003","disposition":"REWORDED","evidenceIds":["PROFILE.SKILL.1","JOB.DESCRIPTION"],"contentPaths":["/cv/personalSummary"],"reviewText":""},
-                    {"claimId":"CLAIM-004","disposition":"REWORDED","evidenceIds":["JOB.TITLE"],"contentPaths":["/coverLetter/title"],"reviewText":""},
-                    {"claimId":"CLAIM-005","disposition":"SUPPORTED","evidenceIds":["JOB.TITLE"],"contentPaths":["/coverLetter/jobTitle"],"reviewText":""},
-                    {"claimId":"CLAIM-006","disposition":"SUPPORTED","evidenceIds":["JOB.COMPANY"],"contentPaths":["/coverLetter/companyName"],"reviewText":""},
-                    {"claimId":"CLAIM-007","disposition":"REWORDED","evidenceIds":["REQUEST.GENERATION_INTENT","JOB.TITLE"],"contentPaths":["/coverLetter/openingParagraph"],"reviewText":""},
-                    {"claimId":"CLAIM-008","disposition":"REWORDED","evidenceIds":["PROFILE.SKILL.1","PROFILE.EMPLOYMENT.1.RESPONSIBILITIES"],"contentPaths":["/coverLetter/bodyParagraphs/0"],"reviewText":""},
-                    {"claimId":"CLAIM-009","disposition":"REWORDED","evidenceIds":["JOB.DESCRIPTION"],"contentPaths":["/coverLetter/bodyParagraphs/1"],"reviewText":""},
-                    {"claimId":"CLAIM-010","disposition":"SUPPORTED","evidenceIds":["JOB.DESCRIPTION"],"contentPaths":["/coverLetter/closingParagraph"],"reviewText":""}
-                  ]
+                    {"claimId":"CLAIM-001","disposition":"SUPPORTED","evidenceIds":["JOB.TITLE"],"contentPaths":["/cv/targetRole"],"reviewText":""},
+                    {"claimId":"CLAIM-002","disposition":"SUPPORTED","evidenceIds":["JOB.TITLE"],"contentPaths":["/coverLetter/jobTitle"],"reviewText":""},
+                    {"claimId":"CLAIM-003","disposition":"SUPPORTED","evidenceIds":["JOB.COMPANY"],"contentPaths":["/coverLetter/companyName"],"reviewText":""}
+                  ],
+                  "canonicalApplicationClaims": {
+                    "opening": {
+                      "claimId":"CLAIM-9001","disposition":"SUPPORTED",
+                      "generationIntentEvidenceId":"REQUEST.GENERATION_INTENT",
+                      "jobTitleEvidenceId":"JOB.TITLE","companyEvidenceId":"JOB.COMPANY",
+                      "contentPath":"/coverLetter/openingParagraph","reviewText":""
+                    },
+                    "closing": {
+                      "claimId":"CLAIM-9002","disposition":"SUPPORTED",
+                      "generationIntentEvidenceId":"REQUEST.GENERATION_INTENT",
+                      "jobTitleEvidenceId":"JOB.TITLE","companyEvidenceId":"JOB.COMPANY",
+                      "contentPath":"/coverLetter/closingParagraph","reviewText":""
+                    }
+                  },
+                  "personalSummaryClaim": {
+                    "claimId":"CLAIM-9003","disposition":"REWORDED",
+                    "evidenceIds":["PROFILE.SKILL.1","JOB.TITLE"],
+                    "contentPath":"/cv/personalSummary","reviewText":""
+                  }
                 }
                 """;
     }
