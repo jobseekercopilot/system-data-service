@@ -1,5 +1,13 @@
 # System Data Service
 
+## Role in Job Seeker Copilot
+
+| Role | Called by | Calls | Data | Local port |
+|---|---|---|---|---:|
+| Non-production owner of versioned synthetic fixtures and named environment states | Provider gateways, E2E/operator | Guarded reset/seed/verify APIs on service owners | Versioned filesystem datasets; no production domain DB | 8103 |
+
+See the central [fixture boundary](https://docs.jobseekercopilot.com/architecture/dependency-maps/), [provider integrations](https://docs.jobseekercopilot.com/services/provider-integrations/), and [local development](https://docs.jobseekercopilot.com/infrastructure/local-development/).
+
 Private, proprietary tooling for deterministic Job Seeker Copilot fixtures and
 explicitly bounded non-production state preparation.
 
@@ -14,11 +22,13 @@ The Infrastructure
 defines System Data as the non-production fixture owner, never the owner of
 production Job Search behaviour or state.
 
-## Baseline status
+## Current status
 
-Status: **not operationally or beta ready**.
+Status: **operational non-production fixture tooling**. It drives the governed
+deterministic E2E/persona environment and remains deliberately unavailable as a
+production data source.
 
-The initial source-only baseline deliberately excludes:
+The source-only migration deliberately excluded:
 
 - 120 live-captured Adzuna/JSearch/Reed job records and two captured OpenAI
   outputs whose redistribution/provenance is not approved;
