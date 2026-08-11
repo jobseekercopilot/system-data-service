@@ -25,7 +25,7 @@ personal data.
 | `PROFILE_LOCATION` | `profile-location-v1` | Profile, location and application-start journeys | authentication and profile seed; application/profile/auth cleanup |
 | `DUPLICATE_REGISTRATION` | `duplicate-registration-v1` | Duplicate-account denial | authentication |
 | `CROSS_USER_SECURITY` | `cross-user-security-v1` | Ownership denial using two claimants | authentication, profile |
-| `REAL_WORLD_PERSONAS` | `real-world-personas-v1` | Seven sparse, typical, rich, stress, CV-led, manual-first and career-change users | authentication and current profile contract |
+| `REAL_WORLD_PERSONAS` | `real-world-personas-v2` | Seven sparse, typical, rich, very-rich consultant, CV-led, manual-first and career-change users | authentication and current profile contract |
 | `PROVIDER_FAILURE` | `provider-failure-v1` | Offline all-provider failure | none; deterministic `502` fixture |
 | `DEMO_READY` | `demo-ready-v1` | Existing populated demonstration | full governed demo state |
 
@@ -54,7 +54,9 @@ The `REAL_WORLD_PERSONAS` profiles are owned by
 `src/main/resources/personas/personas.json`. They intentionally use only fields
 accepted by the current User Profile contract, include canonical location
 provenance and structured work/commute/availability preferences, and vary from
-three skills/no roles to a plausible 60-skill/seven-role stress profile. Legacy
+three skills/no roles to a plausible 60-skill/18-engagement very-rich
+consultant profile. This is a realistic boundary fixture, not a claim that the
+product's maximum storage or rendering scale has been reached. Legacy
 roles and qualifications are migrated by User Profile into its versioned
 evidence library; System Data does not write evidence tables directly.
 

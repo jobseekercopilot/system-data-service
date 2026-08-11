@@ -20,7 +20,7 @@ public class PersonaCatalog {
             "minimal-profile",
             "typical-profile",
             "rich-profile",
-            "stress-profile",
+            "very-rich-profile",
             "uploaded-cv-first",
             "manual-profile-first",
             "career-changer");

@@ -22,7 +22,8 @@ class PersonaCatalogTest {
         assertThat(skills(catalog, "minimal-profile")).hasSize(3);
         assertThat(skills(catalog, "typical-profile")).hasSize(10);
         assertThat(skills(catalog, "rich-profile")).hasSize(20);
-        assertThat(skills(catalog, "stress-profile")).hasSizeGreaterThanOrEqualTo(50);
+        assertThat(skills(catalog, "very-rich-profile")).hasSize(60);
+        assertThat(roles(catalog, "very-rich-profile")).hasSize(18);
         assertThat(roles(catalog, "career-changer")).extracting(role -> role.get("jobTitle"))
                 .contains("Secondary School Teacher")
                 .doesNotContain("Project Coordinator");

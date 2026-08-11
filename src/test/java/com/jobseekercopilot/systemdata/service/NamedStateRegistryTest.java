@@ -27,6 +27,14 @@ class NamedStateRegistryTest {
                         "b0bab5d2-b55b-34e1-a20a-65a31d2cf53b");
         assertThat(first.require(EnvironmentScenario.PROVIDER_FAILURE).providerBehaviour())
                 .isEqualTo("ALL_UNAVAILABLE");
+        assertThat(first.require(EnvironmentScenario.REAL_WORLD_PERSONAS).version()).isEqualTo("1.1.0");
+        assertThat(first.require(EnvironmentScenario.REAL_WORLD_PERSONAS).identities())
+                .allSatisfy(identity -> {
+                    assertThat(identity.resetComponents()).containsExactlyInAnyOrder(
+                            "PAYMENT", "DOCUMENTS", "APPLICATIONS", "USER_PROFILE", "AUTHENTICATION");
+                    assertThat(identity.seedComponents()).containsExactlyInAnyOrder(
+                            "AUTHENTICATION", "USER_PROFILE");
+                });
     }
 
     @Test
@@ -35,7 +43,7 @@ class NamedStateRegistryTest {
                 .getContentAsString(StandardCharsets.UTF_8);
 
         assertThat(new ChecksumUtil().sha256(catalog))
-                .isEqualTo("01eb45eecbb7aac9fc283b96ab2d59958dc4d6481cfbc223b8551dddc41eed4b");
+                .isEqualTo("803b28338646ac9aed631538c6bcd2ca1dcdccf390538d7338370d1945a05723");
     }
 
     @Test

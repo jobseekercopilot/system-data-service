@@ -267,7 +267,7 @@ public class EnvironmentOrchestrationService {
         Map<String, Object> user = map(
                 "scenarioId", scenarioId, "userId", userId, "name", identity.displayName(),
                 "email", identity.email(), "password", "PublicTestPassword123!", "syntheticIdentity", true);
-        Map<String, Object> profile = scenarioId.equals("real-world-personas-v1")
+        Map<String, Object> profile = scenarioId.equals("real-world-personas-v2")
                 ? personaCatalog.profile(identity.key(), userId)
                 : map(
                         "userId", userId, "skills", List.of("Java", "Testing"),
