@@ -21,6 +21,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.nio.file.Path;
+import java.net.URLEncoder;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -31,7 +34,7 @@ import java.util.function.Supplier;
 @Service
 public class EnvironmentOrchestrationService {
     private static final String DEFAULT_DATASET_ID = "uk-software-developer-demo";
-    private static final String DEFAULT_DATASET_VERSION = "1.0.0";
+    private static final String DEFAULT_DATASET_VERSION = "1.1.0";
 
     private final SystemDataProperties properties;
     private final DatasetStorageService datasetStorageService;
@@ -39,6 +42,7 @@ public class EnvironmentOrchestrationService {
     private final DemoEnvironmentScenarioBuilder scenarioBuilder;
     private final GovernedFixtureValidator fixtureValidator;
     private final NamedStateRegistry stateRegistry;
+    private final PersonaCatalog personaCatalog;
     private final RestTemplate restTemplate;
 
     public EnvironmentOrchestrationService(
@@ -48,6 +52,7 @@ public class EnvironmentOrchestrationService {
             DemoEnvironmentScenarioBuilder scenarioBuilder,
             GovernedFixtureValidator fixtureValidator,
             NamedStateRegistry stateRegistry,
+            PersonaCatalog personaCatalog,
             @Qualifier("environmentManagementRestTemplate") RestTemplate restTemplate) {
         this.properties = properties;
         this.datasetStorageService = datasetStorageService;
@@ -55,6 +60,7 @@ public class EnvironmentOrchestrationService {
         this.scenarioBuilder = scenarioBuilder;
         this.fixtureValidator = fixtureValidator;
         this.stateRegistry = stateRegistry;
+        this.personaCatalog = personaCatalog;
         this.restTemplate = restTemplate;
     }
 
@@ -157,19 +163,64 @@ public class EnvironmentOrchestrationService {
     private List<EnvironmentServiceResult> resetServices(NamedStateDefinition definition) {
         List<DownstreamOperation> operations = new ArrayList<>();
         for (NamedStateIdentity identity : definition.identities()) {
-            addResetOperations(operations, definition.scenarioId(), identity);
+            String userId = identity.userId(definition.scenarioId());
+            if (definition.scenario() == EnvironmentScenario.REGISTRATION_CLEAN) {
+                userId = resolveRuntimeRegistrationUserId(identity, userId);
+                if (userId == null) {
+                    return List.of(failure("authentication-service", "RESOLVE"));
+                }
+            }
+            addResetOperations(operations, definition.scenarioId(), identity, userId);
         }
         return executeFailFast(operations);
     }
 
-    private void addResetOperations(List<DownstreamOperation> operations, String scenarioId, NamedStateIdentity identity) {
+    private String resolveRuntimeRegistrationUserId(NamedStateIdentity identity, String deterministicUserId) {
         var targets = properties.getEnvironmentManagement().getTargetServices();
-        String userId = identity.userId(scenarioId);
-        for (String component : identity.resetComponents()) {
+        String encodedEmail = URLEncoder.encode(identity.email(), StandardCharsets.UTF_8);
+        try {
+            URI resolveUrl = URI.create(
+                    targets.getAuthentication() + "/internal/system-data/resolve/users?email=" + encodedEmail);
+            ResponseEntity<Map> response = restTemplate.getForEntity(resolveUrl, Map.class);
+            Map body = response.getBody();
+            if (!response.getStatusCode().is2xxSuccessful()
+                    || body == null
+                    || !"SUCCESS".equalsIgnoreCase(String.valueOf(body.get("status")))) {
+                return null;
+            }
+            Object detailsValue = body.get("details");
+            if (!(detailsValue instanceof Map<?, ?> details)
+                    || !Boolean.TRUE.equals(details.get("exists"))) {
+                return deterministicUserId;
+            }
+            Object runtimeUserId = details.get("userId");
+            return runtimeUserId instanceof String value && value.matches("[a-f0-9-]{36}")
+                    ? value
+                    : null;
+        } catch (RestClientException exception) {
+            return null;
+        }
+    }
+
+    private void addResetOperations(
+            List<DownstreamOperation> operations,
+            String scenarioId,
+            NamedStateIdentity identity,
+            String userId) {
+        var targets = properties.getEnvironmentManagement().getTargetServices();
+        for (String component : List.of(
+                "APPLICATIONS",
+                "DOCUMENTS",
+                "PAYMENT",
+                "USER_PROFILE",
+                "AUTHENTICATION")) {
+            if (!identity.resetComponents().contains(component)) {
+                continue;
+            }
             switch (component) {
-                case "PAYMENT" -> operations.add(operation("payment-service", () -> delete("payment-service", targets.getPayment() + "/internal/system-data/scenario/" + scenarioId + "/payments/" + userId)));
-                case "DOCUMENTS" -> operations.add(operation("document-store-service", () -> delete("document-store-service", targets.getDocumentStore() + "/internal/system-data/scenario/" + scenarioId + "/documents/" + userId)));
-                case "APPLICATIONS" -> operations.add(operation("application-tracker-service", () -> delete("application-tracker-service", applicationScenarioUrl(targets.getApplicationTracker(), scenarioId, userId))));
+                case "APPLICATIONS" -> operations.add(operation("application-tracker-service", () -> delete("application-tracker-service", runtimeOwnerUrl(targets.getApplicationTracker(), scenarioId, identity.key(), userId))));
+                case "DOCUMENTS" -> operations.add(operation("document-store-service", () -> delete("document-store-service", runtimeOwnerUrl(targets.getDocumentStore(), scenarioId, identity.key(), userId))));
+                case "PAYMENT" -> operations.add(operation("payment-service", () -> delete("payment-service", runtimeOwnerUrl(targets.getPayment(), scenarioId, identity.key(), userId))));
                 case "USER_PROFILE" -> operations.add(operation("user-profile-service", () -> delete("user-profile-service", targets.getUserProfile() + "/internal/system-data/scenario/" + scenarioId + "/profiles/" + userId)));
                 case "AUTHENTICATION" -> operations.add(operation("authentication-service", () -> delete("authentication-service", targets.getAuthentication() + "/internal/system-data/scenario/" + scenarioId + "/users/" + userId)));
                 default -> throw new IllegalStateException("Unsupported named-state component");
@@ -216,11 +267,13 @@ public class EnvironmentOrchestrationService {
         Map<String, Object> user = map(
                 "scenarioId", scenarioId, "userId", userId, "name", identity.displayName(),
                 "email", identity.email(), "password", "PublicTestPassword123!", "syntheticIdentity", true);
-        Map<String, Object> profile = map(
-                "userId", userId, "skills", List.of("Java", "Testing"),
-                "aspirations", map("targetRoles", List.of("Software Developer"), "targetWeeklyHours", "FULL_TIME"),
-                "workPreferences", map("location", map("postcode", "RG1 1AA", "region", "South East", "adminDistrict", "Reading"), "commuteRange", 25),
-                "qualifications", List.of(), "roles", List.of());
+        Map<String, Object> profile = scenarioId.equals("real-world-personas-v2")
+                ? personaCatalog.profile(identity.key(), userId)
+                : map(
+                        "userId", userId, "skills", List.of("Java", "Testing"),
+                        "aspirations", map("targetRoles", List.of("Software Developer"), "targetWeeklyHours", "FULL_TIME"),
+                        "workPreferences", map("location", map("postcode", "RG1 1AA", "region", "South East", "adminDistrict", "Reading"), "commuteRange", 25),
+                        "qualifications", List.of(), "roles", List.of());
         for (String component : identity.seedComponents()) {
             switch (component) {
                 case "AUTHENTICATION" -> operations.add(operation("authentication-service", () -> post("authentication-service", targets.getAuthentication() + "/internal/system-data/seed/user", user)));
@@ -289,9 +342,9 @@ public class EnvironmentOrchestrationService {
                 switch (component) {
                     case "AUTHENTICATION" -> operations.add(operation("authentication-service", () -> get("authentication-service", targets.getAuthentication() + "/internal/system-data/verify/users/" + userId)));
                     case "USER_PROFILE" -> operations.add(operation("user-profile-service", () -> get("user-profile-service", targets.getUserProfile() + "/internal/system-data/verify/profiles/" + userId)));
-                    case "APPLICATIONS" -> operations.add(operation("application-tracker-service", () -> get("application-tracker-service", applicationScenarioUrl(targets.getApplicationTracker(), definition.scenarioId(), userId))));
-                    case "DOCUMENTS" -> operations.add(operation("document-store-service", () -> get("document-store-service", targets.getDocumentStore() + "/internal/system-data/verify/documents/" + userId)));
-                    case "PAYMENT" -> operations.add(operation("payment-service", () -> get("payment-service", targets.getPayment() + "/internal/system-data/verify/payments/" + userId)));
+                    case "APPLICATIONS" -> operations.add(operation("application-tracker-service", () -> get("application-tracker-service", runtimeOwnerUrl(targets.getApplicationTracker(), definition.scenarioId(), identity.key(), userId))));
+                    case "DOCUMENTS" -> operations.add(operation("document-store-service", () -> get("document-store-service", runtimeOwnerUrl(targets.getDocumentStore(), definition.scenarioId(), identity.key(), userId))));
+                    case "PAYMENT" -> operations.add(operation("payment-service", () -> get("payment-service", runtimeOwnerUrl(targets.getPayment(), definition.scenarioId(), identity.key(), userId))));
                     default -> throw new IllegalStateException("Unsupported named-state component");
                 }
             }
@@ -299,9 +352,18 @@ public class EnvironmentOrchestrationService {
         return executeFailFast(operations);
     }
 
-    private String applicationScenarioUrl(String baseUrl, String scenarioId, String userId) {
-        return baseUrl + "/internal/system-data/v1/application-scenarios/"
-                + scenarioId + "/owners/" + userId;
+    private String runtimeOwnerUrl(
+            String baseUrl,
+            String scenarioId,
+            String identityKey,
+            String userId) {
+        return baseUrl
+                + "/internal/system-data/v1/runtime-owners/"
+                + scenarioId
+                + "/identities/"
+                + identityKey
+                + "/owners/"
+                + userId;
     }
 
     private EnvironmentOperationResponse response(String operation, EnvironmentScenario scenario, Instant startedAt, List<EnvironmentServiceResult> services, EnvironmentSummary summary, List<String> warnings) {
@@ -465,41 +527,37 @@ public class EnvironmentOrchestrationService {
     private int intDetail(List<EnvironmentServiceResult> services, String serviceName, String key) {
         return services.stream()
                 .filter(result -> serviceName.equals(result.service()))
-                .findFirst()
                 .map(result -> result.details().get(key))
                 .filter(Number.class::isInstance)
                 .map(Number.class::cast)
-                .map(Number::intValue)
-                .orElse(0);
+                .mapToInt(Number::intValue)
+                .sum();
     }
 
     private Long longDetail(List<EnvironmentServiceResult> services, String serviceName, String key) {
         return services.stream()
                 .filter(result -> serviceName.equals(result.service()))
-                .findFirst()
                 .map(result -> result.details().get(key))
                 .filter(Number.class::isInstance)
                 .map(Number.class::cast)
-                .map(Number::longValue)
-                .orElse(0L);
+                .mapToLong(Number::longValue)
+                .sum();
     }
 
     @SuppressWarnings("unchecked")
     private Map<String, Integer> applicationsByStatus(List<EnvironmentServiceResult> services) {
-        Object byStatus = services.stream()
-                .filter(result -> "application-tracker-service".equals(result.service()))
-                .findFirst()
-                .map(result -> result.details().get("byStatus"))
-                .orElse(null);
-        if (!(byStatus instanceof Map<?, ?> rawStatuses)) {
-            return Map.of();
-        }
         Map<String, Integer> statuses = new LinkedHashMap<>();
-        rawStatuses.forEach((key, value) -> {
-            if (value instanceof Number number) {
-                statuses.put(key.toString(), number.intValue());
-            }
-        });
+        services.stream()
+                .filter(result -> "application-tracker-service".equals(result.service()))
+                .map(result -> result.details().get("byStatus"))
+                .filter(Map.class::isInstance)
+                .map(Map.class::cast)
+                .forEach(rawStatuses -> rawStatuses.forEach((key, value) -> {
+                    if (value instanceof Number number) {
+                        statuses.merge(
+                                key.toString(), number.intValue(), Integer::sum);
+                    }
+                }));
         return statuses;
     }
 

@@ -6,6 +6,7 @@ import com.jobseekercopilot.systemdata.model.FixtureJobSearchResponse;
 import com.jobseekercopilot.systemdata.model.FixtureLlmRequest;
 import com.jobseekercopilot.systemdata.model.FixtureLlmResponse;
 import com.jobseekercopilot.systemdata.model.FixturePostcodeResponse;
+import com.jobseekercopilot.systemdata.model.FixturePlaceResponse;
 import com.jobseekercopilot.systemdata.model.FixtureStatusResponse;
 import com.jobseekercopilot.systemdata.model.FixtureStripeRequest;
 import com.jobseekercopilot.systemdata.model.FixtureStripeResponse;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import java.util.List;
 
 @RestController
 @RequestMapping("/internal/fixtures")
@@ -68,6 +70,14 @@ public class FixtureController {
     public FixturePostcodeResponse postcode(@PathVariable String postcode) {
         guard.requireEnabled();
         return fixtureService.postcode(postcode);
+    }
+
+    @GetMapping("/places")
+    public List<FixturePlaceResponse> places(
+            @RequestParam(defaultValue = "") String query,
+            @RequestParam(defaultValue = "10") Integer limit) {
+        guard.requireEnabled();
+        return fixtureService.places(query, limit);
     }
 
     @PostMapping("/llm/respond")

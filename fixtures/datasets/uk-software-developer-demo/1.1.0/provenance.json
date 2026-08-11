@@ -12,8 +12,8 @@
     "generator": "scripts/generate-synthetic-fixtures.sh",
     "liveProvidersCalled": false,
     "method": "DETERMINISTIC_LOCAL_GENERATOR",
-    "sourceSpecification": "fixtures/source/uk-software-developer-demo-v1.json",
-    "sourceSpecificationSha256": "72646f6fbc6d3d70f55783048441fafb21bec67ccccb224b08e03be083790bc1"
+    "sourceSpecification": "fixtures/source/uk-software-developer-demo-v1.1.json",
+    "sourceSpecificationSha256": "26fbadc9f40c6c2a160af7cce68588ac4d037b2e528b20f497c3b5a4a2e2a3a0"
   },
   "dataPolicy": {
     "containsCapturedProviderData": false,
@@ -25,7 +25,7 @@
     "minimisation": "Only fields required by fixture consumers are populated."
   },
   "datasetId": "uk-software-developer-demo",
-  "datasetVersion": "1.0.0",
+  "datasetVersion": "1.1.0",
   "licence": {
     "externalDatasets": [],
     "identifier": "LicenseRef-JobSeekerCopilot-Proprietary",
@@ -39,7 +39,7 @@
     "reviewBy": "2027-01-10"
   },
   "payloadChecksums": {
-    "jobs.json": "f83706d84e4beed815e7f9d8384fc4bba039b4eed97d15fef795a4f0f8656f28",
+    "jobs.json": "09e67c12f731db0c6798d000cbfd4ef9180c4a718732ae4c21b0a57b4d996756",
     "llm-fixtures.json": "9042f24183be782c8c02dcf7cc30b571e47d3ece8f742ea246a001f643a11b69",
     "locations.json": "7656bb77f470bb08b0861fb1c0092c808ec5ceba136e0947620a0642f2d16ec3"
   },
@@ -58,7 +58,7 @@
       "user.json"
     ],
     "path": "src/main/resources/scenarios/demo-ready-v1",
-    "sha256": "e06df135467b0135b423253305c0a54bf8f36e27cb78f82438eb2f7e9ac32fec"
+    "sha256": "ab9f6675c046b8581a11359ea1863357a3968c016cd03be3929d30bc87f77469"
   },
   "schemaVersion": "1.0"
 }

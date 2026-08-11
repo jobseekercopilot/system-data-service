@@ -10,6 +10,7 @@ import com.jobseekercopilot.systemdata.model.FixtureJobSearchResponse;
 import com.jobseekercopilot.systemdata.model.FixtureLlmRequest;
 import com.jobseekercopilot.systemdata.model.FixtureLlmResponse;
 import com.jobseekercopilot.systemdata.model.FixturePostcodeResponse;
+import com.jobseekercopilot.systemdata.model.FixturePlaceResponse;
 import com.jobseekercopilot.systemdata.model.FixtureStripeRequest;
 import com.jobseekercopilot.systemdata.model.FixtureStripeResponse;
 import com.jobseekercopilot.systemdata.util.DeterministicIds;
@@ -82,6 +83,30 @@ public class FixtureService {
         String clean = postcode == null ? "" : postcode.replaceAll("\\s+", "").toUpperCase(Locale.ROOT);
         return knownPostcodes().getOrDefault(clean,
                 new FixturePostcodeResponse(postcode, "England", "South East", "Reading", 51.4543, -0.9781, false, "fallback"));
+    }
+
+    public List<FixturePlaceResponse> places(String query, Integer limit) {
+        String requested = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
+        int boundedLimit = Math.min(10, Math.max(1, limit == null ? 10 : limit));
+        if (requested.length() < 2) {
+            return List.of();
+        }
+        return knownPostcodes().values().stream()
+                .filter(FixturePostcodeResponse::found)
+                .filter(place -> contains(place.adminDistrict(), requested)
+                        || contains(place.region(), requested)
+                        || contains(place.postcode(), requested))
+                .sorted(Comparator.comparing(FixturePostcodeResponse::adminDistrict))
+                .limit(boundedLimit)
+                .map(place -> new FixturePlaceResponse(
+                        DeterministicIds.uuidString("fixture-place:" + place.postcode()),
+                        place.adminDistrict() + ", " + place.region(),
+                        place.postcode(),
+                        place.region(),
+                        place.adminDistrict(),
+                        place.latitude(),
+                        place.longitude()))
+                .toList();
     }
 
     public FixtureLlmResponse llm(FixtureLlmRequest request) {
@@ -271,8 +296,9 @@ public class FixtureService {
                   "cv": {
                     "title": "Tailored Java Software Developer CV",
                     "targetRole": "Java Software Developer",
-                    "personalSummary": "Software developer with Java experience focused on useful and reliable services.",
+                    "personalSummary": "Java software developer experienced in building reliable Spring Boot microservices and accessible Angular products. Combines pragmatic API design, automated testing and cloud delivery with a record of improving deployment speed and reducing escaped defects in collaborative Agile teams.",
                     "coreSkills": [],
+                    "projects": [],
                     "qualifications": [],
                     "workHistory": []
                   },
@@ -281,10 +307,12 @@ public class FixtureService {
                     "jobTitle": "Java Software Developer",
                     "companyName": "Northstar Digital Labs",
                     "greeting": "Dear Hiring Manager,",
-                    "openingParagraph": "I am applying for the Java Software Developer role.",
+                    "openingParagraph": "Please consider my application for this role.",
                     "bodyParagraphs": [
-                      "I use Java to build reliable services.",
-                      "I value automated testing and supportive collaboration."
+                      {"text":"My profile includes confirmed software-delivery experience.","disposition":"REWORDED","evidenceIds":["PROFILE.SKILL.1"]},
+                      {"text":"That confirmed experience is relevant to this Java Software Developer role.","disposition":"REWORDED","evidenceIds":["PROFILE.SKILL.1","JOB.TITLE"]},
+                      {"text":"I would bring that confirmed experience to the role.","disposition":"REWORDED","evidenceIds":["PROFILE.SKILL.1"]},
+                      {"text":"I welcome the opportunity to discuss how that experience supports the Java Software Developer role.","disposition":"REWORDED","evidenceIds":["PROFILE.SKILL.1","JOB.TITLE"]}
                     ],
                     "closingParagraph": "Thank you for considering my application.",
                     "signOff": "Yours sincerely"
@@ -295,17 +323,29 @@ public class FixtureService {
                     "tailoringSummary": "Fixture-generated documents tailored to the governed synthetic Java vacancy."
                   },
                   "claims": [
-                    {"claimId":"CLAIM-001","disposition":"REWORDED","evidenceIds":["PROFILE.SKILL.1","JOB.TITLE"],"contentPaths":["/cv/title"],"reviewText":""},
-                    {"claimId":"CLAIM-002","disposition":"SUPPORTED","evidenceIds":["JOB.TITLE"],"contentPaths":["/cv/targetRole"],"reviewText":""},
-                    {"claimId":"CLAIM-003","disposition":"REWORDED","evidenceIds":["PROFILE.SKILL.1","JOB.DESCRIPTION"],"contentPaths":["/cv/personalSummary"],"reviewText":""},
-                    {"claimId":"CLAIM-004","disposition":"REWORDED","evidenceIds":["JOB.TITLE"],"contentPaths":["/coverLetter/title"],"reviewText":""},
-                    {"claimId":"CLAIM-005","disposition":"SUPPORTED","evidenceIds":["JOB.TITLE"],"contentPaths":["/coverLetter/jobTitle"],"reviewText":""},
-                    {"claimId":"CLAIM-006","disposition":"SUPPORTED","evidenceIds":["JOB.COMPANY"],"contentPaths":["/coverLetter/companyName"],"reviewText":""},
-                    {"claimId":"CLAIM-007","disposition":"REWORDED","evidenceIds":["REQUEST.GENERATION_INTENT","JOB.TITLE"],"contentPaths":["/coverLetter/openingParagraph"],"reviewText":""},
-                    {"claimId":"CLAIM-008","disposition":"REWORDED","evidenceIds":["PROFILE.SKILL.1","PROFILE.EMPLOYMENT.1.RESPONSIBILITIES"],"contentPaths":["/coverLetter/bodyParagraphs/0"],"reviewText":""},
-                    {"claimId":"CLAIM-009","disposition":"REWORDED","evidenceIds":["JOB.DESCRIPTION"],"contentPaths":["/coverLetter/bodyParagraphs/1"],"reviewText":""},
-                    {"claimId":"CLAIM-010","disposition":"SUPPORTED","evidenceIds":["JOB.DESCRIPTION"],"contentPaths":["/coverLetter/closingParagraph"],"reviewText":""}
-                  ]
+                    {"claimId":"CLAIM-001","disposition":"SUPPORTED","evidenceIds":["JOB.TITLE"],"contentPaths":["/cv/targetRole"],"reviewText":""},
+                    {"claimId":"CLAIM-002","disposition":"SUPPORTED","evidenceIds":["JOB.TITLE"],"contentPaths":["/coverLetter/jobTitle"],"reviewText":""},
+                    {"claimId":"CLAIM-003","disposition":"SUPPORTED","evidenceIds":["JOB.COMPANY"],"contentPaths":["/coverLetter/companyName"],"reviewText":""}
+                  ],
+                  "canonicalApplicationClaims": {
+                    "opening": {
+                      "claimId":"CLAIM-9001","disposition":"SUPPORTED",
+                      "generationIntentEvidenceId":"REQUEST.GENERATION_INTENT",
+                      "jobTitleEvidenceId":"JOB.TITLE","companyEvidenceId":"JOB.COMPANY",
+                      "contentPath":"/coverLetter/openingParagraph","reviewText":""
+                    },
+                    "closing": {
+                      "claimId":"CLAIM-9002","disposition":"SUPPORTED",
+                      "generationIntentEvidenceId":"REQUEST.GENERATION_INTENT",
+                      "jobTitleEvidenceId":"JOB.TITLE","companyEvidenceId":"JOB.COMPANY",
+                      "contentPath":"/coverLetter/closingParagraph","reviewText":""
+                    }
+                  },
+                  "personalSummaryClaim": {
+                    "claimId":"CLAIM-9003","disposition":"REWORDED",
+                    "evidenceIds":["PROFILE.SKILL.1","JOB.TITLE"],
+                    "contentPath":"/cv/personalSummary","reviewText":""
+                  }
                 }
                 """;
     }

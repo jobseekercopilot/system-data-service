@@ -154,7 +154,8 @@ public class DemoEnvironmentScenarioBuilder {
                         "targetWeeklyHours", "FULL_TIME"),
                 "workPreferences", map(
                         "location", map("postcode", null, "region", "Berkshire", "adminDistrict", "Reading", "latitude", 51.4543, "longitude", -0.9781),
-                        "commuteRange", 35),
+                        "commuteRange", 35,
+                        "workplaceArrangements", List.of("HYBRID")),
                 "qualifications", List.of(map(
                         "qualificationName", "BSc Computer Science",
                         "issuingBody", "University of Birmingham",

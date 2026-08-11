@@ -1,5 +1,5 @@
 {
-  "checksum": "9e26b1831eff41812a1a6a65c56346b90684168072f29de4e866ccb4829bfcd6",
+  "checksum": "1fbf31e9ac15e07eeeb61dd0f8326a7e40e949292393e5b84b0ad6eae80cd83e",
   "createdAt": "2026-07-10T09:00:00Z",
   "datasetId": "uk-software-developer-demo",
   "description": "Fully synthetic UK software-development vacancies for non-production tests and demonstrations.",
@@ -22,6 +22,7 @@
     "API Developer",
     "Angular Developer",
     "Backend Developer",
+    "Cloud Software Developer",
     "Full Stack Developer",
     "Java Software Developer",
     "Junior Software Developer",
@@ -30,7 +31,7 @@
     "Spring Boot Developer"
   ],
   "recordCounts": {
-    "jobs": 9,
+    "jobs": 10,
     "locations": 6
   },
   "sanitised": true,
@@ -53,6 +54,6 @@
     "valid": true,
     "warnings": []
   },
-  "version": "1.0.0",
+  "version": "1.1.0",
   "warnings": []
 }

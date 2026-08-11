@@ -458,6 +458,57 @@
       "suitableForDemo": true,
       "title": "Platform Software Developer",
       "workingPattern": "FULL_TIME"
+    },
+    {
+      "benefits": [
+        "Synthetic benefit description"
+      ],
+      "category": "Software Development",
+      "closingDate": "2026-08-31",
+      "companyDisplayName": "Willow Test Systems",
+      "companyName": "Willow Test Systems",
+      "contractType": "PERMANENT",
+      "datePosted": "2026-06-29",
+      "description": "A fictional Leeds engineering team is building synthetic cloud workflow services with Java and stable REST APIs. The role covers accessible product delivery, automated tests, secure integration boundaries and collaborative review in a completely non-production environment.",
+      "employmentType": "FULL_TIME",
+      "externalReference": "SYNTH-JOB-010",
+      "generatedMetadata": {
+        "generator": "generate-synthetic-fixtures.sh",
+        "sourceKey": "SYNTH-JOB-010"
+      },
+      "id": "10000000-0000-4000-8000-000000000010",
+      "latitude": null,
+      "locationName": "Leeds",
+      "longitude": null,
+      "postcode": null,
+      "qualifications": [],
+      "qualityScore": 95.0,
+      "region": null,
+      "remoteType": "REMOTE",
+      "salaryCurrency": "GBP",
+      "salaryMaximum": 55000,
+      "salaryMinimum": 41000,
+      "salaryPeriod": "YEAR",
+      "seniority": "MID",
+      "shortDescription": "A fictional Leeds engineering team is building synthetic cloud workflow services with Java and stable REST APIs. The role covers accessible ",
+      "skills": [
+        "Java",
+        "Cloud",
+        "REST APIs",
+        "Testing"
+      ],
+      "sourceLocation": "Leeds",
+      "sourceMetadata": {
+        "classification": "FULLY_SYNTHETIC",
+        "fixture": true
+      },
+      "sourceProvider": "adzuna-gateway-fixture",
+      "sourceQuery": "Cloud Software Developer",
+      "sourceRetrievedAt": "2026-07-10T09:00:00Z",
+      "sourceUrl": "https://jobs.example.test/synthetic/SYNTH-JOB-010",
+      "suitableForDemo": false,
+      "title": "Cloud Software Developer",
+      "workingPattern": "FULL_TIME"
     }
   ],
   "schemaVersion": "1.0"

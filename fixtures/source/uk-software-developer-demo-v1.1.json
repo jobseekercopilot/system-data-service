@@ -2,7 +2,7 @@
   "dataset": {
     "id": "uk-software-developer-demo",
     "name": "UK Software Developer Demo",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "createdAt": "2026-07-10T09:00:00Z",
     "reviewBy": "2027-01-10",
     "expiresAt": "2027-07-10",
@@ -145,6 +145,22 @@
       "datePosted": "2026-06-30",
       "skills": ["Java", "Docker", "CI", "Observability"],
       "description": "Help a fictional platform team simplify developer tooling with Java services and Docker-based local environments. The synthetic vacancy covers health checks, structured logs, CI reliability, dependency maintenance and calm incident-oriented problem solving."
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000000010",
+      "externalReference": "SYNTH-JOB-010",
+      "sourceProvider": "adzuna-gateway-fixture",
+      "title": "Cloud Software Developer",
+      "company": "Willow Test Systems",
+      "location": "Leeds",
+      "salaryMinimum": 41000,
+      "salaryMaximum": 55000,
+      "remoteType": "REMOTE",
+      "seniority": "MID",
+      "datePosted": "2026-06-29",
+      "skills": ["Java", "Cloud", "REST APIs", "Testing"],
+      "description": "A fictional Leeds engineering team is building synthetic cloud workflow services with Java and stable REST APIs. The role covers accessible product delivery, automated tests, secure integration boundaries and collaborative review in a completely non-production environment.",
+      "suitableForDemo": false
     }
   ],
   "locations": [

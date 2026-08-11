@@ -1,0 +1,217 @@
+[
+  {
+    "personaId": "minimal-profile",
+    "journeyStyle": "gradual-entry",
+    "purpose": "Proves that sparse optional data remains usable and does not invite invented experience.",
+    "capabilities": ["onboarding", "profile-save-reload", "job-search", "grounded-generation"],
+    "profile": {
+      "skills": ["Customer service", "Microsoft Office", "Organisation"],
+      "aspirations": {"targetRoles": ["Administrative Assistant"], "targetWeeklyHours": "FULL_TIME"},
+      "workPreferences": {
+        "location": {"locationId": "10000000-0000-0000-0000-000000000001", "displayName": "Birmingham", "countryCode": "GB", "postcode": "B1 1AA", "region": "West Midlands", "adminDistrict": "Birmingham", "latitude": 52.4797, "longitude": -1.9027, "locationType": "POSTCODE", "precision": "POSTCODE_CENTROID", "confidence": "VERIFIED", "postcodesIoPlaceId": "fixture-b1-1aa", "displayNameSource": "POSTCODES_IO", "postcodeSource": "POSTCODES_IO", "coordinatesSource": "POSTCODES_IO"},
+        "commuteRange": 10,
+        "commuteTravelModes": ["TRANSIT"],
+        "maximumTransitMinutes": 45,
+        "employmentTypes": ["PERMANENT"],
+        "workingPatterns": ["FULL_TIME"],
+        "workplaceArrangements": ["ONSITE", "HYBRID"],
+        "noticePeriodDays": 0
+      },
+      "qualifications": [],
+      "roles": []
+    }
+  },
+  {
+    "personaId": "typical-profile",
+    "journeyStyle": "returning-engaged-user",
+    "purpose": "Represents an engaged beta user with two roles, one qualification and common preferences.",
+    "capabilities": ["profile-edit", "job-search", "matching", "documents", "tracking", "reporting", "returning-user"],
+    "profile": {
+      "skills": ["Java", "Spring Boot", "TypeScript", "Angular", "SQL", "REST APIs", "Git", "Docker", "Agile delivery", "Communication"],
+      "aspirations": {"targetRoles": ["Software Developer", "Java Developer"], "targetWeeklyHours": "FULL_TIME"},
+      "workPreferences": {
+        "location": {"locationId": "20000000-0000-0000-0000-000000000002", "displayName": "Reading", "countryCode": "GB", "postcode": "RG1 1AA", "region": "South East", "adminDistrict": "Reading", "latitude": 51.4543, "longitude": -0.9781, "locationType": "POSTCODE", "precision": "POSTCODE_CENTROID", "confidence": "VERIFIED", "postcodesIoPlaceId": "fixture-rg1-1aa", "displayNameSource": "POSTCODES_IO", "postcodeSource": "POSTCODES_IO", "coordinatesSource": "POSTCODES_IO"},
+        "commuteRange": 25,
+        "commuteTravelModes": ["DRIVE", "TRANSIT"],
+        "maximumDrivingMinutes": 45,
+        "maximumTransitMinutes": 60,
+        "employmentTypes": ["PERMANENT", "FIXED_TERM"],
+        "workingPatterns": ["FULL_TIME", "FLEXIBLE"],
+        "workplaceArrangements": ["HYBRID", "REMOTE"],
+        "noticePeriodDays": 28
+      },
+      "qualifications": [
+        {"qualificationName": "BSc Computer Science", "issuingBody": "University of Birmingham", "status": "COMPLETED", "grade": "2:1", "dateAchieved": "2021-06"}
+      ],
+      "roles": [
+        {"jobTitle": "Software Developer", "employer": "BrightTech Solutions", "status": "CURRENT", "startDate": "2022-03", "keyResponsibilities": "Builds Spring Boot services and Angular features, reviews code and supports reliable releases."},
+        {"jobTitle": "Junior Developer", "employer": "CodeBridge Ltd", "status": "PREVIOUS_ROLE", "startDate": "2021-07", "endDate": "2022-02", "keyResponsibilities": "Fixed defects, wrote automated tests and maintained internal web applications."}
+      ]
+    }
+  },
+  {
+    "personaId": "rich-profile",
+    "journeyStyle": "complete-professional-profile",
+    "purpose": "Exercises substantial supported data, quantified evidence and several job-search constraints.",
+    "capabilities": ["profile-edit", "evidence-library", "matching", "generation", "documents", "tracking", "reporting"],
+    "profile": {
+      "skills": ["Java", "Kotlin", "Spring Boot", "Angular", "TypeScript", "PostgreSQL", "Redis", "Kafka", "REST APIs", "OpenAPI", "Docker", "Kubernetes", "AWS", "Terraform", "GitHub Actions", "Contract testing", "Accessibility", "Observability", "Mentoring", "Stakeholder communication"],
+      "aspirations": {"targetRoles": ["Senior Software Engineer", "Backend Engineer", "Platform Engineer"], "targetWeeklyHours": "FULL_TIME"},
+      "workPreferences": {
+        "location": {"locationId": "30000000-0000-0000-0000-000000000003", "displayName": "Manchester", "countryCode": "GB", "postcode": "M1 1AE", "region": "North West", "adminDistrict": "Manchester", "latitude": 53.4808, "longitude": -2.2426, "locationType": "POSTCODE", "precision": "POSTCODE_CENTROID", "confidence": "VERIFIED", "postcodesIoPlaceId": "fixture-m1-1ae", "displayNameSource": "POSTCODES_IO", "postcodeSource": "POSTCODES_IO", "coordinatesSource": "POSTCODES_IO"},
+        "commuteRange": 35,
+        "commuteTravelModes": ["DRIVE", "TRANSIT"],
+        "maximumDrivingMinutes": 60,
+        "maximumTransitMinutes": 75,
+        "employmentTypes": ["PERMANENT", "FIXED_TERM", "CONTRACT"],
+        "workingPatterns": ["FULL_TIME", "FLEXIBLE"],
+        "workplaceArrangements": ["HYBRID", "REMOTE"],
+        "noticePeriodDays": 56
+      },
+      "qualifications": [
+        {"qualificationName": "MSc Software Engineering", "issuingBody": "University of Manchester", "status": "COMPLETED", "grade": "Distinction", "dateAchieved": "2018-09"},
+        {"qualificationName": "AWS Certified Developer – Associate", "issuingBody": "Amazon Web Services", "status": "COMPLETED", "grade": "Pass", "dateAchieved": "2024-02"},
+        {"qualificationName": "Professional Scrum Master I", "issuingBody": "Scrum.org", "status": "COMPLETED", "grade": "Pass", "dateAchieved": "2022-11"}
+      ],
+      "roles": [
+        {"jobTitle": "Senior Software Engineer", "employer": "Civic Digital Works", "status": "CURRENT", "startDate": "2022-04", "keyResponsibilities": "Leads delivery of citizen-facing services; reduced deployment lead time by 45%, introduced service-level dashboards and mentors four engineers."},
+        {"jobTitle": "Software Engineer", "employer": "Northern Retail Systems", "status": "PREVIOUS_ROLE", "startDate": "2019-01", "endDate": "2022-03", "keyResponsibilities": "Built Java and Kafka order services processing up to 1.2 million daily events and improved contract-test coverage across eight integrations."},
+        {"jobTitle": "Graduate Developer", "employer": "Maple Software", "status": "PREVIOUS_ROLE", "startDate": "2017-07", "endDate": "2018-12", "keyResponsibilities": "Implemented accessible Angular workflows, SQL reports and automated regression checks in a multidisciplinary team."}
+      ]
+    }
+  },
+  {
+    "personaId": "very-rich-profile",
+    "journeyStyle": "very-rich-consultant-profile",
+    "purpose": "Exercises rendering, serialization, persistence and prompt growth with a plausible long consulting career rather than claiming a maximum-scale stress test.",
+    "capabilities": ["boundary-save-reload", "large-evidence-library", "matching", "long-input-generation", "performance"],
+    "profile": {
+      "skills": ["Java", "Kotlin", "Python", "JavaScript", "TypeScript", "Spring Boot", "Quarkus", "Angular", "React", "Node.js", "PostgreSQL", "MySQL", "MongoDB", "Redis", "Elasticsearch", "Kafka", "RabbitMQ", "REST APIs", "GraphQL", "OpenAPI", "OAuth 2.0", "OIDC", "Docker", "Kubernetes", "Helm", "Terraform", "AWS", "Azure", "GitHub Actions", "Jenkins", "Prometheus", "Grafana", "OpenTelemetry", "JUnit", "Playwright", "Cucumber", "Contract testing", "Performance testing", "Threat modelling", "Accessibility", "Domain-driven design", "Event-driven architecture", "Microservices", "Technical leadership", "Mentoring", "Incident response", "Product discovery", "Stakeholder management", "Workshop facilitation", "Technical writing", "FinOps", "Data protection", "Agile delivery", "Continuous delivery", "Pair programming", "Code review", "SQL tuning", "Capacity planning", "Service reliability", "API governance"],
+      "aspirations": {"targetRoles": ["Staff Software Engineer", "Principal Engineer", "Engineering Lead", "Platform Architect", "Solutions Architect", "Backend Engineering Manager"], "targetWeeklyHours": "FLEXIBLE"},
+      "workPreferences": {
+        "location": {"locationId": "40000000-0000-0000-0000-000000000004", "displayName": "London", "countryCode": "GB", "postcode": "EC1A 1BB", "region": "London", "adminDistrict": "City of London", "latitude": 51.5202, "longitude": -0.0978, "locationType": "POSTCODE", "precision": "POSTCODE_CENTROID", "confidence": "VERIFIED", "postcodesIoPlaceId": "fixture-ec1a-1bb", "displayNameSource": "POSTCODES_IO", "postcodeSource": "POSTCODES_IO", "coordinatesSource": "POSTCODES_IO"},
+        "commuteRange": 50,
+        "commuteTravelModes": ["DRIVE", "TRANSIT"],
+        "maximumDrivingMinutes": 90,
+        "maximumTransitMinutes": 120,
+        "employmentTypes": ["PERMANENT", "FIXED_TERM", "CONTRACT"],
+        "workingPatterns": ["FULL_TIME", "PART_TIME", "FLEXIBLE", "DAY"],
+        "workplaceArrangements": ["ONSITE", "HYBRID", "REMOTE"],
+        "availableFrom": "2026-10-01"
+      },
+      "qualifications": [
+        {"qualificationName": "MEng Computer Systems Engineering", "issuingBody": "University of Bristol", "status": "COMPLETED", "grade": "First class", "dateAchieved": "2008-06"},
+        {"qualificationName": "AWS Certified Solutions Architect – Professional", "issuingBody": "Amazon Web Services", "status": "COMPLETED", "grade": "Pass", "dateAchieved": "2025-05"},
+        {"qualificationName": "Certified Kubernetes Administrator", "issuingBody": "Cloud Native Computing Foundation", "status": "COMPLETED", "grade": "Pass", "dateAchieved": "2024-08"},
+        {"qualificationName": "TOGAF Enterprise Architecture Foundation", "issuingBody": "The Open Group", "status": "COMPLETED", "grade": "Pass", "dateAchieved": "2023-03"},
+        {"qualificationName": "Professional Scrum Master I", "issuingBody": "Scrum.org", "status": "COMPLETED", "grade": "Pass", "dateAchieved": "2020-02"},
+        {"qualificationName": "FinOps Certified Practitioner", "issuingBody": "FinOps Foundation", "status": "IN_PROGRESS", "expectedCompletion": "2026-11"}
+      ],
+      "roles": [
+        {"jobTitle": "Principal Platform Consultant", "employer": "Harbour Financial Platforms", "status": "CURRENT", "startDate": "2025-04", "keyResponsibilities": "Sets technical direction for a regulated platform spanning twelve services, facilitates architecture decisions and partners with security and product leaders. Led a reliability programme that reduced priority incidents by 38% while preserving weekly delivery."},
+        {"jobTitle": "Cloud Delivery Consultant", "employer": "Oak Technology Partners", "status": "PREVIOUS_ROLE", "startDate": "2024-03", "endDate": "2025-03", "keyResponsibilities": "Designed reusable AWS deployment controls for a public-service portfolio and coached four delivery teams through production-readiness reviews and dependency mapping."},
+        {"jobTitle": "Lead Platform Engineer", "employer": "Northline Logistics", "status": "PREVIOUS_ROLE", "startDate": "2023-01", "endDate": "2024-02", "keyResponsibilities": "Established Kubernetes and observability standards for logistics services and reduced median recovery time from 95 to 24 minutes."},
+        {"jobTitle": "API Governance Consultant", "employer": "Civic Exchange Programme", "status": "PREVIOUS_ROLE", "startDate": "2022-01", "endDate": "2022-12", "keyResponsibilities": "Created an OpenAPI governance model, facilitated design reviews and introduced compatibility checks across eleven multidisciplinary service teams."},
+        {"jobTitle": "Senior Site Reliability Engineer", "employer": "Beacon Media Group", "status": "PREVIOUS_ROLE", "startDate": "2021-02", "endDate": "2021-12", "keyResponsibilities": "Introduced service-level objectives, incident learning reviews and capacity dashboards for subscription and entitlement services."},
+        {"jobTitle": "Platform Migration Lead", "employer": "Greenway Energy Systems", "status": "PREVIOUS_ROLE", "startDate": "2020-01", "endDate": "2021-01", "keyResponsibilities": "Planned a phased container migration, coordinated security assurance and moved critical workloads without missing agreed customer maintenance windows."},
+        {"jobTitle": "Principal Backend Engineer", "employer": "Market Street Payments", "status": "PREVIOUS_ROLE", "startDate": "2019-01", "endDate": "2019-12", "keyResponsibilities": "Designed idempotent payment APIs and Kafka workflows, supported PCI control evidence and improved deployment rollback procedures."},
+        {"jobTitle": "Technical Delivery Consultant", "employer": "Northern Health Digital", "status": "PREVIOUS_ROLE", "startDate": "2018-01", "endDate": "2018-12", "keyResponsibilities": "Coordinated suppliers and clinical stakeholders, maintained delivery risks and introduced accessible service documentation for a patient-notification programme."},
+        {"jobTitle": "Senior Integration Engineer", "employer": "Atlas Travel Cooperative", "status": "PREVIOUS_ROLE", "startDate": "2017-01", "endDate": "2017-12", "keyResponsibilities": "Built OAuth-secured partner APIs, introduced contract testing and traced intermittent message duplication across booking integrations."},
+        {"jobTitle": "DevOps Consultant", "employer": "Fieldstone Insurance", "status": "PREVIOUS_ROLE", "startDate": "2016-01", "endDate": "2016-12", "keyResponsibilities": "Automated infrastructure delivery with Terraform and Jenkins and documented auditable release controls for regulated policy services."},
+        {"jobTitle": "Senior Software Engineer", "employer": "Bramble Commerce", "status": "PREVIOUS_ROLE", "startDate": "2015-01", "endDate": "2015-12", "keyResponsibilities": "Developed catalogue and checkout services, tuned PostgreSQL queries and implemented operational dashboards for seasonal peaks."},
+        {"jobTitle": "Data Platform Engineer", "employer": "Riverside Analytics", "status": "PREVIOUS_ROLE", "startDate": "2014-01", "endDate": "2014-12", "keyResponsibilities": "Built Python ingestion jobs and Elasticsearch reporting indexes and introduced repeatable data-quality checks for customer analytics."},
+        {"jobTitle": "Application Modernisation Consultant", "employer": "Westborough Council", "status": "PREVIOUS_ROLE", "startDate": "2013-01", "endDate": "2013-12", "keyResponsibilities": "Mapped legacy case-management dependencies, delivered incremental Java upgrades and improved keyboard accessibility in high-volume staff workflows."},
+        {"jobTitle": "Software Engineer", "employer": "City Services Cooperative", "status": "PREVIOUS_ROLE", "startDate": "2012-01", "endDate": "2012-12", "keyResponsibilities": "Integrated document and identity services, investigated production defects and created SQL migration verification routines."},
+        {"jobTitle": "Java Developer", "employer": "Severn Learning Systems", "status": "PREVIOUS_ROLE", "startDate": "2011-01", "endDate": "2011-12", "keyResponsibilities": "Implemented course-enrolment workflows and role-based access controls and supported load testing before the academic-year peak."},
+        {"jobTitle": "Integration Developer", "employer": "Copper Rail Services", "status": "PREVIOUS_ROLE", "startDate": "2010-01", "endDate": "2010-12", "keyResponsibilities": "Developed timetable data interfaces, added message-retry controls and documented operational handover for support colleagues."},
+        {"jobTitle": "Application Developer", "employer": "Moorland Housing Association", "status": "PREVIOUS_ROLE", "startDate": "2009-01", "endDate": "2009-12", "keyResponsibilities": "Maintained resident-service applications, wrote regression checks and improved the accuracy of monthly operational reports."},
+        {"jobTitle": "Graduate Software Engineer", "employer": "Red Kite Systems", "status": "PREVIOUS_ROLE", "startDate": "2008-07", "endDate": "2008-12", "keyResponsibilities": "Implemented supervised Java web features, wrote SQL migration scripts and supported customer issue investigation."}
+      ]
+    }
+  },
+  {
+    "personaId": "uploaded-cv-first",
+    "journeyStyle": "uploaded-cv-led",
+    "purpose": "Represents a user who uploads and manages an existing application CV while maintaining profile data separately.",
+    "capabilities": ["application-cv-upload", "document-management", "original-file-retention", "generation"],
+    "profile": {
+      "skills": ["Bookkeeping", "Payroll", "Excel", "Xero", "Customer queries", "Attention to detail"],
+      "aspirations": {"targetRoles": ["Accounts Assistant", "Payroll Administrator"], "targetWeeklyHours": "PART_TIME_16_30"},
+      "workPreferences": {
+        "location": {"locationId": "50000000-0000-0000-0000-000000000005", "displayName": "Leeds", "countryCode": "GB", "postcode": "LS1 1UR", "region": "Yorkshire and The Humber", "adminDistrict": "Leeds", "latitude": 53.8008, "longitude": -1.5491, "locationType": "POSTCODE", "precision": "POSTCODE_CENTROID", "confidence": "VERIFIED", "postcodesIoPlaceId": "fixture-ls1-1ur", "displayNameSource": "POSTCODES_IO", "postcodeSource": "POSTCODES_IO", "coordinatesSource": "POSTCODES_IO"},
+        "commuteRange": 15,
+        "commuteTravelModes": ["TRANSIT"],
+        "maximumTransitMinutes": 50,
+        "employmentTypes": ["PERMANENT", "TEMPORARY"],
+        "workingPatterns": ["PART_TIME", "FLEXIBLE"],
+        "workplaceArrangements": ["ONSITE", "HYBRID"],
+        "noticePeriodDays": 14
+      },
+      "qualifications": [
+        {"qualificationName": "AAT Level 3 Diploma in Accounting", "issuingBody": "AAT", "status": "COMPLETED", "grade": "Pass", "dateAchieved": "2024-07"}
+      ],
+      "roles": [
+        {"jobTitle": "Finance Administrator", "employer": "Pennine Community Housing", "status": "CURRENT", "startDate": "2023-02", "keyResponsibilities": "Processes supplier invoices, reconciles statements and responds to resident account queries."},
+        {"jobTitle": "Customer Service Adviser", "employer": "Leeds Home Supplies", "status": "PREVIOUS_ROLE", "startDate": "2019-09", "endDate": "2023-01", "keyResponsibilities": "Resolved order and payment queries and maintained accurate customer records."}
+      ]
+    }
+  },
+  {
+    "personaId": "manual-profile-first",
+    "journeyStyle": "manual-profile-before-upload",
+    "purpose": "Protects carefully entered profile data when a later CV is uploaded and reviewed.",
+    "capabilities": ["manual-profile", "later-cv-upload", "non-destructive-merge", "deduplication", "document-lineage"],
+    "profile": {
+      "skills": ["Project planning", "Risk management", "Budget tracking", "Stakeholder communication", "Workshop facilitation", "Jira", "Confluence", "Excel", "Procurement", "Continuous improvement", "Team leadership", "Reporting"],
+      "aspirations": {"targetRoles": ["Project Coordinator", "Junior Project Manager"], "targetWeeklyHours": "FULL_TIME"},
+      "workPreferences": {
+        "location": {"locationId": "60000000-0000-0000-0000-000000000006", "displayName": "Bristol", "countryCode": "GB", "postcode": "BS1 1AA", "region": "South West", "adminDistrict": "Bristol", "latitude": 51.4545, "longitude": -2.5879, "locationType": "POSTCODE", "precision": "POSTCODE_CENTROID", "confidence": "VERIFIED", "postcodesIoPlaceId": "fixture-bs1-1aa", "displayNameSource": "POSTCODES_IO", "postcodeSource": "POSTCODES_IO", "coordinatesSource": "POSTCODES_IO"},
+        "commuteRange": 25,
+        "commuteTravelModes": ["DRIVE", "TRANSIT"],
+        "maximumDrivingMinutes": 45,
+        "maximumTransitMinutes": 60,
+        "employmentTypes": ["PERMANENT", "FIXED_TERM"],
+        "workingPatterns": ["FULL_TIME", "FLEXIBLE"],
+        "workplaceArrangements": ["HYBRID"],
+        "noticePeriodDays": 28
+      },
+      "qualifications": [
+        {"qualificationName": "APM Project Fundamentals Qualification", "issuingBody": "Association for Project Management", "status": "COMPLETED", "grade": "Pass", "dateAchieved": "2025-09"},
+        {"qualificationName": "BA Business Management", "issuingBody": "University of the West of England", "status": "COMPLETED", "grade": "2:1", "dateAchieved": "2020-06"}
+      ],
+      "roles": [
+        {"jobTitle": "Project Support Officer", "employer": "Westway Energy", "status": "CURRENT", "startDate": "2022-08", "keyResponsibilities": "Maintains plans, risks and actions for a £2.4m programme; prepares governance packs and coordinates suppliers across four workstreams."},
+        {"jobTitle": "Operations Administrator", "employer": "Bristol Learning Trust", "status": "PREVIOUS_ROLE", "startDate": "2020-08", "endDate": "2022-07", "keyResponsibilities": "Coordinated schedules, purchasing and monthly performance reporting for three sites."}
+      ]
+    }
+  },
+  {
+    "personaId": "career-changer",
+    "journeyStyle": "transferable-skills",
+    "purpose": "Proves that matching and generation distinguish past occupation from the desired role.",
+    "capabilities": ["transferable-skills", "cross-sector-matching", "grounded-generation", "career-change-guidance"],
+    "profile": {
+      "skills": ["Lesson planning", "Facilitation", "Stakeholder communication", "Risk identification", "Progress reporting", "Conflict resolution", "Data analysis", "Excel", "Microsoft Teams", "Organisation", "Coaching", "Continuous improvement"],
+      "aspirations": {"targetRoles": ["Project Coordinator", "Programme Support Officer"], "targetWeeklyHours": "FULL_TIME"},
+      "workPreferences": {
+        "location": {"locationId": "70000000-0000-0000-0000-000000000007", "displayName": "Manchester", "countryCode": "GB", "postcode": "M1 1AE", "region": "North West", "adminDistrict": "Manchester", "latitude": 53.4808, "longitude": -2.2426, "locationType": "POSTCODE", "precision": "POSTCODE_CENTROID", "confidence": "VERIFIED", "postcodesIoPlaceId": "fixture-m1-1ae-career", "displayNameSource": "POSTCODES_IO", "postcodeSource": "POSTCODES_IO", "coordinatesSource": "POSTCODES_IO"},
+        "commuteRange": 20,
+        "commuteTravelModes": ["TRANSIT"],
+        "maximumTransitMinutes": 60,
+        "employmentTypes": ["PERMANENT", "FIXED_TERM"],
+        "workingPatterns": ["FULL_TIME"],
+        "workplaceArrangements": ["ONSITE", "HYBRID", "REMOTE"],
+        "availableFrom": "2026-09-01"
+      },
+      "qualifications": [
+        {"qualificationName": "PGCE Secondary Education", "issuingBody": "Manchester Metropolitan University", "status": "COMPLETED", "grade": "Pass", "dateAchieved": "2018-07"},
+        {"qualificationName": "BA History", "issuingBody": "University of Liverpool", "status": "COMPLETED", "grade": "2:1", "dateAchieved": "2017-06"},
+        {"qualificationName": "Google Project Management Certificate", "issuingBody": "Google", "status": "IN_PROGRESS", "expectedCompletion": "2026-10"}
+      ],
+      "roles": [
+        {"jobTitle": "Secondary School Teacher", "employer": "Mersey View Academy", "status": "CURRENT", "startDate": "2018-09", "keyResponsibilities": "Plans and delivers programmes for six classes, coordinates assessment deadlines, reports progress to families and leaders, and led a curriculum change involving nine colleagues."},
+        {"jobTitle": "Museum Learning Assistant", "employer": "North West Heritage Centre", "status": "PREVIOUS_ROLE", "startDate": "2016-09", "endDate": "2017-08", "keyResponsibilities": "Organised workshops, maintained booking records and adapted activities for varied audiences."}
+      ]
+    }
+  }
+]
