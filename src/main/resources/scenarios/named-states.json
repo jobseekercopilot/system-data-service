@@ -6,7 +6,7 @@
     "purpose": "Scenario-owned application data is absent across all participating services.",
     "providerBehaviour": "FIXTURE",
     "datasetId": "uk-software-developer-demo",
-    "datasetVersion": "1.0.0",
+    "datasetVersion": "1.1.0",
     "referenceDate": "2026-07-10T09:00:00Z",
     "identities": [{"key":"empty-primary","email":"empty.primary@example.com","displayName":"Empty State Tester","resetComponents":["PAYMENT","DOCUMENTS","APPLICATIONS","USER_PROFILE","AUTHENTICATION"],"seedComponents":[]}],
     "expected": {"users": 0, "profiles": 0, "applications": 0, "documents": 0, "documentVersions": 0, "ledgerEntries": 0}
@@ -18,7 +18,7 @@
     "purpose": "Deterministic Alex Taylor identity is absent before the end-to-end product showcase and is fully removed afterwards.",
     "providerBehaviour": "FIXTURE",
     "datasetId": "uk-software-developer-demo",
-    "datasetVersion": "1.0.0",
+    "datasetVersion": "1.1.0",
     "referenceDate": "2026-07-10T09:00:00Z",
     "identities": [{"key":"registration-primary","email":"alex.taylor.showcase@example.com","displayName":"Alex Taylor","resetComponents":["PAYMENT","DOCUMENTS","APPLICATIONS","USER_PROFILE","AUTHENTICATION"],"seedComponents":[]}],
     "expected": {"users": 0, "profiles": 0, "applications": 0, "documents": 0, "documentVersions": 0, "ledgerEntries": 0}
@@ -30,7 +30,7 @@
     "purpose": "Existing synthetic account for login, reload, expiry and logout journeys.",
     "providerBehaviour": "FIXTURE",
     "datasetId": "uk-software-developer-demo",
-    "datasetVersion": "1.0.0",
+    "datasetVersion": "1.1.0",
     "referenceDate": "2026-07-10T09:00:00Z",
     "identities": [{"key":"login-primary","email":"login.primary@example.com","displayName":"Login Tester","resetComponents":["AUTHENTICATION"],"seedComponents":["AUTHENTICATION"]}],
     "expected": {"users": 1, "profiles": 0}
@@ -42,7 +42,7 @@
     "purpose": "Existing account and profile for subject-bound profile and location journeys.",
     "providerBehaviour": "FIXTURE",
     "datasetId": "uk-software-developer-demo",
-    "datasetVersion": "1.0.0",
+    "datasetVersion": "1.1.0",
     "referenceDate": "2026-07-10T09:00:00Z",
     "identities": [{"key":"profile-primary","email":"profile.primary@example.com","displayName":"Profile Tester","resetComponents":["APPLICATIONS","USER_PROFILE","AUTHENTICATION"],"seedComponents":["AUTHENTICATION","USER_PROFILE"]}],
     "expected": {"users": 1, "profiles": 1}
@@ -54,7 +54,7 @@
     "purpose": "Existing account used to verify generic duplicate-registration handling.",
     "providerBehaviour": "FIXTURE",
     "datasetId": "uk-software-developer-demo",
-    "datasetVersion": "1.0.0",
+    "datasetVersion": "1.1.0",
     "referenceDate": "2026-07-10T09:00:00Z",
     "identities": [{"key":"duplicate-primary","email":"duplicate.primary@example.com","displayName":"Duplicate Tester","resetComponents":["AUTHENTICATION"],"seedComponents":["AUTHENTICATION"]}],
     "expected": {"users": 1, "profiles": 0}
@@ -66,7 +66,7 @@
     "purpose": "Two isolated identities for ownership and cross-user denial checks.",
     "providerBehaviour": "FIXTURE",
     "datasetId": "uk-software-developer-demo",
-    "datasetVersion": "1.0.0",
+    "datasetVersion": "1.1.0",
     "referenceDate": "2026-07-10T09:00:00Z",
     "identities": [
       {"key":"claimant-a","email":"claimant.a@example.com","displayName":"Claimant A","resetComponents":["PAYMENT","DOCUMENTS","APPLICATIONS","USER_PROFILE","AUTHENTICATION"],"seedComponents":["AUTHENTICATION","USER_PROFILE"]},
@@ -101,7 +101,7 @@
     "purpose": "Deterministic all-provider-unavailable fixture without external network access.",
     "providerBehaviour": "ALL_UNAVAILABLE",
     "datasetId": "uk-software-developer-demo",
-    "datasetVersion": "1.0.0",
+    "datasetVersion": "1.1.0",
     "referenceDate": "2026-07-10T09:00:00Z",
     "identities": [],
     "expected": {"providerStatus": "UNAVAILABLE"}
@@ -113,7 +113,7 @@
     "purpose": "Populated deterministic demo journey.",
     "providerBehaviour": "FIXTURE",
     "datasetId": "uk-software-developer-demo",
-    "datasetVersion": "1.0.0",
+    "datasetVersion": "1.1.0",
     "referenceDate": "2026-07-10T09:00:00Z",
     "identities": [{"key":"alex-taylor","email":"alex.taylor92@example.com","displayName":"Alex Taylor","resetComponents":["PAYMENT","DOCUMENTS","APPLICATIONS","USER_PROFILE","AUTHENTICATION"],"seedComponents":["AUTHENTICATION","USER_PROFILE","PAYMENT","DOCUMENTS","APPLICATIONS"]}],
     "expected": {"users": 1, "profiles": 1, "applications": 9, "documents": 19}

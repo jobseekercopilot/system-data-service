@@ -3,8 +3,8 @@ set -eu
 
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 repository_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
-source_file="$repository_root/fixtures/source/uk-software-developer-demo-v1.json"
-fixture_dir="$repository_root/fixtures/datasets/uk-software-developer-demo/1.0.0"
+source_file="$repository_root/fixtures/source/uk-software-developer-demo-v1.1.json"
+fixture_dir="$repository_root/fixtures/datasets/uk-software-developer-demo/1.1.0"
 temporary_dir=$(mktemp -d)
 cleanup() { rm -rf "$temporary_dir"; }
 trap cleanup EXIT INT TERM
