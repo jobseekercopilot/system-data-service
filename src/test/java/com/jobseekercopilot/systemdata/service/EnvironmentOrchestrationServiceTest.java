@@ -38,6 +38,11 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.io.RandomAccessReadBuffer;
+import org.apache.pdfbox.pdfparser.PDFParser;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -272,7 +277,7 @@ class EnvironmentOrchestrationServiceTest {
     }
 
     @Test
-    void demoReadyDocumentSeedEmitsDeterministicSafeUploadedDocx() throws Exception {
+    void demoReadyDocumentSeedEmitsDeterministicStructurallyValidFiles() throws Exception {
         expectSeedSequence();
         expectSeedSequence();
 
@@ -320,13 +325,15 @@ class EnvironmentOrchestrationServiceTest {
         List<JsonNode> generatedFiles = files.stream()
                 .filter(file -> "GENERATED".equals(file.path("source").asText()))
                 .toList();
-        assertThat(generatedFiles).hasSize(18).allSatisfy(file -> {
+        assertThat(generatedFiles).hasSize(18);
+        for (JsonNode file : generatedFiles) {
             assertThat(file.path("fileType").asText()).isEqualTo("PDF");
             assertThat(file.path("mimeType").asText()).isEqualTo("application/pdf");
             assertThat(file.path("fileName").asText()).endsWith(".pdf");
-            assertThat(Base64.getDecoder().decode(file.path("fileContent").asText()))
-                    .startsWith("%PDF-".getBytes(StandardCharsets.US_ASCII));
-        });
+            assertSafeGeneratedPdf(
+                    Base64.getDecoder().decode(file.path("fileContent").asText()),
+                    file.path("fileName").asText());
+        }
         server.verify();
     }
 
@@ -876,6 +883,32 @@ class EnvironmentOrchestrationServiceTest {
         assertThat(document.getElementsByTagNameNS("*", "control").getLength()).isZero();
         assertThat(document.getDocumentElement().getTextContent())
                 .contains("Alex Taylor revised CV");
+    }
+
+    private void assertSafeGeneratedPdf(byte[] content, String expectedFileName) throws Exception {
+        assertThat(content)
+                .startsWith("%PDF-1.4".getBytes(StandardCharsets.US_ASCII));
+        try (RandomAccessReadBuffer source = new RandomAccessReadBuffer(content);
+                PDDocument document = new PDFParser(source).parse(false)) {
+            assertThat(document.isEncrypted()).isFalse();
+            assertThat(document.getVersion()).isEqualTo(1.4f);
+            assertThat(document.getNumberOfPages()).isEqualTo(1);
+            assertThat(document.getDocument().getXrefTable()).hasSize(5);
+            assertThat(document.getDocument().getHighestXRefObjectNumber()).isEqualTo(5L);
+            assertThat(document.getDocument().getTrailer().keySet())
+                    .doesNotContain(COSName.ENCRYPT);
+            assertThat(document.getDocumentCatalog().getCOSObject().keySet())
+                    .doesNotContain(
+                            COSName.AA,
+                            COSName.OPEN_ACTION,
+                            COSName.ACRO_FORM,
+                            COSName.NAMES);
+            assertThat(document.getPage(0).getAnnotations()).isEmpty();
+            assertThat(document.getPage(0).getCOSObject().keySet())
+                    .doesNotContain(COSName.AA);
+            assertThat(new PDFTextStripper().getText(document))
+                    .contains("Job Seeker Copilot demo fixture", expectedFileName);
+        }
     }
 
     private Document parseSafeXml(byte[] content) throws Exception {
