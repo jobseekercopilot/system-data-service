@@ -2,11 +2,15 @@
 
 ## Approved dataset
 
-`fixtures/datasets/uk-software-developer-demo/1.0.0` is the only approved
-runtime dataset. It contains nine fictional jobs, six minimised place records,
-and one deterministic LLM response. Employers, vacancy references, content,
-and URLs were authored for this repository. No provider API, copied vacancy,
-real user record, provider credential, or captured model output was used.
+The immutable `1.0.0` and `1.1.0` versions of
+`fixtures/datasets/uk-software-developer-demo` are approved synthetic runtime
+datasets. Controlled-beta E2E and all current named states pin `1.1.0`, which
+contains ten fictional jobs. `1.0.0` is retained as the nine-job predecessor
+and remains a legacy local fallback; it is never rewritten. Both versions
+contain six minimised place records and one deterministic LLM response.
+Employers, vacancy references, content, and URLs were authored for this
+repository. No provider API, copied vacancy, real user record, provider
+credential, or captured model output was used.
 
 The dataset is private proprietary material under
 `LicenseRef-JobSeekerCopilot-Proprietary`; redistribution is prohibited. There
@@ -39,10 +43,11 @@ secret markers, unsafe URLs, missing licence metadata, and checksum tampering.
 
 ## Deterministic Job Search expectations
 
-The approved dataset contains nine jobs: three each for Adzuna, JSearch and
-Reed. A request with no search filters returns all nine jobs, or all three for
-the requested provider. Known provider-specific query and location pairs return
-one stable result:
+The current controlled-beta `1.1.0` dataset contains ten jobs: four for Adzuna
+and three each for JSearch and Reed. A request with no search filters returns
+all ten jobs, or the provider's exact subset. The `1.0.0` predecessor contains
+three jobs for each provider. Known provider-specific query and location pairs
+return one stable result in both versions:
 
 | Provider | Query | Location | Expected job |
 | --- | --- | --- | --- |

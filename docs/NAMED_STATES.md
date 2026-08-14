@@ -29,6 +29,11 @@ personal data.
 | `PROVIDER_FAILURE` | `provider-failure-v1` | Offline all-provider failure | none; deterministic `502` fixture |
 | `DEMO_READY` | `demo-ready-v1` | Existing populated demonstration | full governed demo state |
 
+All current named states select the approved synthetic
+`uk-software-developer-demo` dataset at version `1.1.0`. The immutable
+`1.0.0` predecessor remains available for legacy local fixture fallbacks but is
+not the governed dataset for these state definitions.
+
 ## Authenticated contract
 
 All endpoints require `X-System-Data-Key`, and the environment guard must first
