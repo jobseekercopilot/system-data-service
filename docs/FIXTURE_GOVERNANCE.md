@@ -69,9 +69,11 @@ consumer contract, scenario, schema, licence, policy, or required field changes.
 1. Confirm every input remains authored and fictional. Do not paste provider
    responses, production logs, real applications, resumes, emails, or model
    output into the source specification.
-2. Make changes only in `fixtures/source/uk-software-developer-demo-v1.json`.
-   Use a new semantic dataset version for a material or breaking change; never
-   silently rewrite a version already relied upon as immutable evidence.
+2. Treat the published `fixtures/source/uk-software-developer-demo-v1.json`
+   and `uk-software-developer-demo-v1.1.json` specifications as immutable. For
+   any dataset change, create the next semantic-version source specification
+   alongside them and update the generator deliberately; never silently
+   rewrite a version already relied upon as evidence.
 3. Update provenance review/expiry and approval scope. Approval must identify
    the private repository owner and remain limited to non-production use.
 4. Regenerate and run all policy, Java, secret, dependency, and container tests.
