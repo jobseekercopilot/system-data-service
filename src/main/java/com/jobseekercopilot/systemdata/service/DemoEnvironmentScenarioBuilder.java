@@ -314,8 +314,7 @@ public class DemoEnvironmentScenarioBuilder {
         String mimeType = userUploaded ? DOCX_MIME_TYPE : "application/pdf";
         byte[] content = userUploaded
                 ? minimalSafeDocx()
-                : ("%PDF-1.4\n% Job Seeker Copilot demo fixture\n" + fileName + "\n%%EOF\n")
-                        .getBytes(StandardCharsets.UTF_8);
+                : minimalSafePdf(fileName);
         return map(
                 "id", DeterministicIds.uuidString(SCENARIO_ID + ":file:" + documentId + ":" + fileName),
                 "generatedDocumentId", documentId,
@@ -327,6 +326,62 @@ public class DemoEnvironmentScenarioBuilder {
                 "fileContent", Base64.getEncoder().encodeToString(content),
                 "createdAt", createdAt.toString(),
                 "updatedAt", createdAt.toString());
+    }
+
+    private byte[] minimalSafePdf(String fileName) {
+        String contentStream = "BT\n"
+                + "/F1 12 Tf\n"
+                + "72 720 Td\n"
+                + "(Job Seeker Copilot demo fixture) Tj\n"
+                + "0 -18 Td\n"
+                + "(" + escapePdfLiteral(fileName) + ") Tj\n"
+                + "ET\n";
+        byte[] contentBytes = contentStream.getBytes(StandardCharsets.US_ASCII);
+        List<String> objects = List.of(
+                "<< /Type /Catalog /Pages 2 0 R >>",
+                "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+                "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] "
+                        + "/Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+                "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+                "<< /Length " + contentBytes.length + " >>\nstream\n"
+                        + contentStream
+                        + "endstream");
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        writePdfAscii(output, "%PDF-1.4\n");
+        List<Integer> objectOffsets = new ArrayList<>();
+        for (int index = 0; index < objects.size(); index++) {
+            objectOffsets.add(output.size());
+            writePdfAscii(output, (index + 1) + " 0 obj\n");
+            writePdfAscii(output, objects.get(index));
+            writePdfAscii(output, "\nendobj\n");
+        }
+
+        int crossReferenceOffset = output.size();
+        writePdfAscii(output, "xref\n0 " + (objects.size() + 1) + "\n");
+        writePdfAscii(output, "0000000000 65535 f \n");
+        for (int offset : objectOffsets) {
+            writePdfAscii(output, String.format(Locale.ROOT, "%010d 00000 n \n", offset));
+        }
+        writePdfAscii(output, "trailer\n<< /Size " + (objects.size() + 1) + " /Root 1 0 R >>\n");
+        writePdfAscii(output, "startxref\n" + crossReferenceOffset + "\n%%EOF\n");
+        return output.toByteArray();
+    }
+
+    private String escapePdfLiteral(String value) {
+        StringBuilder escaped = new StringBuilder(value.length());
+        for (int index = 0; index < value.length(); index++) {
+            char character = value.charAt(index);
+            if (character == '\\' || character == '(' || character == ')') {
+                escaped.append('\\');
+            }
+            escaped.append(character >= 0x20 && character <= 0x7e ? character : '?');
+        }
+        return escaped.toString();
+    }
+
+    private void writePdfAscii(ByteArrayOutputStream output, String value) {
+        output.writeBytes(value.getBytes(StandardCharsets.US_ASCII));
     }
 
     private byte[] minimalSafeDocx() {
