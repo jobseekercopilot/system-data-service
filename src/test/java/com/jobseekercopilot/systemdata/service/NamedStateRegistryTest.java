@@ -20,6 +20,10 @@ class NamedStateRegistryTest {
         NamedStateRegistry second = new NamedStateRegistry(objectMapper);
 
         assertThat(first.list()).hasSize(EnvironmentScenario.values().length).isEqualTo(second.list());
+        assertThat(first.list()).allSatisfy(definition -> {
+            assertThat(definition.datasetId()).isEqualTo("uk-software-developer-demo");
+            assertThat(definition.datasetVersion()).isEqualTo("1.1.0");
+        });
         assertThat(first.require(EnvironmentScenario.CROSS_USER_SECURITY).identities())
                 .extracting(identity -> identity.userId("cross-user-security-v1"))
                 .containsExactly(
