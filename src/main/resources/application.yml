@@ -29,6 +29,7 @@ system-data:
       application-tracker: ${APPLICATION_TRACKER_SERVICE_URL:http://localhost:8088}
       document-store: ${DOCUMENT_STORE_SERVICE_URL:http://localhost:8089}
       payment: ${PAYMENT_SERVICE_URL:http://localhost:8099}
+      stripe-gateway: ${STRIPE_GATEWAY_URL:http://localhost:8100}
   fixtures:
     enabled: ${SYSTEM_DATA_FIXTURES_ENABLED:false}
     allowed-environments: ${SYSTEM_DATA_FIXTURE_ALLOWED_PROFILES:local,test,demo,default}

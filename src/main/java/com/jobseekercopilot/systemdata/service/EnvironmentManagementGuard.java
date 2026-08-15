@@ -61,6 +61,7 @@ public class EnvironmentManagementGuard {
         validateTarget(targets.getApplicationTracker(), new TargetBoundary("application-tracker-service", 8088));
         validateTarget(targets.getDocumentStore(), new TargetBoundary("document-store-service", 8089));
         validateTarget(targets.getPayment(), new TargetBoundary("payment-service", 8099));
+        validateTarget(targets.getStripeGateway(), new TargetBoundary("stripe-gateway", 8100));
     }
 
     private void validateTarget(String value, TargetBoundary boundary) {

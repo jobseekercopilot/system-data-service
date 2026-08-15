@@ -107,6 +107,18 @@
     "expected": {"providerStatus": "UNAVAILABLE"}
   },
   {
+    "scenarioId": "payment-acceptance-v1",
+    "version": "1.0.0",
+    "scenario": "PAYMENT_ACCEPTANCE",
+    "purpose": "Authenticated deterministic document-credit checkout, signed settlement replay, expiry and owner-scoped return reconciliation.",
+    "providerBehaviour": "FIXTURE",
+    "datasetId": "uk-software-developer-demo",
+    "datasetVersion": "1.1.0",
+    "referenceDate": "2026-08-15T09:00:00Z",
+    "identities": [{"key":"payment-primary","email":"payment.primary@example.com","displayName":"Payment Acceptance Tester","resetComponents":["PAYMENT","AUTHENTICATION"],"seedComponents":["AUTHENTICATION","PAYMENT"]}],
+    "expected": {"users": 1, "profiles": 0, "applications": 0, "documents": 0, "documentVersions": 0, "ledgerEntries": 1}
+  },
+  {
     "scenarioId": "demo-ready-v1",
     "version": "1.0.0",
     "scenario": "DEMO_READY",

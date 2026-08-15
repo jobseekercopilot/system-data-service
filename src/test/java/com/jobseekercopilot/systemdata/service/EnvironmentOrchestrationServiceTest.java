@@ -170,6 +170,82 @@ class EnvironmentOrchestrationServiceTest {
     }
 
     @Test
+    void paymentAcceptanceResetsProviderFirstAndSeedsTheV2DocumentWallet() {
+        NamedStateDefinition definition =
+                new NamedStateRegistry(objectMapper).require(EnvironmentScenario.PAYMENT_ACCEPTANCE);
+        NamedStateIdentity identity = definition.identities().get(0);
+        String userId = identity.userId(definition.scenarioId());
+
+        expectSuccess(
+                DELETE,
+                "http://localhost:8100/internal/fixtures/v2/stripe/owners/" + userId,
+                "stripe-gateway",
+                "RESET");
+        expectSuccess(
+                DELETE,
+                runtimeOwnerUrl(
+                        "http://localhost:8099",
+                        definition.scenarioId(),
+                        identity.key(),
+                        userId),
+                "payment-service",
+                "RESET");
+        expectSuccess(
+                DELETE,
+                "http://localhost:8084/internal/system-data/scenario/"
+                        + definition.scenarioId() + "/users/" + userId,
+                "authentication-service",
+                "RESET");
+        expectSuccess(POST, AUTHENTICATION_SEED_URL, "authentication-service", "SEED");
+        expectSuccess(
+                POST,
+                "http://localhost:8099/internal/system-data/v2/runtime-owners/"
+                        + definition.scenarioId() + "/identities/" + identity.key()
+                        + "/owners/" + userId + "/document-credit-wallet",
+                "payment-service",
+                "SEED");
+
+        var response = service.resetAndSeed(request(EnvironmentScenario.PAYMENT_ACCEPTANCE));
+
+        assertThat(response.status()).isEqualTo("SUCCESS");
+        assertThat(response.services())
+                .extracting(result -> result.service())
+                .containsExactly(
+                        "stripe-gateway",
+                        "payment-service",
+                        "authentication-service",
+                        "authentication-service",
+                        "payment-service");
+        server.verify();
+    }
+
+    @Test
+    void fixturePaymentEventIsStrictlyBoundedAndProxiesOnlyToStripeGateway() {
+        String sessionId = "cs_fixture_0123456789abcdef0123456789abcdef";
+        String url = "http://localhost:8100/internal/fixtures/v2/stripe/checkout-sessions/"
+                + sessionId + "/events";
+        server.expect(requestTo(url))
+                .andExpect(method(POST))
+                .andRespond(withSuccess(
+                        "{\"status\":\"FORWARDED\",\"eventId\":\"evt_fixture_completed\"}",
+                        MediaType.APPLICATION_JSON));
+
+        assertThat(service.emitFixturePaymentEvent(
+                sessionId, Map.of("event", "COMPLETED")))
+                .containsEntry("status", "FORWARDED")
+                .containsEntry("eventId", "evt_fixture_completed");
+        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+                        service.emitFixturePaymentEvent(
+                                "cs_live_not_allowed", Map.of("event", "COMPLETED")))
+                .isInstanceOf(IllegalArgumentException.class);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+                        service.emitFixturePaymentEvent(
+                                sessionId, Map.of("event", "PAID")))
+                .isInstanceOf(IllegalArgumentException.class);
+        server.verify();
+    }
+
+    @Test
     void demoReadyProfileSeedUsesPublishedProfileDatePrecision() throws Exception {
         expectSeedSequence();
 
