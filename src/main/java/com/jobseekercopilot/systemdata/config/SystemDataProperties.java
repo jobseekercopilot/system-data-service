@@ -179,6 +179,7 @@ public class SystemDataProperties {
         private String applicationTracker = "http://localhost:8088";
         private String documentStore = "http://localhost:8089";
         private String payment = "http://localhost:8099";
+        private String stripeGateway = "http://localhost:8100";
 
         public String getAuthentication() { return authentication; }
         public void setAuthentication(String authentication) { this.authentication = authentication; }
@@ -190,6 +191,8 @@ public class SystemDataProperties {
         public void setDocumentStore(String documentStore) { this.documentStore = documentStore; }
         public String getPayment() { return payment; }
         public void setPayment(String payment) { this.payment = payment; }
+        public String getStripeGateway() { return stripeGateway; }
+        public void setStripeGateway(String stripeGateway) { this.stripeGateway = stripeGateway; }
     }
 
     public static class Fixtures {

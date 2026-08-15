@@ -28,6 +28,7 @@ class EnvironmentManagementGuardTest {
         targets.setApplicationTracker("http://application-tracker-service:8088");
         targets.setDocumentStore("http://document-store-service:8089");
         targets.setPayment("http://payment-service:8099");
+        targets.setStripeGateway("http://stripe-gateway:8100");
 
         assertThatCode(() -> new EnvironmentManagementGuard(properties, environment("test")).requireEnabled())
                 .doesNotThrowAnyException();

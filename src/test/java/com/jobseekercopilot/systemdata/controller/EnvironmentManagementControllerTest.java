@@ -33,6 +33,9 @@ class EnvironmentManagementControllerTest {
         assertUnauthorized(() -> controller.states("wrong"));
         assertUnauthorized(() -> controller.describe("wrong", EnvironmentScenario.DEMO_READY));
         assertUnauthorized(() -> controller.status(null));
+        assertUnauthorized(() -> controller.fixturePaymentEvent(
+                "wrong", "cs_fixture_00000000000000000000000000000000",
+                Map.of("event", "COMPLETED")));
         assertUnauthorized(() -> controller.verify("wrong", EnvironmentScenario.DEMO_READY));
         assertThat(orchestration.invocations).isZero();
     }
@@ -56,8 +59,12 @@ class EnvironmentManagementControllerTest {
         controller.describe(VALID_KEY, EnvironmentScenario.LOGIN_SESSION);
         controller.prepare(VALID_KEY, new EnvironmentOperationRequest(
                 EnvironmentScenario.LOGIN_SESSION, null, null, null));
+        controller.fixturePaymentEvent(
+                VALID_KEY,
+                "cs_fixture_00000000000000000000000000000000",
+                Map.of("event", "COMPLETED"));
 
-        assertThat(orchestration.invocations).isEqualTo(3);
+        assertThat(orchestration.invocations).isEqualTo(4);
     }
 
     private EnvironmentManagementController controller(RecordingOrchestrationService orchestration) {
@@ -132,6 +139,13 @@ class EnvironmentManagementControllerTest {
         public Map<String, Object> status() {
             invocations++;
             return Map.of();
+        }
+
+        @Override
+        public Map<String, Object> emitFixturePaymentEvent(
+                String providerSessionId, Map<String, Object> request) {
+            invocations++;
+            return Map.of("status", "FORWARDED");
         }
     }
 }

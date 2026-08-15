@@ -220,7 +220,17 @@ public class EnvironmentOrchestrationService {
             switch (component) {
                 case "APPLICATIONS" -> operations.add(operation("application-tracker-service", () -> delete("application-tracker-service", runtimeOwnerUrl(targets.getApplicationTracker(), scenarioId, identity.key(), userId))));
                 case "DOCUMENTS" -> operations.add(operation("document-store-service", () -> delete("document-store-service", runtimeOwnerUrl(targets.getDocumentStore(), scenarioId, identity.key(), userId))));
-                case "PAYMENT" -> operations.add(operation("payment-service", () -> delete("payment-service", runtimeOwnerUrl(targets.getPayment(), scenarioId, identity.key(), userId))));
+                case "PAYMENT" -> {
+                    if ("payment-acceptance-v1".equals(scenarioId)) {
+                        operations.add(operation("stripe-gateway", () -> delete(
+                                "stripe-gateway",
+                                targets.getStripeGateway()
+                                        + "/internal/fixtures/v2/stripe/owners/" + userId)));
+                    }
+                    operations.add(operation("payment-service", () -> delete(
+                            "payment-service",
+                            runtimeOwnerUrl(targets.getPayment(), scenarioId, identity.key(), userId))));
+                }
                 case "USER_PROFILE" -> operations.add(operation("user-profile-service", () -> delete("user-profile-service", targets.getUserProfile() + "/internal/system-data/scenario/" + scenarioId + "/profiles/" + userId)));
                 case "AUTHENTICATION" -> operations.add(operation("authentication-service", () -> delete("authentication-service", targets.getAuthentication() + "/internal/system-data/scenario/" + scenarioId + "/users/" + userId)));
                 default -> throw new IllegalStateException("Unsupported named-state component");
@@ -278,6 +288,13 @@ public class EnvironmentOrchestrationService {
             switch (component) {
                 case "AUTHENTICATION" -> operations.add(operation("authentication-service", () -> post("authentication-service", targets.getAuthentication() + "/internal/system-data/seed/user", user)));
                 case "USER_PROFILE" -> operations.add(operation("user-profile-service", () -> post("user-profile-service", targets.getUserProfile() + "/internal/system-data/seed/profiles/" + userId, profile)));
+                case "PAYMENT" -> operations.add(operation("payment-service", () -> post(
+                        "payment-service",
+                        targets.getPayment()
+                                + "/internal/system-data/v2/runtime-owners/"
+                                + scenarioId + "/identities/" + identity.key()
+                                + "/owners/" + userId + "/document-credit-wallet",
+                        Map.of())));
                 default -> throw new IllegalStateException("Non-demo named state cannot seed persistent application data");
             }
         }
@@ -344,7 +361,17 @@ public class EnvironmentOrchestrationService {
                     case "USER_PROFILE" -> operations.add(operation("user-profile-service", () -> get("user-profile-service", targets.getUserProfile() + "/internal/system-data/verify/profiles/" + userId)));
                     case "APPLICATIONS" -> operations.add(operation("application-tracker-service", () -> get("application-tracker-service", runtimeOwnerUrl(targets.getApplicationTracker(), definition.scenarioId(), identity.key(), userId))));
                     case "DOCUMENTS" -> operations.add(operation("document-store-service", () -> get("document-store-service", runtimeOwnerUrl(targets.getDocumentStore(), definition.scenarioId(), identity.key(), userId))));
-                    case "PAYMENT" -> operations.add(operation("payment-service", () -> get("payment-service", runtimeOwnerUrl(targets.getPayment(), definition.scenarioId(), identity.key(), userId))));
+                    case "PAYMENT" -> {
+                        operations.add(operation("payment-service", () -> get(
+                                "payment-service",
+                                runtimeOwnerUrl(targets.getPayment(), definition.scenarioId(), identity.key(), userId))));
+                        if (definition.scenario() == EnvironmentScenario.PAYMENT_ACCEPTANCE) {
+                            operations.add(operation("stripe-gateway", () -> get(
+                                    "stripe-gateway",
+                                    targets.getStripeGateway()
+                                            + "/internal/fixtures/v2/stripe/owners/" + userId)));
+                        }
+                    }
                     default -> throw new IllegalStateException("Unsupported named-state component");
                 }
             }
@@ -385,6 +412,33 @@ public class EnvironmentOrchestrationService {
             return resultFrom(service, "SEED", response);
         } catch (RestClientException exception) {
             return failure(service, "SEED");
+        }
+    }
+
+    public Map<String, Object> emitFixturePaymentEvent(
+            String providerSessionId, Map<String, Object> request) {
+        guard.requireEnabled();
+        if (providerSessionId == null
+                || !providerSessionId.matches("cs_fixture_[a-f0-9]{32}")
+                || request == null
+                || request.size() != 1
+                || !(request.get("event") instanceof String event)
+                || !("COMPLETED".equals(event) || "EXPIRED".equals(event))) {
+            throw new IllegalArgumentException("Invalid fixture payment event request");
+        }
+        String url = properties.getEnvironmentManagement().getTargetServices()
+                .getStripeGateway()
+                + "/internal/fixtures/v2/stripe/checkout-sessions/"
+                + providerSessionId + "/events";
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
+            if (!response.getStatusCode().is2xxSuccessful()
+                    || response.getBody() == null) {
+                throw new IllegalStateException("Fixture payment settlement failed");
+            }
+            return new LinkedHashMap<>((Map<String, Object>) response.getBody());
+        } catch (RestClientException exception) {
+            throw new IllegalStateException("Fixture payment settlement failed", exception);
         }
     }
 

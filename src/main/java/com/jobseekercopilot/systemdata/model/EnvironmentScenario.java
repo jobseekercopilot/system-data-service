@@ -9,5 +9,6 @@ public enum EnvironmentScenario {
     CROSS_USER_SECURITY,
     REAL_WORLD_PERSONAS,
     PROVIDER_FAILURE,
+    PAYMENT_ACCEPTANCE,
     DEMO_READY
 }

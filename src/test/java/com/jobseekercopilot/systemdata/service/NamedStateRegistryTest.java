@@ -31,6 +31,14 @@ class NamedStateRegistryTest {
                         "b0bab5d2-b55b-34e1-a20a-65a31d2cf53b");
         assertThat(first.require(EnvironmentScenario.PROVIDER_FAILURE).providerBehaviour())
                 .isEqualTo("ALL_UNAVAILABLE");
+        var paymentAcceptance = first.require(EnvironmentScenario.PAYMENT_ACCEPTANCE);
+        assertThat(paymentAcceptance.scenarioId()).isEqualTo("payment-acceptance-v1");
+        assertThat(paymentAcceptance.providerBehaviour()).isEqualTo("FIXTURE");
+        assertThat(paymentAcceptance.identities()).singleElement().satisfies(identity -> {
+            assertThat(identity.resetComponents()).containsExactly("PAYMENT", "AUTHENTICATION");
+            assertThat(identity.seedComponents()).containsExactly("AUTHENTICATION", "PAYMENT");
+        });
+        assertThat(paymentAcceptance.expected()).containsEntry("ledgerEntries", 1);
         var realWorldPersonas = first.require(EnvironmentScenario.REAL_WORLD_PERSONAS);
         assertThat(realWorldPersonas.version()).isEqualTo("1.1.0");
         assertThat(realWorldPersonas.datasetId()).isEqualTo("uk-software-developer-demo");
@@ -50,7 +58,7 @@ class NamedStateRegistryTest {
                 .getContentAsString(StandardCharsets.UTF_8);
 
         assertThat(new ChecksumUtil().sha256(catalog))
-                .isEqualTo("f6eab1ab6d721a76da686777b03e5d9cf6be3c1ef9983d5ca34508d88faa5036");
+                .isEqualTo("d32403901da606341ebb29e45d444b0283d977944374d25af6a061d30f08ce70");
     }
 
     @Test
