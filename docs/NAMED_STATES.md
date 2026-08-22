@@ -27,12 +27,16 @@ personal data.
 | `CROSS_USER_SECURITY` | `cross-user-security-v1` | Ownership denial using two claimants | authentication, profile |
 | `REAL_WORLD_PERSONAS` | `real-world-personas-v2` | Seven sparse, typical, rich, very-rich consultant, CV-led, manual-first and career-change users | authentication and current profile contract |
 | `PROVIDER_FAILURE` | `provider-failure-v1` | Offline all-provider failure | none; deterministic `502` fixture |
+| `PAYMENT_ACCEPTANCE` | `payment-acceptance-v1` | Signed fixture checkout completion, expiry and replay | authentication and payment |
 | `DEMO_READY` | `demo-ready-v1` | Existing populated demonstration | full governed demo state |
 
 All current named states select the approved synthetic
-`uk-software-developer-demo` dataset at version `1.1.0`. The immutable
-`1.0.0` predecessor remains available for legacy local fixture fallbacks but is
-not the governed dataset for these state definitions.
+`uk-software-developer-demo` dataset at version `1.2.0`. It retains the ten-job
+software catalogue from immutable `1.1.0` and adds six fictional vacancies
+that let all seven governed personas, including senior Manchester and London
+platform profiles, exercise relevant searches and grounded document generation. The
+immutable `1.0.0` and `1.1.0` predecessors remain available for legacy local
+fixture fallbacks but are not the governed dataset for these state definitions.
 
 ## Authenticated contract
 

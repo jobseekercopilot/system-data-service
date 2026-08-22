@@ -71,7 +71,7 @@ test "$(docker inspect --format '{{.State.Health.Status}}' "$fixture_service_nam
 
 fixture_response=$(docker exec "$fixture_service_name" wget --quiet --timeout=3 --tries=1 -O - \
     'http://127.0.0.1:8103/internal/fixtures/jobs/search?pageSize=20')
-printf '%s' "$fixture_response" | grep -F '"totalResults":10' >/dev/null
+printf '%s' "$fixture_response" | grep -F '"totalResults":16' >/dev/null
 printf '%s' "$fixture_response" | grep -F 'SYNTH-JOB-001' >/dev/null
 if printf '%s' "$fixture_response" | grep -F 'LIVE_CAPTURED_FIXTURE' >/dev/null; then
     echo "fixture API returned a captured-provider marker" >&2

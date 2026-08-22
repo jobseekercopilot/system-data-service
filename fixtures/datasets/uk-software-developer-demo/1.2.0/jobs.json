@@ -1,0 +1,821 @@
+{
+  "jobs": [
+    {
+      "benefits": [
+        "Synthetic benefit description"
+      ],
+      "category": "Software Development",
+      "closingDate": "2026-08-31",
+      "companyDisplayName": "Northstar Digital Labs",
+      "companyName": "Northstar Digital Labs",
+      "contractType": "PERMANENT",
+      "datePosted": "2026-07-08",
+      "description": "Join a fictional product team building accessible workflow tools with Java and Spring Boot. The synthetic role includes API design, automated testing, SQL data modelling, code review and supportive collaboration with Angular developers.",
+      "employmentType": "FULL_TIME",
+      "externalReference": "SYNTH-JOB-001",
+      "generatedMetadata": {
+        "generator": "generate-synthetic-fixtures.sh",
+        "sourceKey": "SYNTH-JOB-001"
+      },
+      "id": "10000000-0000-4000-8000-000000000001",
+      "latitude": 51.45,
+      "locationName": "Reading",
+      "longitude": -0.97,
+      "postcode": null,
+      "qualifications": [],
+      "qualityScore": 95.0,
+      "region": null,
+      "remoteType": "HYBRID",
+      "salaryCurrency": "GBP",
+      "salaryMaximum": 60000,
+      "salaryMinimum": 45000,
+      "salaryPeriod": "YEAR",
+      "seniority": "MID",
+      "shortDescription": "Join a fictional product team building accessible workflow tools with Java and Spring Boot. The synthetic role includes API design, automate",
+      "skills": [
+        "Java",
+        "Spring Boot",
+        "REST APIs",
+        "SQL"
+      ],
+      "sourceLocation": "Reading",
+      "sourceMetadata": {
+        "classification": "FULLY_SYNTHETIC",
+        "fixture": true
+      },
+      "sourceProvider": "adzuna-gateway-fixture",
+      "sourceQuery": "Java Software Developer",
+      "sourceRetrievedAt": "2026-07-10T09:00:00Z",
+      "sourceUrl": "https://jobs.example.test/synthetic/SYNTH-JOB-001",
+      "suitableForDemo": true,
+      "title": "Java Software Developer",
+      "workingPattern": "FULL_TIME"
+    },
+    {
+      "benefits": [
+        "Synthetic benefit description"
+      ],
+      "category": "Software Development",
+      "closingDate": "2026-08-31",
+      "companyDisplayName": "Copper Finch Software",
+      "companyName": "Copper Finch Software",
+      "contractType": "PERMANENT",
+      "datePosted": "2026-07-07",
+      "description": "A fictional engineering group needs a backend developer to shape small Java services, improve PostgreSQL queries and maintain Docker-based development workflows. The synthetic vacancy values secure design, dependable tests and constructive peer review.",
+      "employmentType": "FULL_TIME",
+      "externalReference": "SYNTH-JOB-002",
+      "generatedMetadata": {
+        "generator": "generate-synthetic-fixtures.sh",
+        "sourceKey": "SYNTH-JOB-002"
+      },
+      "id": "10000000-0000-4000-8000-000000000002",
+      "latitude": null,
+      "locationName": "London",
+      "longitude": null,
+      "postcode": null,
+      "qualifications": [],
+      "qualityScore": 95.0,
+      "region": null,
+      "remoteType": "HYBRID",
+      "salaryCurrency": "GBP",
+      "salaryMaximum": 68000,
+      "salaryMinimum": 50000,
+      "salaryPeriod": "YEAR",
+      "seniority": "MID",
+      "shortDescription": "A fictional engineering group needs a backend developer to shape small Java services, improve PostgreSQL queries and maintain Docker-based d",
+      "skills": [
+        "Java",
+        "Microservices",
+        "PostgreSQL",
+        "Docker"
+      ],
+      "sourceLocation": "London",
+      "sourceMetadata": {
+        "classification": "FULLY_SYNTHETIC",
+        "fixture": true
+      },
+      "sourceProvider": "jsearch-gateway-fixture",
+      "sourceQuery": "Backend Developer",
+      "sourceRetrievedAt": "2026-07-10T09:00:00Z",
+      "sourceUrl": "https://jobs.example.test/synthetic/SYNTH-JOB-002",
+      "suitableForDemo": true,
+      "title": "Backend Developer",
+      "workingPattern": "FULL_TIME"
+    },
+    {
+      "benefits": [
+        "Synthetic benefit description"
+      ],
+      "category": "Software Development",
+      "closingDate": "2026-08-31",
+      "companyDisplayName": "Juniper Works",
+      "companyName": "Juniper Works",
+      "contractType": "PERMANENT",
+      "datePosted": "2026-07-06",
+      "description": "Build a fictional case-management product across Angular, TypeScript and Spring Boot. This entirely synthetic position covers user-focused interface work, REST integration, unit and integration testing, and incremental delivery with a multidisciplinary team.",
+      "employmentType": "FULL_TIME",
+      "externalReference": "SYNTH-JOB-003",
+      "generatedMetadata": {
+        "generator": "generate-synthetic-fixtures.sh",
+        "sourceKey": "SYNTH-JOB-003"
+      },
+      "id": "10000000-0000-4000-8000-000000000003",
+      "latitude": null,
+      "locationName": "Birmingham",
+      "longitude": null,
+      "postcode": null,
+      "qualifications": [],
+      "qualityScore": 95.0,
+      "region": null,
+      "remoteType": "ONSITE",
+      "salaryCurrency": "GBP",
+      "salaryMaximum": 58000,
+      "salaryMinimum": 42000,
+      "salaryPeriod": "YEAR",
+      "seniority": "MID",
+      "shortDescription": "Build a fictional case-management product across Angular, TypeScript and Spring Boot. This entirely synthetic position covers user-focused i",
+      "skills": [
+        "Angular",
+        "TypeScript",
+        "Java",
+        "Testing"
+      ],
+      "sourceLocation": "Birmingham",
+      "sourceMetadata": {
+        "classification": "FULLY_SYNTHETIC",
+        "fixture": true
+      },
+      "sourceProvider": "reed-gateway-fixture",
+      "sourceQuery": "Full Stack Developer",
+      "sourceRetrievedAt": "2026-07-10T09:00:00Z",
+      "sourceUrl": "https://jobs.example.test/synthetic/SYNTH-JOB-003",
+      "suitableForDemo": true,
+      "title": "Full Stack Developer",
+      "workingPattern": "FULL_TIME"
+    },
+    {
+      "benefits": [
+        "Synthetic benefit description"
+      ],
+      "category": "Software Development",
+      "closingDate": "2026-08-31",
+      "companyDisplayName": "Paper Kite Technology",
+      "companyName": "Paper Kite Technology",
+      "contractType": "PERMANENT",
+      "datePosted": "2026-07-05",
+      "description": "This fictional junior role supports a friendly delivery team maintaining Java applications and documented REST APIs. The synthetic work includes pairing, small bug fixes, automated tests, Git-based review and structured learning without fees or paid training claims.",
+      "employmentType": "FULL_TIME",
+      "externalReference": "SYNTH-JOB-004",
+      "generatedMetadata": {
+        "generator": "generate-synthetic-fixtures.sh",
+        "sourceKey": "SYNTH-JOB-004"
+      },
+      "id": "10000000-0000-4000-8000-000000000004",
+      "latitude": null,
+      "locationName": "Manchester",
+      "longitude": null,
+      "postcode": null,
+      "qualifications": [],
+      "qualityScore": 95.0,
+      "region": null,
+      "remoteType": "HYBRID",
+      "salaryCurrency": "GBP",
+      "salaryMaximum": 38000,
+      "salaryMinimum": 30000,
+      "salaryPeriod": "YEAR",
+      "seniority": "JUNIOR",
+      "shortDescription": "This fictional junior role supports a friendly delivery team maintaining Java applications and documented REST APIs. The synthetic work incl",
+      "skills": [
+        "Java",
+        "Git",
+        "REST APIs",
+        "Teamwork"
+      ],
+      "sourceLocation": "Manchester",
+      "sourceMetadata": {
+        "classification": "FULLY_SYNTHETIC",
+        "fixture": true
+      },
+      "sourceProvider": "adzuna-gateway-fixture",
+      "sourceQuery": "Junior Software Developer",
+      "sourceRetrievedAt": "2026-07-10T09:00:00Z",
+      "sourceUrl": "https://jobs.example.test/synthetic/SYNTH-JOB-004",
+      "suitableForDemo": true,
+      "title": "Junior Software Developer",
+      "workingPattern": "FULL_TIME"
+    },
+    {
+      "benefits": [
+        "Synthetic benefit description"
+      ],
+      "category": "Software Development",
+      "closingDate": "2026-08-31",
+      "companyDisplayName": "Harbour Signal Systems",
+      "companyName": "Harbour Signal Systems",
+      "contractType": "PERMANENT",
+      "datePosted": "2026-07-04",
+      "description": "A wholly fictional remote team is improving an Angular and TypeScript interface for workflow reporting. The synthetic vacancy focuses on accessible components, predictable state, API integration, browser tests and clear collaboration with backend engineers.",
+      "employmentType": "FULL_TIME",
+      "externalReference": "SYNTH-JOB-005",
+      "generatedMetadata": {
+        "generator": "generate-synthetic-fixtures.sh",
+        "sourceKey": "SYNTH-JOB-005"
+      },
+      "id": "10000000-0000-4000-8000-000000000005",
+      "latitude": null,
+      "locationName": "Bristol",
+      "longitude": null,
+      "postcode": null,
+      "qualifications": [],
+      "qualityScore": 95.0,
+      "region": null,
+      "remoteType": "REMOTE",
+      "salaryCurrency": "GBP",
+      "salaryMaximum": 57000,
+      "salaryMinimum": 43000,
+      "salaryPeriod": "YEAR",
+      "seniority": "MID",
+      "shortDescription": "A wholly fictional remote team is improving an Angular and TypeScript interface for workflow reporting. The synthetic vacancy focuses on acc",
+      "skills": [
+        "Angular",
+        "TypeScript",
+        "Accessibility",
+        "REST APIs"
+      ],
+      "sourceLocation": "Bristol",
+      "sourceMetadata": {
+        "classification": "FULLY_SYNTHETIC",
+        "fixture": true
+      },
+      "sourceProvider": "jsearch-gateway-fixture",
+      "sourceQuery": "Angular Developer",
+      "sourceRetrievedAt": "2026-07-10T09:00:00Z",
+      "sourceUrl": "https://jobs.example.test/synthetic/SYNTH-JOB-005",
+      "suitableForDemo": true,
+      "title": "Angular Developer",
+      "workingPattern": "FULL_TIME"
+    },
+    {
+      "benefits": [
+        "Synthetic benefit description"
+      ],
+      "category": "Software Development",
+      "closingDate": "2026-08-31",
+      "companyDisplayName": "Oak Circuit Studio",
+      "companyName": "Oak Circuit Studio",
+      "contractType": "PERMANENT",
+      "datePosted": "2026-07-03",
+      "description": "Develop fictional Spring Boot services for a small internal platform, with emphasis on authorization boundaries, input validation and repeatable CI. This synthetic role also covers observability, API contracts, refactoring and shared ownership of production-quality tests.",
+      "employmentType": "FULL_TIME",
+      "externalReference": "SYNTH-JOB-006",
+      "generatedMetadata": {
+        "generator": "generate-synthetic-fixtures.sh",
+        "sourceKey": "SYNTH-JOB-006"
+      },
+      "id": "10000000-0000-4000-8000-000000000006",
+      "latitude": null,
+      "locationName": "Leeds",
+      "longitude": null,
+      "postcode": null,
+      "qualifications": [],
+      "qualityScore": 95.0,
+      "region": null,
+      "remoteType": "HYBRID",
+      "salaryCurrency": "GBP",
+      "salaryMaximum": 63000,
+      "salaryMinimum": 47000,
+      "salaryPeriod": "YEAR",
+      "seniority": "MID",
+      "shortDescription": "Develop fictional Spring Boot services for a small internal platform, with emphasis on authorization boundaries, input validation and repeat",
+      "skills": [
+        "Spring Boot",
+        "Java",
+        "Security",
+        "CI"
+      ],
+      "sourceLocation": "Leeds",
+      "sourceMetadata": {
+        "classification": "FULLY_SYNTHETIC",
+        "fixture": true
+      },
+      "sourceProvider": "reed-gateway-fixture",
+      "sourceQuery": "Spring Boot Developer",
+      "sourceRetrievedAt": "2026-07-10T09:00:00Z",
+      "sourceUrl": "https://jobs.example.test/synthetic/SYNTH-JOB-006",
+      "suitableForDemo": true,
+      "title": "Spring Boot Developer",
+      "workingPattern": "FULL_TIME"
+    },
+    {
+      "benefits": [
+        "Synthetic benefit description"
+      ],
+      "category": "Software Development",
+      "closingDate": "2026-08-31",
+      "companyDisplayName": "Blue Rowan Engineering",
+      "companyName": "Blue Rowan Engineering",
+      "contractType": "PERMANENT",
+      "datePosted": "2026-07-02",
+      "description": "Work on a fictional remote-first software platform using Java, relational data and carefully bounded cloud integrations. The synthetic position includes design discussions, troubleshooting, performance measurement, threat-aware development and pragmatic automated testing.",
+      "employmentType": "FULL_TIME",
+      "externalReference": "SYNTH-JOB-007",
+      "generatedMetadata": {
+        "generator": "generate-synthetic-fixtures.sh",
+        "sourceKey": "SYNTH-JOB-007"
+      },
+      "id": "10000000-0000-4000-8000-000000000007",
+      "latitude": null,
+      "locationName": "Reading",
+      "longitude": null,
+      "postcode": null,
+      "qualifications": [],
+      "qualityScore": 95.0,
+      "region": null,
+      "remoteType": "REMOTE",
+      "salaryCurrency": "GBP",
+      "salaryMaximum": 70000,
+      "salaryMinimum": 52000,
+      "salaryPeriod": "YEAR",
+      "seniority": "MID",
+      "shortDescription": "Work on a fictional remote-first software platform using Java, relational data and carefully bounded cloud integrations. The synthetic posit",
+      "skills": [
+        "Java",
+        "Cloud",
+        "SQL",
+        "Problem Solving"
+      ],
+      "sourceLocation": "Reading",
+      "sourceMetadata": {
+        "classification": "FULLY_SYNTHETIC",
+        "fixture": true
+      },
+      "sourceProvider": "adzuna-gateway-fixture",
+      "sourceQuery": "Software Engineer",
+      "sourceRetrievedAt": "2026-07-10T09:00:00Z",
+      "sourceUrl": "https://jobs.example.test/synthetic/SYNTH-JOB-007",
+      "suitableForDemo": true,
+      "title": "Software Engineer",
+      "workingPattern": "FULL_TIME"
+    },
+    {
+      "benefits": [
+        "Synthetic benefit description"
+      ],
+      "category": "Software Development",
+      "closingDate": "2026-08-31",
+      "companyDisplayName": "Cedar Bridge Products",
+      "companyName": "Cedar Bridge Products",
+      "contractType": "PERMANENT",
+      "datePosted": "2026-07-01",
+      "description": "A fictional London product group is designing stable REST APIs and generated client contracts. This synthetic role involves Java implementation, OpenAPI review, negative-path integration tests, compatibility checks and concise technical documentation for consumers.",
+      "employmentType": "FULL_TIME",
+      "externalReference": "SYNTH-JOB-008",
+      "generatedMetadata": {
+        "generator": "generate-synthetic-fixtures.sh",
+        "sourceKey": "SYNTH-JOB-008"
+      },
+      "id": "10000000-0000-4000-8000-000000000008",
+      "latitude": null,
+      "locationName": "London",
+      "longitude": null,
+      "postcode": null,
+      "qualifications": [],
+      "qualityScore": 95.0,
+      "region": null,
+      "remoteType": "ONSITE",
+      "salaryCurrency": "GBP",
+      "salaryMaximum": 64000,
+      "salaryMinimum": 48000,
+      "salaryPeriod": "YEAR",
+      "seniority": "MID",
+      "shortDescription": "A fictional London product group is designing stable REST APIs and generated client contracts. This synthetic role involves Java implementat",
+      "skills": [
+        "REST APIs",
+        "Java",
+        "OpenAPI",
+        "Integration Testing"
+      ],
+      "sourceLocation": "London",
+      "sourceMetadata": {
+        "classification": "FULLY_SYNTHETIC",
+        "fixture": true
+      },
+      "sourceProvider": "jsearch-gateway-fixture",
+      "sourceQuery": "API Developer",
+      "sourceRetrievedAt": "2026-07-10T09:00:00Z",
+      "sourceUrl": "https://jobs.example.test/synthetic/SYNTH-JOB-008",
+      "suitableForDemo": true,
+      "title": "API Developer",
+      "workingPattern": "FULL_TIME"
+    },
+    {
+      "benefits": [
+        "Synthetic benefit description"
+      ],
+      "category": "Software Development",
+      "closingDate": "2026-08-31",
+      "companyDisplayName": "Silver Elm Platforms",
+      "companyName": "Silver Elm Platforms",
+      "contractType": "PERMANENT",
+      "datePosted": "2026-06-30",
+      "description": "Help a fictional platform team simplify developer tooling with Java services and Docker-based local environments. The synthetic vacancy covers health checks, structured logs, CI reliability, dependency maintenance and calm incident-oriented problem solving.",
+      "employmentType": "FULL_TIME",
+      "externalReference": "SYNTH-JOB-009",
+      "generatedMetadata": {
+        "generator": "generate-synthetic-fixtures.sh",
+        "sourceKey": "SYNTH-JOB-009"
+      },
+      "id": "10000000-0000-4000-8000-000000000009",
+      "latitude": null,
+      "locationName": "Birmingham",
+      "longitude": null,
+      "postcode": null,
+      "qualifications": [],
+      "qualityScore": 95.0,
+      "region": null,
+      "remoteType": "HYBRID",
+      "salaryCurrency": "GBP",
+      "salaryMaximum": 61000,
+      "salaryMinimum": 46000,
+      "salaryPeriod": "YEAR",
+      "seniority": "MID",
+      "shortDescription": "Help a fictional platform team simplify developer tooling with Java services and Docker-based local environments. The synthetic vacancy cove",
+      "skills": [
+        "Java",
+        "Docker",
+        "CI",
+        "Observability"
+      ],
+      "sourceLocation": "Birmingham",
+      "sourceMetadata": {
+        "classification": "FULLY_SYNTHETIC",
+        "fixture": true
+      },
+      "sourceProvider": "reed-gateway-fixture",
+      "sourceQuery": "Platform Software Developer",
+      "sourceRetrievedAt": "2026-07-10T09:00:00Z",
+      "sourceUrl": "https://jobs.example.test/synthetic/SYNTH-JOB-009",
+      "suitableForDemo": true,
+      "title": "Platform Software Developer",
+      "workingPattern": "FULL_TIME"
+    },
+    {
+      "benefits": [
+        "Synthetic benefit description"
+      ],
+      "category": "Software Development",
+      "closingDate": "2026-08-31",
+      "companyDisplayName": "Willow Test Systems",
+      "companyName": "Willow Test Systems",
+      "contractType": "PERMANENT",
+      "datePosted": "2026-06-29",
+      "description": "A fictional Leeds engineering team is building synthetic cloud workflow services with Java and stable REST APIs. The role covers accessible product delivery, automated tests, secure integration boundaries and collaborative review in a completely non-production environment.",
+      "employmentType": "FULL_TIME",
+      "externalReference": "SYNTH-JOB-010",
+      "generatedMetadata": {
+        "generator": "generate-synthetic-fixtures.sh",
+        "sourceKey": "SYNTH-JOB-010"
+      },
+      "id": "10000000-0000-4000-8000-000000000010",
+      "latitude": null,
+      "locationName": "Leeds",
+      "longitude": null,
+      "postcode": null,
+      "qualifications": [],
+      "qualityScore": 95.0,
+      "region": null,
+      "remoteType": "REMOTE",
+      "salaryCurrency": "GBP",
+      "salaryMaximum": 55000,
+      "salaryMinimum": 41000,
+      "salaryPeriod": "YEAR",
+      "seniority": "MID",
+      "shortDescription": "A fictional Leeds engineering team is building synthetic cloud workflow services with Java and stable REST APIs. The role covers accessible ",
+      "skills": [
+        "Java",
+        "Cloud",
+        "REST APIs",
+        "Testing"
+      ],
+      "sourceLocation": "Leeds",
+      "sourceMetadata": {
+        "classification": "FULLY_SYNTHETIC",
+        "fixture": true
+      },
+      "sourceProvider": "adzuna-gateway-fixture",
+      "sourceQuery": "Cloud Software Developer",
+      "sourceRetrievedAt": "2026-07-10T09:00:00Z",
+      "sourceUrl": "https://jobs.example.test/synthetic/SYNTH-JOB-010",
+      "suitableForDemo": false,
+      "title": "Cloud Software Developer",
+      "workingPattern": "FULL_TIME"
+    },
+    {
+      "benefits": [
+        "Synthetic benefit description"
+      ],
+      "category": "Administration",
+      "closingDate": "2026-08-31",
+      "companyDisplayName": "Midland Community Services",
+      "companyName": "Midland Community Services",
+      "contractType": "PERMANENT",
+      "datePosted": "2026-08-18",
+      "description": "A fictional community organisation needs an administrative assistant to coordinate diaries, prepare accurate records and respond helpfully to routine enquiries. This wholly synthetic vacancy values organisation, Microsoft Office confidence, careful written communication and dependable teamwork.",
+      "employmentType": "FULL_TIME",
+      "externalReference": "SYNTH-JOB-011",
+      "generatedMetadata": {
+        "generator": "generate-synthetic-fixtures.sh",
+        "sourceKey": "SYNTH-JOB-011"
+      },
+      "id": "10000000-0000-4000-8000-000000000011",
+      "latitude": 52.4797,
+      "locationName": "Birmingham",
+      "longitude": -1.9027,
+      "postcode": null,
+      "qualifications": [],
+      "qualityScore": 95.0,
+      "region": null,
+      "remoteType": "HYBRID",
+      "salaryCurrency": "GBP",
+      "salaryMaximum": 28000,
+      "salaryMinimum": 24000,
+      "salaryPeriod": "YEAR",
+      "seniority": "JUNIOR",
+      "shortDescription": "A fictional community organisation needs an administrative assistant to coordinate diaries, prepare accurate records and respond helpfully t",
+      "skills": [
+        "Microsoft Office",
+        "Customer service",
+        "Organisation",
+        "Diary management"
+      ],
+      "sourceLocation": "Birmingham",
+      "sourceMetadata": {
+        "classification": "FULLY_SYNTHETIC",
+        "fixture": true
+      },
+      "sourceProvider": "adzuna-gateway-fixture",
+      "sourceQuery": "Administrative Assistant",
+      "sourceRetrievedAt": "2026-07-10T09:00:00Z",
+      "sourceUrl": "https://jobs.example.test/synthetic/SYNTH-JOB-011",
+      "suitableForDemo": true,
+      "title": "Administrative Assistant",
+      "workingPattern": "FULL_TIME"
+    },
+    {
+      "benefits": [
+        "Synthetic benefit description"
+      ],
+      "category": "Finance",
+      "closingDate": "2026-08-31",
+      "companyDisplayName": "Yorkshire Neighbourhood Homes",
+      "companyName": "Yorkshire Neighbourhood Homes",
+      "contractType": "PERMANENT",
+      "datePosted": "2026-08-17",
+      "description": "A fictional housing team is recruiting an accounts assistant to process invoices, reconcile supplier statements and help answer account queries. This entirely synthetic vacancy values bookkeeping fundamentals, payroll awareness, Excel accuracy, Xero experience and clear customer communication.",
+      "employmentType": "FULL_TIME",
+      "externalReference": "SYNTH-JOB-012",
+      "generatedMetadata": {
+        "generator": "generate-synthetic-fixtures.sh",
+        "sourceKey": "SYNTH-JOB-012"
+      },
+      "id": "10000000-0000-4000-8000-000000000012",
+      "latitude": 53.8008,
+      "locationName": "Leeds",
+      "longitude": -1.5491,
+      "postcode": null,
+      "qualifications": [],
+      "qualityScore": 95.0,
+      "region": null,
+      "remoteType": "HYBRID",
+      "salaryCurrency": "GBP",
+      "salaryMaximum": 31000,
+      "salaryMinimum": 26000,
+      "salaryPeriod": "YEAR",
+      "seniority": "JUNIOR",
+      "shortDescription": "A fictional housing team is recruiting an accounts assistant to process invoices, reconcile supplier statements and help answer account quer",
+      "skills": [
+        "Bookkeeping",
+        "Payroll",
+        "Excel",
+        "Xero"
+      ],
+      "sourceLocation": "Leeds",
+      "sourceMetadata": {
+        "classification": "FULLY_SYNTHETIC",
+        "fixture": true
+      },
+      "sourceProvider": "jsearch-gateway-fixture",
+      "sourceQuery": "Accounts Assistant",
+      "sourceRetrievedAt": "2026-07-10T09:00:00Z",
+      "sourceUrl": "https://jobs.example.test/synthetic/SYNTH-JOB-012",
+      "suitableForDemo": true,
+      "title": "Accounts Assistant",
+      "workingPattern": "FULL_TIME"
+    },
+    {
+      "benefits": [
+        "Synthetic benefit description"
+      ],
+      "category": "Project Management",
+      "closingDate": "2026-08-31",
+      "companyDisplayName": "Bristol Learning Partnership",
+      "companyName": "Bristol Learning Partnership",
+      "contractType": "PERMANENT",
+      "datePosted": "2026-08-16",
+      "description": "A fictional education partnership needs a project coordinator to maintain delivery plans, track risks and budgets, prepare governance updates and coordinate suppliers. This fully synthetic role values structured reporting, stakeholder communication, workshop support and continuous improvement.",
+      "employmentType": "FULL_TIME",
+      "externalReference": "SYNTH-JOB-013",
+      "generatedMetadata": {
+        "generator": "generate-synthetic-fixtures.sh",
+        "sourceKey": "SYNTH-JOB-013"
+      },
+      "id": "10000000-0000-4000-8000-000000000013",
+      "latitude": 51.4545,
+      "locationName": "Bristol",
+      "longitude": -2.5879,
+      "postcode": null,
+      "qualifications": [],
+      "qualityScore": 95.0,
+      "region": null,
+      "remoteType": "HYBRID",
+      "salaryCurrency": "GBP",
+      "salaryMaximum": 37000,
+      "salaryMinimum": 30000,
+      "salaryPeriod": "YEAR",
+      "seniority": "MID",
+      "shortDescription": "A fictional education partnership needs a project coordinator to maintain delivery plans, track risks and budgets, prepare governance update",
+      "skills": [
+        "Project planning",
+        "Risk management",
+        "Budget tracking",
+        "Stakeholder communication"
+      ],
+      "sourceLocation": "Bristol",
+      "sourceMetadata": {
+        "classification": "FULLY_SYNTHETIC",
+        "fixture": true
+      },
+      "sourceProvider": "reed-gateway-fixture",
+      "sourceQuery": "Project Coordinator",
+      "sourceRetrievedAt": "2026-07-10T09:00:00Z",
+      "sourceUrl": "https://jobs.example.test/synthetic/SYNTH-JOB-013",
+      "suitableForDemo": true,
+      "title": "Project Coordinator",
+      "workingPattern": "FULL_TIME"
+    },
+    {
+      "benefits": [
+        "Synthetic benefit description"
+      ],
+      "category": "Project Management",
+      "closingDate": "2026-08-31",
+      "companyDisplayName": "North West Skills Network",
+      "companyName": "North West Skills Network",
+      "contractType": "PERMANENT",
+      "datePosted": "2026-08-15",
+      "description": "A fictional skills programme is seeking a programme support officer who can also perform project coordinator duties: organise workshops, maintain progress records, identify delivery risks and communicate with varied stakeholders. This synthetic vacancy welcomes transferable education and facilitation experience.",
+      "employmentType": "FULL_TIME",
+      "externalReference": "SYNTH-JOB-014",
+      "generatedMetadata": {
+        "generator": "generate-synthetic-fixtures.sh",
+        "sourceKey": "SYNTH-JOB-014"
+      },
+      "id": "10000000-0000-4000-8000-000000000014",
+      "latitude": 53.4808,
+      "locationName": "Manchester",
+      "longitude": -2.2426,
+      "postcode": null,
+      "qualifications": [],
+      "qualityScore": 95.0,
+      "region": null,
+      "remoteType": "HYBRID",
+      "salaryCurrency": "GBP",
+      "salaryMaximum": 35000,
+      "salaryMinimum": 29000,
+      "salaryPeriod": "YEAR",
+      "seniority": "JUNIOR",
+      "shortDescription": "A fictional skills programme is seeking a programme support officer who can also perform project coordinator duties: organise workshops, mai",
+      "skills": [
+        "Facilitation",
+        "Progress reporting",
+        "Data analysis",
+        "Stakeholder communication"
+      ],
+      "sourceLocation": "Manchester",
+      "sourceMetadata": {
+        "classification": "FULLY_SYNTHETIC",
+        "fixture": true
+      },
+      "sourceProvider": "adzuna-gateway-fixture",
+      "sourceQuery": "Programme Support Officer",
+      "sourceRetrievedAt": "2026-07-10T09:00:00Z",
+      "sourceUrl": "https://jobs.example.test/synthetic/SYNTH-JOB-014",
+      "suitableForDemo": true,
+      "title": "Programme Support Officer",
+      "workingPattern": "FULL_TIME"
+    },
+    {
+      "benefits": [
+        "Synthetic benefit description"
+      ],
+      "category": "Software Development",
+      "closingDate": "2026-08-31",
+      "companyDisplayName": "Mersey Reliability Systems",
+      "companyName": "Mersey Reliability Systems",
+      "contractType": "PERMANENT",
+      "datePosted": "2026-08-14",
+      "description": "A fictional reliability product team needs a senior software engineer to lead Java and Spring Boot service improvements, strengthen contract tests and observability, mentor engineers and shorten dependable deployment lead times. This wholly synthetic Manchester role values pragmatic technical leadership and measurable service reliability.",
+      "employmentType": "FULL_TIME",
+      "externalReference": "SYNTH-JOB-015",
+      "generatedMetadata": {
+        "generator": "generate-synthetic-fixtures.sh",
+        "sourceKey": "SYNTH-JOB-015"
+      },
+      "id": "10000000-0000-4000-8000-000000000015",
+      "latitude": 53.4808,
+      "locationName": "Manchester",
+      "longitude": -2.2426,
+      "postcode": null,
+      "qualifications": [],
+      "qualityScore": 95.0,
+      "region": null,
+      "remoteType": "HYBRID",
+      "salaryCurrency": "GBP",
+      "salaryMaximum": 78000,
+      "salaryMinimum": 65000,
+      "salaryPeriod": "YEAR",
+      "seniority": "SENIOR",
+      "shortDescription": "A fictional reliability product team needs a senior software engineer to lead Java and Spring Boot service improvements, strengthen contract",
+      "skills": [
+        "Java",
+        "Spring Boot",
+        "Contract testing",
+        "Observability"
+      ],
+      "sourceLocation": "Manchester",
+      "sourceMetadata": {
+        "classification": "FULLY_SYNTHETIC",
+        "fixture": true
+      },
+      "sourceProvider": "jsearch-gateway-fixture",
+      "sourceQuery": "Senior Software Engineer",
+      "sourceRetrievedAt": "2026-07-10T09:00:00Z",
+      "sourceUrl": "https://jobs.example.test/synthetic/SYNTH-JOB-015",
+      "suitableForDemo": true,
+      "title": "Senior Software Engineer",
+      "workingPattern": "FULL_TIME"
+    },
+    {
+      "benefits": [
+        "Synthetic benefit description"
+      ],
+      "category": "Software Development",
+      "closingDate": "2026-08-31",
+      "companyDisplayName": "Thames Regulated Platforms",
+      "companyName": "Thames Regulated Platforms",
+      "contractType": "PERMANENT",
+      "datePosted": "2026-08-13",
+      "description": "A fictional regulated-services organisation is seeking a platform architect to guide architecture across twelve services, facilitate technical decisions and establish governance and reliability controls. This entirely synthetic London vacancy values senior stakeholder leadership, incident reduction and evidence-based platform strategy.",
+      "employmentType": "FULL_TIME",
+      "externalReference": "SYNTH-JOB-016",
+      "generatedMetadata": {
+        "generator": "generate-synthetic-fixtures.sh",
+        "sourceKey": "SYNTH-JOB-016"
+      },
+      "id": "10000000-0000-4000-8000-000000000016",
+      "latitude": 51.5074,
+      "locationName": "London",
+      "longitude": -0.1278,
+      "postcode": null,
+      "qualifications": [],
+      "qualityScore": 95.0,
+      "region": null,
+      "remoteType": "HYBRID",
+      "salaryCurrency": "GBP",
+      "salaryMaximum": 110000,
+      "salaryMinimum": 90000,
+      "salaryPeriod": "YEAR",
+      "seniority": "LEAD",
+      "shortDescription": "A fictional regulated-services organisation is seeking a platform architect to guide architecture across twelve services, facilitate technic",
+      "skills": [
+        "Platform architecture",
+        "Reliability",
+        "Governance",
+        "Stakeholder leadership"
+      ],
+      "sourceLocation": "London",
+      "sourceMetadata": {
+        "classification": "FULLY_SYNTHETIC",
+        "fixture": true
+      },
+      "sourceProvider": "reed-gateway-fixture",
+      "sourceQuery": "Platform Architect",
+      "sourceRetrievedAt": "2026-07-10T09:00:00Z",
+      "sourceUrl": "https://jobs.example.test/synthetic/SYNTH-JOB-016",
+      "suitableForDemo": true,
+      "title": "Platform Architect",
+      "workingPattern": "FULL_TIME"
+    }
+  ],
+  "schemaVersion": "1.0"
+}

@@ -3,8 +3,8 @@ set -eu
 
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 repository_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
-source_file=${1:-$repository_root/fixtures/source/uk-software-developer-demo-v1.1.json}
-output_dir=${2:-$repository_root/fixtures/datasets/uk-software-developer-demo/1.1.0}
+source_file=${1:-$repository_root/fixtures/source/uk-software-developer-demo-v1.2.json}
+output_dir=${2:-$repository_root/fixtures/datasets/uk-software-developer-demo/1.2.0}
 scenario_dir="$repository_root/src/main/resources/scenarios/demo-ready-v1"
 temporary_dir=$(mktemp -d)
 cleanup() { rm -rf "$temporary_dir"; }
@@ -16,8 +16,28 @@ for command in jq sha256sum; do
         exit 1
     }
 done
-jq -e '.dataset.id and .dataset.version and (.jobs | length == 10) and (.locations | length > 0)' \
-    "$source_file" >/dev/null
+input_source="$source_file"
+parent_source=""
+parent_source_path=$(jq -r '.parentSourceSpecification // empty' "$source_file")
+if [ -n "$parent_source_path" ]; then
+    parent_source="$repository_root/$parent_source_path"
+    test -f "$parent_source" || {
+        echo "synthetic fixture generation: parent source specification is unavailable" >&2
+        exit 1
+    }
+    input_source="$temporary_dir/composed-source.json"
+    jq -S -s '
+      .[0] as $parent | .[1] as $extension |
+      {
+        dataset: $extension.dataset,
+        jobs: ($parent.jobs + $extension.additionalJobs),
+        locations: $parent.locations,
+        llmFixture: $parent.llmFixture
+      }
+    ' "$parent_source" "$source_file" > "$input_source"
+fi
+jq -e '.dataset.id and .dataset.version and (.jobs | length == 16) and (.locations | length > 0)' \
+    "$input_source" >/dev/null
 
 jq -S '{
   schemaVersion: "1.0",
@@ -41,7 +61,7 @@ jq -S '{
     workingPattern: "FULL_TIME",
     remoteType,
     contractType: "PERMANENT",
-    category: "Software Development",
+    category: (.category // "Software Development"),
     seniority,
     description,
     shortDescription: (.description[0:140]),
@@ -59,7 +79,7 @@ jq -S '{
     suitableForDemo: (if has("suitableForDemo") then .suitableForDemo else true end),
     qualityScore: 95.0
   }]
-}' "$source_file" > "$temporary_dir/jobs.json"
+}' "$input_source" > "$temporary_dir/jobs.json"
 
 jq -S '{
   schemaVersion: "1.0",
@@ -78,17 +98,17 @@ jq -S '{
     sourceProvider: "synthetic-generator",
     sourceRetrievedAt: "2026-07-10T09:00:00Z"
   }]
-}' "$source_file" > "$temporary_dir/locations.json"
+}' "$input_source" > "$temporary_dir/locations.json"
 
 jq -S '{"DEMO_READY:CV_COVER_LETTER_GENERATION": .llmFixture}' \
-    "$source_file" > "$temporary_dir/llm-fixtures.json"
+    "$input_source" > "$temporary_dir/llm-fixtures.json"
 
 payload_checksum=$(
     cd "$temporary_dir"
     sha256sum jobs.json locations.json | sha256sum | cut -d ' ' -f 1
 )
 
-jq -S --arg checksum "$payload_checksum" '{
+jq -S --arg checksum "$payload_checksum" --arg parentVersion "$(test -n "$parent_source" && jq -r '.dataset.version' "$parent_source" || true)" '{
   datasetId: .dataset.id,
   name: .dataset.name,
   version: .dataset.version,
@@ -117,8 +137,8 @@ jq -S --arg checksum "$payload_checksum" '{
     containsCapturedProviderData: false
   },
   warnings: [],
-  parentDatasetVersion: null
-}' "$source_file" > "$temporary_dir/manifest.json"
+  parentDatasetVersion: (if $parentVersion == "" then null else $parentVersion end)
+}' "$input_source" > "$temporary_dir/manifest.json"
 
 jq -S '{
   startedAt: .dataset.createdAt,
@@ -138,9 +158,13 @@ jq -S '{
   postcodeLookupsAttempted: 0,
   postcodeLookupsSucceeded: 0,
   warnings: []
-}' "$source_file" > "$temporary_dir/generation-report.json"
+}' "$input_source" > "$temporary_dir/generation-report.json"
 
 source_checksum=$(sha256sum "$source_file" | cut -d ' ' -f 1)
+parent_source_checksum=""
+if [ -n "$parent_source" ]; then
+    parent_source_checksum=$(sha256sum "$parent_source" | cut -d ' ' -f 1)
+fi
 jobs_checksum=$(sha256sum "$temporary_dir/jobs.json" | cut -d ' ' -f 1)
 locations_checksum=$(sha256sum "$temporary_dir/locations.json" | cut -d ' ' -f 1)
 llm_checksum=$(sha256sum "$temporary_dir/llm-fixtures.json" | cut -d ' ' -f 1)
@@ -157,6 +181,8 @@ jq -n -S \
     --arg reviewBy "$(jq -r '.dataset.reviewBy' "$source_file")" \
     --arg expiresAt "$(jq -r '.dataset.expiresAt' "$source_file")" \
     --arg sourceChecksum "$source_checksum" \
+    --arg parentSourceSpecification "$parent_source_path" \
+    --arg parentSourceSpecificationSha256 "$parent_source_checksum" \
     --arg jobsChecksum "$jobs_checksum" \
     --arg locationsChecksum "$locations_checksum" \
     --arg llmChecksum "$llm_checksum" \
@@ -170,8 +196,10 @@ jq -n -S \
       creation: {
         method: "DETERMINISTIC_LOCAL_GENERATOR",
         generator: "scripts/generate-synthetic-fixtures.sh",
-        sourceSpecification: "fixtures/source/uk-software-developer-demo-v1.1.json",
+        sourceSpecification: "fixtures/source/uk-software-developer-demo-v1.2.json",
         sourceSpecificationSha256: $sourceChecksum,
+        parentSourceSpecification: $parentSourceSpecification,
+        parentSourceSpecificationSha256: $parentSourceSpecificationSha256,
         createdAt: $createdAt,
         liveProvidersCalled: false
       },
@@ -193,7 +221,7 @@ jq -n -S \
         status: "APPROVED_FOR_NON_PRODUCTION_TESTING",
         approvedBy: "jobseekercopilot repository owner",
         approvedAt: "2026-07-22",
-        scope: "Private beta test, local demo and CI fixtures only"
+        scope: "Public beta release-candidate test, local demo and CI fixtures only"
       },
       lifecycle: {
         reviewBy: $reviewBy,

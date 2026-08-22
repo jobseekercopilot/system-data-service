@@ -41,8 +41,8 @@ class GovernedFixtureIntegrationTest {
         var all = fixtureService.searchJobs(null, null, "DEMO_READY", null,
                 null, null, 0, 20, null, null, null, null);
 
-        assertThat(all.totalResults()).isEqualTo(10);
-        assertThat(all.jobs()).hasSize(10).allSatisfy(job -> {
+        assertThat(all.totalResults()).isEqualTo(16);
+        assertThat(all.jobs()).hasSize(16).allSatisfy(job -> {
             assertThat(job.externalReference()).startsWith("SYNTH-JOB-");
             assertThat(job.sourceProvider()).endsWith("-gateway-fixture");
             assertThat(job.sourceUrl()).startsWith("https://jobs.example.test/");
@@ -50,7 +50,7 @@ class GovernedFixtureIntegrationTest {
         for (String provider : new String[]{"adzuna", "jsearch", "reed"}) {
             var providerJobs = fixtureService.searchJobs(null, null, "DEMO_READY", provider,
                     null, null, 0, 20, null, null, null, null);
-            int expectedCount = "adzuna".equals(provider) ? 4 : 3;
+            int expectedCount = "adzuna".equals(provider) ? 6 : 5;
             assertThat(providerJobs.totalResults()).isEqualTo(expectedCount);
             assertThat(providerJobs.jobs()).hasSize(expectedCount)
                     .allMatch(job -> (provider + "-gateway-fixture").equals(job.sourceProvider()));
@@ -70,6 +70,12 @@ class GovernedFixtureIntegrationTest {
                 "Software Developer",
                 "Reading, South East (RG1 1AA)",
                 "Java Software Developer");
+        assertSingleMatch("adzuna", "Administrative Assistant", "Birmingham", "Administrative Assistant");
+        assertSingleMatch("jsearch", "Accounts Assistant", "Leeds", "Accounts Assistant");
+        assertSingleMatch("reed", "Project Coordinator", "Bristol", "Project Coordinator");
+        assertSingleMatch("jsearch", "Senior Software Engineer", "Manchester", "Senior Software Engineer");
+        assertSingleMatch("reed", "Platform Architect", "London", "Platform Architect");
+        assertSingleMatch("adzuna", "Project Coordinator", "Manchester", "Programme Support Officer");
     }
 
     @Test
