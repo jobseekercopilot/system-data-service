@@ -3,7 +3,7 @@ FROM eclipse-temurin:17-jre-alpine@sha256:02320dd4ce20e243dfb915c686089cf9315c76
 WORKDIR /app
 
 RUN apk add --no-cache --upgrade \
-        libexpat=2.8.2-r0 \
+        libexpat=2.8.3-r0 \
         p11-kit=0.26.2-r0 \
         p11-kit-trust=0.26.2-r0 \
     && addgroup -S -g 10001 app \
