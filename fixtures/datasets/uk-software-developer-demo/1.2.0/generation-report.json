@@ -1,0 +1,23 @@
+{
+  "duplicatesRemoved": 0,
+  "durationMillis": 0,
+  "finalJobCount": 16,
+  "finishedAt": "2026-08-22T09:00:00Z",
+  "invalidRecordsRemoved": 0,
+  "invalidSalariesDetected": 0,
+  "locationRecordsGenerated": 6,
+  "normalisedResultCount": 16,
+  "paidTrainingRecordsDetected": 0,
+  "postcodeLookupsAttempted": 0,
+  "postcodeLookupsSucceeded": 0,
+  "providerStatuses": {
+    "synthetic-generator": "SUCCESS"
+  },
+  "providersCalled": [],
+  "rawResultCounts": {
+    "synthetic-generator": 16
+  },
+  "rejectedRecords": 0,
+  "startedAt": "2026-08-22T09:00:00Z",
+  "warnings": []
+}

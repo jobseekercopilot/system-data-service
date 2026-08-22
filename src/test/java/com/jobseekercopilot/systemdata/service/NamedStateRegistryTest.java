@@ -22,7 +22,7 @@ class NamedStateRegistryTest {
         assertThat(first.list()).hasSize(EnvironmentScenario.values().length).isEqualTo(second.list());
         assertThat(first.list()).allSatisfy(definition -> {
             assertThat(definition.datasetId()).isEqualTo("uk-software-developer-demo");
-            assertThat(definition.datasetVersion()).isEqualTo("1.1.0");
+            assertThat(definition.datasetVersion()).isEqualTo("1.2.0");
         });
         assertThat(first.require(EnvironmentScenario.CROSS_USER_SECURITY).identities())
                 .extracting(identity -> identity.userId("cross-user-security-v1"))
@@ -40,9 +40,9 @@ class NamedStateRegistryTest {
         });
         assertThat(paymentAcceptance.expected()).containsEntry("ledgerEntries", 1);
         var realWorldPersonas = first.require(EnvironmentScenario.REAL_WORLD_PERSONAS);
-        assertThat(realWorldPersonas.version()).isEqualTo("1.1.0");
+        assertThat(realWorldPersonas.version()).isEqualTo("1.2.0");
         assertThat(realWorldPersonas.datasetId()).isEqualTo("uk-software-developer-demo");
-        assertThat(realWorldPersonas.datasetVersion()).isEqualTo("1.1.0");
+        assertThat(realWorldPersonas.datasetVersion()).isEqualTo("1.2.0");
         assertThat(realWorldPersonas.identities())
                 .allSatisfy(identity -> {
                     assertThat(identity.resetComponents()).containsExactlyInAnyOrder(
@@ -58,7 +58,7 @@ class NamedStateRegistryTest {
                 .getContentAsString(StandardCharsets.UTF_8);
 
         assertThat(new ChecksumUtil().sha256(catalog))
-                .isEqualTo("d32403901da606341ebb29e45d444b0283d977944374d25af6a061d30f08ce70");
+                .isEqualTo("cffab2c06204edfe4d4b4a49c321f42bcd432e7ec5ae979177bae2e6ad55235f");
     }
 
     @Test

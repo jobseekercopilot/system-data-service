@@ -1,0 +1,66 @@
+{
+  "approval": {
+    "approvedAt": "2026-07-22",
+    "approvedBy": "jobseekercopilot repository owner",
+    "scope": "Public beta release-candidate test, local demo and CI fixtures only",
+    "status": "APPROVED_FOR_NON_PRODUCTION_TESTING"
+  },
+  "attribution": [],
+  "classification": "FULLY_SYNTHETIC",
+  "creation": {
+    "createdAt": "2026-08-22T09:00:00Z",
+    "generator": "scripts/generate-synthetic-fixtures.sh",
+    "liveProvidersCalled": false,
+    "method": "DETERMINISTIC_LOCAL_GENERATOR",
+    "parentSourceSpecification": "fixtures/source/uk-software-developer-demo-v1.1.json",
+    "parentSourceSpecificationSha256": "26fbadc9f40c6c2a160af7cce68588ac4d037b2e528b20f497c3b5a4a2e2a3a0",
+    "sourceSpecification": "fixtures/source/uk-software-developer-demo-v1.2.json",
+    "sourceSpecificationSha256": "c3b6150c49a4e7ef514ee0601ae026094828c25294cbe2078ff18f44d8c72203"
+  },
+  "dataPolicy": {
+    "containsCapturedProviderData": false,
+    "containsProviderCredentials": false,
+    "containsRealPersonalData": false,
+    "externalUrlsAllowed": [
+      "https://jobs.example.test/"
+    ],
+    "minimisation": "Only fields required by fixture consumers are populated."
+  },
+  "datasetId": "uk-software-developer-demo",
+  "datasetVersion": "1.2.0",
+  "licence": {
+    "externalDatasets": [],
+    "identifier": "LicenseRef-JobSeekerCopilot-Proprietary",
+    "owner": "jobseekercopilot",
+    "redistribution": "PROHIBITED"
+  },
+  "lifecycle": {
+    "expiresAt": "2027-08-22",
+    "immutableVersion": true,
+    "refreshTrigger": "Schema, consumer, policy or scenario change",
+    "reviewBy": "2027-02-22"
+  },
+  "payloadChecksums": {
+    "jobs.json": "ef9be04c42c8b4a565fa5f4e1dab4bf1eb2b2f7b32dd2b0b94870f24b9a478d1",
+    "llm-fixtures.json": "9042f24183be782c8c02dcf7cc30b571e47d3ece8f742ea246a001f643a11b69",
+    "locations.json": "7656bb77f470bb08b0861fb1c0092c808ec5ceba136e0947620a0642f2d16ec3"
+  },
+  "purpose": [
+    "LOCAL_DEVELOPMENT",
+    "AUTOMATED_TESTING",
+    "DEMO"
+  ],
+  "scenarioBundle": {
+    "files": [
+      "activities.json",
+      "applications.json",
+      "documents.json",
+      "payment-ledger.json",
+      "scenario.json",
+      "user.json"
+    ],
+    "path": "src/main/resources/scenarios/demo-ready-v1",
+    "sha256": "5dc6df6068d86cd8b916a39cbaf9fc4cab07a51a89a9403f8204acecb8276756"
+  },
+  "schemaVersion": "1.0"
+}

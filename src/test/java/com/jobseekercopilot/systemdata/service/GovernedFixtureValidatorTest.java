@@ -20,7 +20,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 class GovernedFixtureValidatorTest {
     private static final Path COMMITTED_FIXTURE =
-            Path.of("fixtures/datasets/uk-software-developer-demo/1.1.0");
+            Path.of("fixtures/datasets/uk-software-developer-demo/1.2.0");
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     @TempDir
@@ -34,7 +34,7 @@ class GovernedFixtureValidatorTest {
 
     @Test
     void rejectsExpiredFixtureEvenWhenItsChecksumsRemainValid() {
-        assertRejected(() -> validator(at("2027-07-11T00:00:00Z")).requireApproved(COMMITTED_FIXTURE));
+        assertRejected(() -> validator(at("2027-08-23T00:00:00Z")).requireApproved(COMMITTED_FIXTURE));
     }
 
     @Test

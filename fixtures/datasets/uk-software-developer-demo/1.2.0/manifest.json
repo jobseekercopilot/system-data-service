@@ -1,0 +1,65 @@
+{
+  "checksum": "a41875ebb4492b7665182c72fae45294b1f3a1f6cc0f18a8b03ea288a3dc929b",
+  "createdAt": "2026-08-22T09:00:00Z",
+  "datasetId": "uk-software-developer-demo",
+  "description": "Fully synthetic UK vacancies spanning software, administration, finance and project support for non-production release-candidate validation.",
+  "generationParameters": {
+    "containsCapturedProviderData": false,
+    "liveProvidersCalled": false,
+    "method": "deterministic-jq-transform"
+  },
+  "locations": [
+    "Birmingham",
+    "Bristol",
+    "Leeds",
+    "London",
+    "Manchester",
+    "Reading"
+  ],
+  "name": "UK Multi-role Application Demo",
+  "parentDatasetVersion": "1.1.0",
+  "queries": [
+    "API Developer",
+    "Accounts Assistant",
+    "Administrative Assistant",
+    "Angular Developer",
+    "Backend Developer",
+    "Cloud Software Developer",
+    "Full Stack Developer",
+    "Java Software Developer",
+    "Junior Software Developer",
+    "Platform Architect",
+    "Platform Software Developer",
+    "Programme Support Officer",
+    "Project Coordinator",
+    "Senior Software Engineer",
+    "Software Engineer",
+    "Spring Boot Developer"
+  ],
+  "recordCounts": {
+    "jobs": 16,
+    "locations": 6
+  },
+  "sanitised": true,
+  "schemaVersion": "1.0",
+  "sourceProviderNames": [
+    "synthetic-generator"
+  ],
+  "sources": [
+    {
+      "gateway": "synthetic-generator",
+      "location": "non-production",
+      "query": "deterministic-source-specification",
+      "retrievedAt": "2026-08-22T09:00:00Z",
+      "status": "SYNTHETIC",
+      "warning": null
+    }
+  ],
+  "status": "APPROVED_SYNTHETIC",
+  "validation": {
+    "valid": true,
+    "warnings": []
+  },
+  "version": "1.2.0",
+  "warnings": []
+}

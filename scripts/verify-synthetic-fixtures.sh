@@ -4,10 +4,10 @@ set -eu
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 repository_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
 fixture_root="$repository_root/fixtures/datasets/uk-software-developer-demo"
-fixture_dir=${1:-$fixture_root/1.1.0}
+fixture_dir=${1:-$fixture_root/1.2.0}
 scenario_dir="$repository_root/src/main/resources/scenarios/demo-ready-v1"
 scenario_catalog="$repository_root/src/main/resources/scenarios/named-states.json"
-source_specification="$repository_root/fixtures/source/uk-software-developer-demo-v1.1.json"
+source_specification="$repository_root/fixtures/source/uk-software-developer-demo-v1.2.json"
 
 fail() {
     echo "synthetic fixture policy: $1" >&2
@@ -25,22 +25,22 @@ done
 if [ "$#" -eq 0 ]; then
     while IFS= read -r candidate || test -n "$candidate"; do
         case "$candidate" in
-            "$fixture_root/1.0.0"/*|"$fixture_root/1.1.0"/*) ;;
+            "$fixture_root/1.0.0"/*|"$fixture_root/1.1.0"/*|"$fixture_root/1.2.0"/*) ;;
             *) fail "ungoverned dataset file detected: $candidate" ;;
         esac
     done <<EOF
 $(find "$repository_root/fixtures/datasets" -type f | sort)
 EOF
     source_count=$(find "$repository_root/fixtures/source" -type f | wc -l | tr -d ' ')
-    test "$source_count" = "2" || fail "unexpected fixture source specification detected"
+    test "$source_count" = "3" || fail "unexpected fixture source specification detected"
 fi
 
 jq -e '
   .scenarioId == "demo-ready-v1"
   and .scenario == "DEMO_READY"
   and .datasetId == "uk-software-developer-demo"
-  and .datasetVersion == "1.1.0"
-  and .provenance == "fixtures/datasets/uk-software-developer-demo/1.1.0/provenance.json"
+  and .datasetVersion == "1.2.0"
+  and .provenance == "fixtures/datasets/uk-software-developer-demo/1.2.0/provenance.json"
 ' "$scenario_dir/scenario.json" >/dev/null || fail "demo scenario does not reference the governed dataset"
 jq -e '
   .syntheticIdentity == true
@@ -48,9 +48,9 @@ jq -e '
   and (.email | endswith("@example.com"))
 ' "$scenario_dir/user.json" >/dev/null || fail "demo identity is not explicitly synthetic and reserved"
 jq -e '
-  length == 9
-  and ([.[].scenario] | unique | length == 9)
-  and ([.[].scenarioId] | unique | length == 9)
+  length == 10
+  and ([.[].scenario] | unique | length == 10)
+  and ([.[].scenarioId] | unique | length == 10)
   and all(.[];
     (.scenarioId | test("^[a-z0-9-]+-v[1-9][0-9]*$"))
     and (.version | test("^[1-9][0-9]*\\.[0-9]+\\.[0-9]+$"))
@@ -62,14 +62,14 @@ jq -e '
 
 jq -e '
   .datasetId == "uk-software-developer-demo"
-  and .version == "1.1.0"
+  and .version == "1.2.0"
   and .schemaVersion == "1.0"
   and .status == "APPROVED_SYNTHETIC"
   and .sanitised == true
   and .validation.valid == true
   and .generationParameters.liveProvidersCalled == false
   and .generationParameters.containsCapturedProviderData == false
-  and .recordCounts.jobs == 10
+  and .recordCounts.jobs == 16
   and .recordCounts.locations == 6
   and (.sources | length == 1)
   and .sources[0].status == "SYNTHETIC"
@@ -77,10 +77,10 @@ jq -e '
 
 jq -e '
   .schemaVersion == "1.0"
-  and (.jobs | length == 10)
-  and ([.jobs[].id] | unique | length == 10)
-  and ([.jobs[].externalReference] | unique | length == 10)
-  and ([.jobs[] | select(.suitableForDemo == true)] | length == 9)
+  and (.jobs | length == 16)
+  and ([.jobs[].id] | unique | length == 16)
+  and ([.jobs[].externalReference] | unique | length == 16)
+  and ([.jobs[] | select(.suitableForDemo == true)] | length == 15)
   and ([.jobs[] | select(.suitableForDemo == false)] | length == 1)
   and ([.jobs[] | select(.latitude != null and .longitude != null)] | length >= 1)
   and all(.jobs[];
@@ -117,10 +117,12 @@ jq -e '
 jq -e '
   .schemaVersion == "1.0"
   and .datasetId == "uk-software-developer-demo"
-  and .datasetVersion == "1.1.0"
+  and .datasetVersion == "1.2.0"
   and .classification == "FULLY_SYNTHETIC"
   and .creation.method == "DETERMINISTIC_LOCAL_GENERATOR"
   and .creation.liveProvidersCalled == false
+  and .creation.parentSourceSpecification == "fixtures/source/uk-software-developer-demo-v1.1.json"
+  and (.creation.parentSourceSpecificationSha256 | test("^[0-9a-f]{64}$"))
   and .dataPolicy.containsRealPersonalData == false
   and .dataPolicy.containsCapturedProviderData == false
   and .dataPolicy.containsProviderCredentials == false

@@ -2,12 +2,14 @@
 
 ## Approved dataset
 
-The immutable `1.0.0` and `1.1.0` versions of
+The immutable `1.0.0`, `1.1.0` and `1.2.0` versions of
 `fixtures/datasets/uk-software-developer-demo` are approved synthetic runtime
-datasets. Controlled-beta E2E and all current named states pin `1.1.0`, which
-contains ten fictional jobs. `1.0.0` is retained as the nine-job predecessor
-and remains a legacy local fallback; it is never rewritten. Both versions
-contain six minimised place records and one deterministic LLM response.
+datasets. Release-candidate E2E and all current named states pin `1.2.0`, which
+retains the ten fictional software vacancies from `1.1.0` and adds four
+fictional administration, finance and project-support vacancies. `1.0.0` is
+retained as the nine-job predecessor and remains a legacy local fallback; no
+published version is rewritten. All three versions contain six minimised place
+records and one deterministic LLM response.
 Employers, vacancy references, content, and URLs were authored for this
 repository. No provider API, copied vacancy, real user record, provider
 credential, or captured model output was used.
@@ -43,17 +45,23 @@ secret markers, unsafe URLs, missing licence metadata, and checksum tampering.
 
 ## Deterministic Job Search expectations
 
-The current controlled-beta `1.1.0` dataset contains ten jobs: four for Adzuna
-and three each for JSearch and Reed. A request with no search filters returns
-all ten jobs, or the provider's exact subset. The `1.0.0` predecessor contains
-three jobs for each provider. Known provider-specific query and location pairs
-return one stable result in both versions:
+The current release-candidate `1.2.0` dataset contains sixteen jobs: six for
+Adzuna and five each for JSearch and Reed. A request with no search filters
+returns all sixteen jobs, or the provider's exact subset. The `1.1.0`
+predecessor contains ten jobs and `1.0.0` contains nine. Known provider-specific
+query and location pairs remain stable, and `1.2.0` adds these aligned journeys:
 
 | Provider | Query | Location | Expected job |
 | --- | --- | --- | --- |
 | Adzuna | `Junior` | `Manchester` | Junior Software Developer |
 | JSearch | `Angular` | `Bristol` | Angular Developer |
 | Reed | `Spring Boot` | `Leeds` | Spring Boot Developer |
+| Adzuna | `Administrative Assistant` | `Birmingham` | Administrative Assistant |
+| JSearch | `Accounts Assistant` | `Leeds` | Accounts Assistant |
+| Reed | `Project Coordinator` | `Bristol` | Project Coordinator |
+| Adzuna | `Project Coordinator` | `Manchester` | Programme Support Officer |
+| JSearch | `Senior Software Engineer` | `Manchester` | Senior Software Engineer |
+| Reed | `Platform Architect` | `London` | Platform Architect |
 
 A supplied query, location, salary or remote filter that matches no fixture
 returns `totalResults: 0` and an empty `jobs` collection. Filtered empty results
@@ -70,7 +78,8 @@ consumer contract, scenario, schema, licence, policy, or required field changes.
    responses, production logs, real applications, resumes, emails, or model
    output into the source specification.
 2. Treat the published `fixtures/source/uk-software-developer-demo-v1.json`
-   and `uk-software-developer-demo-v1.1.json` specifications as immutable. For
+   `uk-software-developer-demo-v1.1.json` and the compositional
+   `uk-software-developer-demo-v1.2.json` specifications as immutable. For
    any dataset change, create the next semantic-version source specification
    alongside them and update the generator deliberately; never silently
    rewrite a version already relied upon as evidence.
