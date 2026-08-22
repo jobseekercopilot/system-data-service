@@ -1,0 +1,15 @@
+{
+  "count": 9,
+  "statuses": [
+    "OFFER",
+    "INTERVIEW",
+    "APPLIED",
+    "APPLIED",
+    "DOCUMENTS_GENERATED",
+    "DOCUMENTS_GENERATED",
+    "UNSUCCESSFUL",
+    "WITHDRAWN",
+    "DOCUMENTS_GENERATED"
+  ],
+  "note": "Application records are materialised by DemoEnvironmentScenarioBuilder from selected dataset job IDs."
+}

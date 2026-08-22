@@ -1,0 +1,78 @@
+spring:
+  application:
+    name: system-data-service
+
+server:
+  port: ${SERVER_PORT:8103}
+
+system-data:
+  repository-directory: ${SYSTEM_DATA_REPOSITORY_DIRECTORY:./fixtures/datasets}
+  output-directory: ${SYSTEM_DATA_OUTPUT_DIRECTORY:./generated-datasets}
+  generation:
+    default-dataset-id: uk-software-developer-demo
+    default-name: UK Software Developer Demo
+    default-version: 1.0.0
+    maximum-jobs-per-provider: 20
+    fail-if-all-providers-fail: true
+    allow-partial-provider-failure: true
+  enrichment:
+    enabled: false
+    max-retries: 1
+  environment-management:
+    enabled: ${SYSTEM_DATA_ENVIRONMENT_MANAGEMENT_ENABLED:false}
+    allowed-environments: ${SYSTEM_DATA_ENVIRONMENT_ALLOWED_PROFILES:local,test,demo}
+    caller-key: ${SYSTEM_DATA_INTERNAL_CALLER_KEY:}
+    downstream-environment-data-token: ${SYSTEM_DATA_DOWNSTREAM_ENVIRONMENT_DATA_TOKEN:}
+    target-services:
+      authentication: ${AUTHENTICATION_SERVICE_URL:http://localhost:8084}
+      user-profile: ${USER_PROFILE_SERVICE_URL:http://localhost:8085}
+      application-tracker: ${APPLICATION_TRACKER_SERVICE_URL:http://localhost:8088}
+      document-store: ${DOCUMENT_STORE_SERVICE_URL:http://localhost:8089}
+      payment: ${PAYMENT_SERVICE_URL:http://localhost:8099}
+      stripe-gateway: ${STRIPE_GATEWAY_URL:http://localhost:8100}
+  fixtures:
+    enabled: ${SYSTEM_DATA_FIXTURES_ENABLED:false}
+    allowed-environments: ${SYSTEM_DATA_FIXTURE_ALLOWED_PROFILES:local,test,demo,default}
+    default-dataset-id: ${FIXTURE_DATASET_ID:uk-software-developer-demo}
+    default-dataset-version: ${FIXTURE_DATASET_VERSION:1.2.0}
+    default-scenario: ${FIXTURE_SCENARIO:DEMO_READY}
+  live-acquisition:
+    enabled: false
+    execute: false
+    operator-confirmation: ""
+    terms-approval-reference: ""
+    provenance-reviewer: ""
+    maximum-output-records: 120
+    approved-providers: []
+  gateways:
+    adzuna:
+      base-url: ${ADZUNA_GATEWAY_URL:http://localhost:8101}
+      enabled: false
+    jsearch:
+      base-url: ${JSEARCH_GATEWAY_URL:http://localhost:8102}
+      enabled: false
+    reed:
+      base-url: ${REED_GATEWAY_URL:http://localhost:8087}
+      enabled: false
+    postcode-io:
+      base-url: ${POSTCODE_IO_GATEWAY_URL:http://localhost:8082}
+      enabled: false
+    llm:
+      base-url: ${LLM_GATEWAY_URL:http://localhost:8090}
+      enabled: false
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{correlationId}] [%X{serviceName}] [%thread] %logger{36} - %msg%n"
+  level:
+    com.jobseekercopilot: ${APP_LOG_LEVEL:INFO}

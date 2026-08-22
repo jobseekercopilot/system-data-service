@@ -1,0 +1,132 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Jobseeker Copilot - Postcode.io Gateway API",
+    "description": "Gateway API for UK postcode lookups via postcodes.io external API.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8082",
+      "description": "Generated server url"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Postcode",
+      "description": "UK postcode lookup endpoints"
+    }
+  ],
+  "paths": {
+    "/internal/provider-mode": {
+      "get": {
+        "tags": [
+          "provider-mode-controller"
+        ],
+        "operationId": "providerMode",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/postcodes/{postcode}": {
+      "get": {
+        "tags": [
+          "Postcode"
+        ],
+        "summary": "Get location by postcode",
+        "description": "Retrieves geographic location data for a UK postcode via postcodes.io.",
+        "operationId": "getLocationByPostcode",
+        "parameters": [
+          {
+            "name": "postcode",
+            "in": "path",
+            "description": "UK postcode",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "SW1A 1AA"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostcodeLocation"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PostcodeLocation": {
+        "type": "object",
+        "properties": {
+          "postcode": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "eastings": {
+            "type": "string"
+          },
+          "northings": {
+            "type": "string"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "parliamentary_constituency": {
+            "type": "string"
+          },
+          "european_electoral_region": {
+            "type": "string"
+          },
+          "primary_care_trust": {
+            "type": "string"
+          },
+          "nhs_ha": {
+            "type": "string"
+          },
+          "admin_county": {
+            "type": "string"
+          },
+          "admin_district": {
+            "type": "string"
+          },
+          "admin_ward": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

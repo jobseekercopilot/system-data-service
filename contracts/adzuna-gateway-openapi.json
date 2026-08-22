@@ -1,0 +1,180 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Adzuna Gateway API",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8101",
+      "description": "Generated server url"
+    }
+  ],
+  "paths": {
+    "/api/v1/adzuna/jobs/search": {
+      "post": {
+        "tags": [
+          "Adzuna Jobs"
+        ],
+        "summary": "Search Adzuna jobs for job-service",
+        "operationId": "search",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdzunaSearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdzunaSearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/provider-mode": {
+      "get": {
+        "tags": [
+          "provider-mode-controller"
+        ],
+        "operationId": "providerMode",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AdzunaSearchRequest": {
+        "type": "object",
+        "properties": {
+          "targetRole": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "distanceMiles": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "resultsPerPage": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "AdzunaJob": {
+        "type": "object",
+        "properties": {
+          "externalJobId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "companyName": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "locationDisplayName": {
+            "type": "string"
+          },
+          "contractType": {
+            "type": "string"
+          },
+          "employmentType": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "postedAt": {
+            "type": "string"
+          },
+          "redirectUrl": {
+            "type": "string"
+          },
+          "locationAreas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "salaryMinimum": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "salaryMaximum": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "salaryPredicted": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AdzunaSearchResponse": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string"
+          },
+          "totalAvailable": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "resultsPerPage": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "jobs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdzunaJob"
+            }
+          }
+        }
+      }
+    }
+  }
+}

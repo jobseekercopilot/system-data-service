@@ -1,0 +1,36 @@
+spring:
+  main:
+    web-application-type: none
+
+system-data:
+  output-directory: ${SYSTEM_DATA_ACQUISITION_OUTPUT_DIRECTORY:./quarantined-acquisitions}
+  generation:
+    default-dataset-id: ${SYSTEM_DATA_ACQUISITION_DATASET_ID:live-provider-acquisition}
+    default-name: ${SYSTEM_DATA_ACQUISITION_DATASET_NAME:Quarantined live provider acquisition}
+    default-version: ${SYSTEM_DATA_ACQUISITION_DATASET_VERSION:}
+    queries: ${SYSTEM_DATA_ACQUISITION_QUERIES:Software Developer}
+    locations: ${SYSTEM_DATA_ACQUISITION_LOCATIONS:London}
+    maximum-jobs-per-provider: ${SYSTEM_DATA_ACQUISITION_MAXIMUM_JOBS_PER_PROVIDER:20}
+  fixtures:
+    enabled: false
+  environment-management:
+    enabled: false
+  live-acquisition:
+    enabled: ${SYSTEM_DATA_LIVE_ACQUISITION_ENABLED:false}
+    execute: ${SYSTEM_DATA_LIVE_ACQUISITION_EXECUTE:false}
+    operator-confirmation: ${SYSTEM_DATA_LIVE_ACQUISITION_CONFIRMATION:}
+    terms-approval-reference: ${SYSTEM_DATA_LIVE_ACQUISITION_TERMS_APPROVAL_REFERENCE:}
+    provenance-reviewer: ${SYSTEM_DATA_LIVE_ACQUISITION_PROVENANCE_REVIEWER:}
+    maximum-output-records: ${SYSTEM_DATA_LIVE_ACQUISITION_MAXIMUM_OUTPUT_RECORDS:120}
+    approved-providers: ${SYSTEM_DATA_LIVE_ACQUISITION_APPROVED_PROVIDERS:}
+  gateways:
+    adzuna:
+      enabled: ${SYSTEM_DATA_ACQUISITION_ADZUNA_ENABLED:false}
+    jsearch:
+      enabled: ${SYSTEM_DATA_ACQUISITION_JSEARCH_ENABLED:false}
+    reed:
+      enabled: ${SYSTEM_DATA_ACQUISITION_REED_ENABLED:false}
+    postcode-io:
+      enabled: ${SYSTEM_DATA_ACQUISITION_POSTCODE_ENABLED:false}
+    llm:
+      enabled: false

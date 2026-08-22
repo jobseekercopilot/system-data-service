@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DatasetManifest",
+  "type": "object",
+  "required": ["datasetId", "version", "schemaVersion", "createdAt", "status", "sources", "recordCounts", "checksum", "validation"],
+  "properties": {
+    "datasetId": { "type": "string" },
+    "name": { "type": "string" },
+    "version": { "type": "string" },
+    "schemaVersion": { "type": "string" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "description": { "type": "string" },
+    "status": { "type": "string" },
+    "sources": { "type": "array" },
+    "recordCounts": { "type": "object" },
+    "checksum": { "type": "string" },
+    "validation": { "type": "object" }
+  }
+}

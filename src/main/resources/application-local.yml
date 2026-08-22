@@ -1,0 +1,3 @@
+system-data:
+  repository-directory: ${SYSTEM_DATA_REPOSITORY_DIRECTORY:./fixtures/datasets}
+  output-directory: ${SYSTEM_DATA_OUTPUT_DIRECTORY:./generated-datasets}

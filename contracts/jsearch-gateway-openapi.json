@@ -1,0 +1,197 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "JSearch Gateway API",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8102",
+      "description": "Generated server url"
+    }
+  ],
+  "paths": {
+    "/api/v1/jsearch/jobs/search": {
+      "post": {
+        "tags": [
+          "JSearch Jobs"
+        ],
+        "summary": "Search JSearch jobs for job-service",
+        "operationId": "search",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JSearchSearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/JSearchSearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/provider-mode": {
+      "get": {
+        "tags": [
+          "provider-mode-controller"
+        ],
+        "operationId": "providerMode",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "JSearchSearchRequest": {
+        "type": "object",
+        "properties": {
+          "targetRole": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "remoteOnly": {
+            "type": "boolean"
+          },
+          "cursor": {
+            "type": "string"
+          }
+        }
+      },
+      "JSearchApplyOption": {
+        "type": "object",
+        "properties": {
+          "publisher": {
+            "type": "string"
+          },
+          "applyUrl": {
+            "type": "string"
+          },
+          "direct": {
+            "type": "boolean"
+          }
+        }
+      },
+      "JSearchJob": {
+        "type": "object",
+        "properties": {
+          "externalJobId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "companyName": {
+            "type": "string"
+          },
+          "publisher": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "employmentType": {
+            "type": "string"
+          },
+          "locationDisplayName": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "salaryCurrency": {
+            "type": "string"
+          },
+          "salaryPeriod": {
+            "type": "string"
+          },
+          "postedAt": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "primaryApplyUrl": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "salaryMinimum": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "salaryMaximum": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "remote": {
+            "type": "boolean"
+          },
+          "directApply": {
+            "type": "boolean"
+          },
+          "applyOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JSearchApplyOption"
+            }
+          }
+        }
+      },
+      "JSearchSearchResponse": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string"
+          },
+          "cursor": {
+            "type": "string"
+          },
+          "jobs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JSearchJob"
+            }
+          }
+        }
+      }
+    }
+  }
+}

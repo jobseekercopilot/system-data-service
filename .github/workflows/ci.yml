@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [develop, "feature/**"]
+  pull_request:
+    branches: [develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+      - name: Reject forbidden repository content
+        run: ./scripts/verify-repository-policy.sh
+      - name: Test repository policy
+        run: ./scripts/test-repository-policy.sh
+      - name: Verify pinned source contracts
+        run: ./scripts/verify-contracts.sh
+      - name: Test contract compatibility policy
+        run: ./scripts/test-contract-policy.sh
+      - name: Verify fixture API producer contract
+        run: ./scripts/verify-fixture-api-contract.sh
+      - name: Test fixture API producer contract policy
+        run: ./scripts/test-fixture-api-contract-policy.sh
+      - name: Verify governed synthetic fixtures
+        run: ./scripts/verify-synthetic-fixtures.sh
+      - name: Test synthetic fixture policy and reproducibility
+        run: ./scripts/test-synthetic-fixture-policy.sh
+      - name: Verify
+        run: mvn -B clean verify
+      - name: Test dependency report policy
+        run: ./scripts/test-dependency-report-policy.sh
+      - name: Materialize resolved runtime dependencies
+        run: mvn -B dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/dependency-scan
+      - name: Scan verified runtime dependencies
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: rootfs
+          scan-ref: target/dependency-scan
+          scanners: vuln
+          vuln-type: library
+          list-all-pkgs: "true"
+          severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+          format: json
+          output: target/trivy-dependencies.json
+          exit-code: "0"
+          trivyignores: config/trivy/.trivyignore
+          cache: "true"
+          version: v0.72.0
+      - name: Upload dependency vulnerability report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dependency-vulnerability-report-${{ github.sha }}
+          path: target/trivy-dependencies.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Enforce dependency vulnerability policy
+        run: ./scripts/verify-dependency-report.sh target/trivy-dependencies.json config/trivy/.trivyignore
+      - name: Dependency inventory
+        if: always()
+        run: mvn -B dependency:tree
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Test fail-closed history scanning
+        run: ./scripts/test-secret-history.sh
+      - name: Scan complete Git history
+        run: ./scripts/verify-secret-history.sh
+
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build and verify hardened image
+        run: ./scripts/verify-container.sh system-data-service:ci
+      - name: Scan image for Critical and High vulnerabilities
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: system-data-service:ci
+          format: table
+          exit-code: "1"
+          severity: CRITICAL,HIGH
+          scanners: vuln
+          vuln-type: os,library
+          version: v0.72.0

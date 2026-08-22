@@ -1,0 +1,133 @@
+[
+  {
+    "scenarioId": "empty-v1",
+    "version": "1.0.0",
+    "scenario": "EMPTY",
+    "purpose": "Scenario-owned application data is absent across all participating services.",
+    "providerBehaviour": "FIXTURE",
+    "datasetId": "uk-software-developer-demo",
+    "datasetVersion": "1.2.0",
+    "referenceDate": "2026-07-10T09:00:00Z",
+    "identities": [{"key":"empty-primary","email":"empty.primary@example.com","displayName":"Empty State Tester","resetComponents":["PAYMENT","DOCUMENTS","APPLICATIONS","USER_PROFILE","AUTHENTICATION"],"seedComponents":[]}],
+    "expected": {"users": 0, "profiles": 0, "applications": 0, "documents": 0, "documentVersions": 0, "ledgerEntries": 0}
+  },
+  {
+    "scenarioId": "registration-clean-v1",
+    "version": "1.0.0",
+    "scenario": "REGISTRATION_CLEAN",
+    "purpose": "Deterministic Alex Taylor identity is absent before the end-to-end product showcase and is fully removed afterwards.",
+    "providerBehaviour": "FIXTURE",
+    "datasetId": "uk-software-developer-demo",
+    "datasetVersion": "1.2.0",
+    "referenceDate": "2026-07-10T09:00:00Z",
+    "identities": [{"key":"registration-primary","email":"alex.taylor.showcase@example.com","displayName":"Alex Taylor","resetComponents":["PAYMENT","DOCUMENTS","APPLICATIONS","USER_PROFILE","AUTHENTICATION"],"seedComponents":[]}],
+    "expected": {"users": 0, "profiles": 0, "applications": 0, "documents": 0, "documentVersions": 0, "ledgerEntries": 0}
+  },
+  {
+    "scenarioId": "login-session-v1",
+    "version": "1.0.0",
+    "scenario": "LOGIN_SESSION",
+    "purpose": "Existing synthetic account for login, reload, expiry and logout journeys.",
+    "providerBehaviour": "FIXTURE",
+    "datasetId": "uk-software-developer-demo",
+    "datasetVersion": "1.2.0",
+    "referenceDate": "2026-07-10T09:00:00Z",
+    "identities": [{"key":"login-primary","email":"login.primary@example.com","displayName":"Login Tester","resetComponents":["AUTHENTICATION"],"seedComponents":["AUTHENTICATION"]}],
+    "expected": {"users": 1, "profiles": 0}
+  },
+  {
+    "scenarioId": "profile-location-v1",
+    "version": "1.0.0",
+    "scenario": "PROFILE_LOCATION",
+    "purpose": "Existing account and profile for subject-bound profile and location journeys.",
+    "providerBehaviour": "FIXTURE",
+    "datasetId": "uk-software-developer-demo",
+    "datasetVersion": "1.2.0",
+    "referenceDate": "2026-07-10T09:00:00Z",
+    "identities": [{"key":"profile-primary","email":"profile.primary@example.com","displayName":"Profile Tester","resetComponents":["APPLICATIONS","USER_PROFILE","AUTHENTICATION"],"seedComponents":["AUTHENTICATION","USER_PROFILE"]}],
+    "expected": {"users": 1, "profiles": 1}
+  },
+  {
+    "scenarioId": "duplicate-registration-v1",
+    "version": "1.0.0",
+    "scenario": "DUPLICATE_REGISTRATION",
+    "purpose": "Existing account used to verify generic duplicate-registration handling.",
+    "providerBehaviour": "FIXTURE",
+    "datasetId": "uk-software-developer-demo",
+    "datasetVersion": "1.2.0",
+    "referenceDate": "2026-07-10T09:00:00Z",
+    "identities": [{"key":"duplicate-primary","email":"duplicate.primary@example.com","displayName":"Duplicate Tester","resetComponents":["AUTHENTICATION"],"seedComponents":["AUTHENTICATION"]}],
+    "expected": {"users": 1, "profiles": 0}
+  },
+  {
+    "scenarioId": "cross-user-security-v1",
+    "version": "1.0.0",
+    "scenario": "CROSS_USER_SECURITY",
+    "purpose": "Two isolated identities for ownership and cross-user denial checks.",
+    "providerBehaviour": "FIXTURE",
+    "datasetId": "uk-software-developer-demo",
+    "datasetVersion": "1.2.0",
+    "referenceDate": "2026-07-10T09:00:00Z",
+    "identities": [
+      {"key":"claimant-a","email":"claimant.a@example.com","displayName":"Claimant A","resetComponents":["PAYMENT","DOCUMENTS","APPLICATIONS","USER_PROFILE","AUTHENTICATION"],"seedComponents":["AUTHENTICATION","USER_PROFILE"]},
+      {"key":"claimant-b","email":"claimant.b@example.com","displayName":"Claimant B","resetComponents":["PAYMENT","DOCUMENTS","APPLICATIONS","USER_PROFILE","AUTHENTICATION"],"seedComponents":["AUTHENTICATION","USER_PROFILE"]}
+    ],
+    "expected": {"users": 2, "profiles": 2, "applications": 0, "documents": 0, "documentVersions": 0, "ledgerEntries": 0}
+  },
+  {
+    "scenarioId": "real-world-personas-v2",
+    "version": "1.2.0",
+    "scenario": "REAL_WORLD_PERSONAS",
+    "purpose": "Seven meaningfully different synthetic job seekers for sparse, typical, rich, boundary, CV-led, manual-first and career-change validation.",
+    "providerBehaviour": "FIXTURE",
+    "datasetId": "uk-software-developer-demo",
+    "datasetVersion": "1.2.0",
+    "referenceDate": "2026-08-10T09:00:00Z",
+    "identities": [
+      {"key":"minimal-profile","email":"minimal.profile@example.com","displayName":"Maya Green","resetComponents":["PAYMENT","DOCUMENTS","APPLICATIONS","USER_PROFILE","AUTHENTICATION"],"seedComponents":["AUTHENTICATION","USER_PROFILE"]},
+      {"key":"typical-profile","email":"typical.profile@example.com","displayName":"Alex Taylor","resetComponents":["PAYMENT","DOCUMENTS","APPLICATIONS","USER_PROFILE","AUTHENTICATION"],"seedComponents":["AUTHENTICATION","USER_PROFILE"]},
+      {"key":"rich-profile","email":"rich.profile@example.com","displayName":"Priya Shah","resetComponents":["PAYMENT","DOCUMENTS","APPLICATIONS","USER_PROFILE","AUTHENTICATION"],"seedComponents":["AUTHENTICATION","USER_PROFILE"]},
+      {"key":"very-rich-profile","email":"very.rich.profile@example.com","displayName":"Morgan Hughes","resetComponents":["PAYMENT","DOCUMENTS","APPLICATIONS","USER_PROFILE","AUTHENTICATION"],"seedComponents":["AUTHENTICATION","USER_PROFILE"]},
+      {"key":"uploaded-cv-first","email":"uploaded.cv.first@example.com","displayName":"Hannah Cole","resetComponents":["PAYMENT","DOCUMENTS","APPLICATIONS","USER_PROFILE","AUTHENTICATION"],"seedComponents":["AUTHENTICATION","USER_PROFILE"]},
+      {"key":"manual-profile-first","email":"manual.profile.first@example.com","displayName":"Daniel Okoro","resetComponents":["PAYMENT","DOCUMENTS","APPLICATIONS","USER_PROFILE","AUTHENTICATION"],"seedComponents":["AUTHENTICATION","USER_PROFILE"]},
+      {"key":"career-changer","email":"career.changer@example.com","displayName":"Samira Khan","resetComponents":["PAYMENT","DOCUMENTS","APPLICATIONS","USER_PROFILE","AUTHENTICATION"],"seedComponents":["AUTHENTICATION","USER_PROFILE"]}
+    ],
+    "expected": {"users": 7, "profiles": 7, "applications": 0, "documents": 0, "documentVersions": 0, "ledgerEntries": 0}
+  },
+  {
+    "scenarioId": "provider-failure-v1",
+    "version": "1.0.0",
+    "scenario": "PROVIDER_FAILURE",
+    "purpose": "Deterministic all-provider-unavailable fixture without external network access.",
+    "providerBehaviour": "ALL_UNAVAILABLE",
+    "datasetId": "uk-software-developer-demo",
+    "datasetVersion": "1.2.0",
+    "referenceDate": "2026-07-10T09:00:00Z",
+    "identities": [],
+    "expected": {"providerStatus": "UNAVAILABLE"}
+  },
+  {
+    "scenarioId": "payment-acceptance-v1",
+    "version": "1.0.0",
+    "scenario": "PAYMENT_ACCEPTANCE",
+    "purpose": "Authenticated deterministic document-credit checkout, signed settlement replay, expiry and owner-scoped return reconciliation.",
+    "providerBehaviour": "FIXTURE",
+    "datasetId": "uk-software-developer-demo",
+    "datasetVersion": "1.2.0",
+    "referenceDate": "2026-08-15T09:00:00Z",
+    "identities": [{"key":"payment-primary","email":"payment.primary@example.com","displayName":"Payment Acceptance Tester","resetComponents":["PAYMENT","AUTHENTICATION"],"seedComponents":["AUTHENTICATION","PAYMENT"]}],
+    "expected": {"users": 1, "profiles": 0, "applications": 0, "documents": 0, "documentVersions": 0, "ledgerEntries": 1}
+  },
+  {
+    "scenarioId": "demo-ready-v1",
+    "version": "1.0.0",
+    "scenario": "DEMO_READY",
+    "purpose": "Populated deterministic demo journey.",
+    "providerBehaviour": "FIXTURE",
+    "datasetId": "uk-software-developer-demo",
+    "datasetVersion": "1.2.0",
+    "referenceDate": "2026-07-10T09:00:00Z",
+    "identities": [{"key":"alex-taylor","email":"alex.taylor92@example.com","displayName":"Alex Taylor","resetComponents":["PAYMENT","DOCUMENTS","APPLICATIONS","USER_PROFILE","AUTHENTICATION"],"seedComponents":["AUTHENTICATION","USER_PROFILE","PAYMENT","DOCUMENTS","APPLICATIONS"]}],
+    "expected": {"users": 1, "profiles": 1, "applications": 9, "documents": 19}
+  }
+]

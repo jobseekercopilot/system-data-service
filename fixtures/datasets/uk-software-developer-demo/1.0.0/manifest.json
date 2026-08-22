@@ -1,0 +1,58 @@
+{
+  "checksum": "9e26b1831eff41812a1a6a65c56346b90684168072f29de4e866ccb4829bfcd6",
+  "createdAt": "2026-07-10T09:00:00Z",
+  "datasetId": "uk-software-developer-demo",
+  "description": "Fully synthetic UK software-development vacancies for non-production tests and demonstrations.",
+  "generationParameters": {
+    "containsCapturedProviderData": false,
+    "liveProvidersCalled": false,
+    "method": "deterministic-jq-transform"
+  },
+  "locations": [
+    "Birmingham",
+    "Bristol",
+    "Leeds",
+    "London",
+    "Manchester",
+    "Reading"
+  ],
+  "name": "UK Software Developer Demo",
+  "parentDatasetVersion": null,
+  "queries": [
+    "API Developer",
+    "Angular Developer",
+    "Backend Developer",
+    "Full Stack Developer",
+    "Java Software Developer",
+    "Junior Software Developer",
+    "Platform Software Developer",
+    "Software Engineer",
+    "Spring Boot Developer"
+  ],
+  "recordCounts": {
+    "jobs": 9,
+    "locations": 6
+  },
+  "sanitised": true,
+  "schemaVersion": "1.0",
+  "sourceProviderNames": [
+    "synthetic-generator"
+  ],
+  "sources": [
+    {
+      "gateway": "synthetic-generator",
+      "location": "non-production",
+      "query": "deterministic-source-specification",
+      "retrievedAt": "2026-07-10T09:00:00Z",
+      "status": "SYNTHETIC",
+      "warning": null
+    }
+  ],
+  "status": "APPROVED_SYNTHETIC",
+  "validation": {
+    "valid": true,
+    "warnings": []
+  },
+  "version": "1.0.0",
+  "warnings": []
+}
