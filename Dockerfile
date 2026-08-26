@@ -11,6 +11,7 @@ RUN apk add --no-cache --upgrade \
         libexpat=2.8.3-r0 \
         p11-kit=0.26.2-r0 \
         p11-kit-trust=0.26.2-r0 \
+        sqlite-libs=3.53.4-r0 \
     && addgroup -S -g 10001 app \
     && adduser -S -D -H -u 10001 -G app app
 
